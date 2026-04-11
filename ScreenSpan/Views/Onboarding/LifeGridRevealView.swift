@@ -3,160 +3,178 @@ import SwiftUI
 struct LifeGridRevealView: View {
     var viewModel: OnboardingViewModel
     var animation: Namespace.ID
-    @State private var showGrid = false
-    @State private var animateRedSpread = false
+
+    @State private var displayedYears: Double = 0
+    @State private var timerRotation: Double = 0
+    @State private var countingTask: Task<Void, Never>?
+
+    private let backgroundColor = Color(hex: "F3F4F6")
+    private let titleColor = Color(hex: "051425")
+    private let mutedColor = Color(hex: "797979")
+    private let blurredRedColor = Color(hex: "F63232")
+    private let yearsTextColor = Color.white
+    private let boxBackground = Color(hex: "FFC2C2")
+    private let boxStroke = Color(hex: "C82020")
+    private let buttonColor = Color(hex: "051425")
+
+    private var targetYears: Double {
+        max(viewModel.projectedYearsOnPhone, 0)
+    }
+
+    private var targetPercent: Double {
+        max(viewModel.percentageOfWakingHours, 0)
+    }
 
     private var yearsFormatted: String {
-        String(format: "%.1f", viewModel.projectedYearsOnPhone)
+        String(format: "%.1f", displayedYears)
     }
 
     private var percentageFormatted: String {
-        String(format: "%.0f", viewModel.percentageOfWakingHours)
+        String(format: "%.0f", targetPercent)
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: 32) {
-                    // Hero Number
-                    VStack(spacing: 12) {
-                        HStack(spacing: 8) {
-                            Text(yearsFormatted)
-                                .font(.custom("Geist", size: 72, relativeTo: .body).weight(.bold))
-                                .foregroundColor(.screenSpanRed)
-                                .monospacedDigit()
+            Spacer(minLength: 16)
 
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("YEARS")
-                                    .font(.custom("Geist", size: 14, relativeTo: .body).weight(.bold))
-                                    .foregroundColor(.screenSpanNavy)
-                                Text("of your life")
-                                    .font(.custom("Geist", size: 12, relativeTo: .body))
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 32)
+            // Top status pill
+            HStack(spacing: 8) {
+                Image(systemName: "hourglass")
+                    .font(.custom("Geist", size: 13, relativeTo: .body).weight(.semibold))
+                    .foregroundStyle(Color(hex: "C82020"))
+                    .rotationEffect(.degrees(timerRotation))
 
-                    // Subtitle
-                    VStack(spacing: 8) {
-                        Text("of your waking life will be spent on your phone")
-                            .font(.custom("Geist", size: 18, relativeTo: .body).weight(.semibold))
-                            .foregroundColor(.screenSpanNavy)
-                            .lineSpacing(1)
-
-                        Text("That's \(percentageFormatted)% of every waking hour you have left")
-                            .font(.custom("Geist", size: 15, relativeTo: .body))
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 24)
-
-                    // Life Grid
-                    VStack(spacing: 12) {
-                        OnboardingLifeGrid(
-                            years: Int(viewModel.remainingYearsOfLife),
-                            projectedPhoneYears: Int(viewModel.projectedYearsOnPhone),
-                            showAnimation: showGrid,
-                            animateRedSpread: animateRedSpread
-                        )
-                    }
-                    .padding(.horizontal, 24)
-
-                    // Information Box
-                    VStack(spacing: 12) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "info.circle.fill")
-                                .font(.custom("Geist", size: 16, relativeTo: .body))
-                                .foregroundColor(.screenSpanBlue)
-
-                            Text("This assumes your current daily screen time of \(String(format: "%.1f", viewModel.estimatedDailyScreenTime)) hours")
-                                .font(.custom("Geist", size: 14, relativeTo: .body))
-                                .foregroundColor(.secondary)
-
-                            Spacer()
-                        }
-                        .padding(12)
-                        .background(Color.screenSpanBlue.opacity(0.08))
-                        .cornerRadius(8)
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 24)
-                }
+                Text("TIME ANALYSIS COMPLETE")
+                    .font(.custom("Geist", size: 14, relativeTo: .body).weight(.semibold))
+                    .foregroundStyle(Color(hex: "575757"))
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(Color(hex: "ECECEF"))
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                    )
+            )
+
+            Spacer(minLength: 44)
+
+            VStack(spacing: 10) {
+                Text(yearsFormatted)
+                    .font(.custom("Geist", size: 74, relativeTo: .body).weight(.bold))
+                    .foregroundStyle(yearsTextColor)
+                    .monospacedDigit()
+                    .shadow(color: .black.opacity(0.20), radius: 2, x: 0, y: 2)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 8)
+                    .background(
+                        Circle()
+                            .fill(blurredRedColor.opacity(0.42))
+                            .frame(width: 270, height: 210)
+                            .blur(radius: 36)
+                    )
+
+                Text("YEARS")
+                    .font(.custom("Geist", size: 42, relativeTo: .body).weight(.bold))
+                    .foregroundStyle(Color(hex: "C82020"))
+
+                Text("of your waking life")
+                    .font(.custom("Geist", size: 37, relativeTo: .body).weight(.semibold))
+                    .italic()
+                    .foregroundStyle(mutedColor)
+
+                Text("staring at your phone.")
+                    .font(.custom("Geist", size: 46, relativeTo: .body).weight(.bold))
+                    .foregroundStyle(titleColor)
+            }
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 24)
+
+            Spacer(minLength: 36)
+
+            HStack(spacing: 10) {
+                Image(systemName: "clock")
+                    .font(.custom("Geist", size: 18, relativeTo: .body).weight(.semibold))
+                    .foregroundStyle(Color(hex: "D92A2A"))
+
+                Text("That’s \(percentageFormatted)% of every waking hour you have left.")
+                    .font(.custom("Geist", size: 19, relativeTo: .body).weight(.semibold))
+                    .foregroundStyle(titleColor)
+                    .lineLimit(2)
+
+                Spacer(minLength: 0)
+            }
+            .padding(.vertical, 18)
+            .padding(.horizontal, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(boxBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(boxStroke, lineWidth: 1)
+                    )
+            )
+            .padding(.horizontal, 24)
 
             Spacer()
 
-            // Continue Button
-            Button(action: {
+            Button {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     viewModel.advance()
                 }
-            }) {
-                Text("Continue")
-                    .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(Color.screenSpanRed)
-                    .cornerRadius(12)
+            } label: {
+                HStack(spacing: 8) {
+                    Text("See your life, visualized")
+                        .font(.custom("Geist", size: 28, relativeTo: .body).weight(.semibold))
+                        .foregroundStyle(.white)
+
+                    Image(systemName: "arrow.right")
+                        .font(.custom("Geist", size: 23, relativeTo: .body).weight(.semibold))
+                        .foregroundStyle(.white)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 58)
+                .background(buttonColor)
+                .clipShape(Capsule())
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 32)
+            .padding(.bottom, 34)
         }
-        .background(Color.screenSpanOffWhite.ignoresSafeArea())
+        .background(backgroundColor.ignoresSafeArea())
         .onAppear {
-            withAnimation(.easeOut(duration: 0.6)) {
-                showGrid = true
-            }
-            withAnimation(.easeInOut(duration: 1.2).delay(0.6)) {
-                animateRedSpread = true
-            }
+            viewModel.calculateProjection()
+            startAnimations()
+        }
+        .onDisappear {
+            countingTask?.cancel()
         }
     }
-}
 
-// MARK: - Life Grid Component
-struct OnboardingLifeGrid: View {
-    let years: Int
-    let projectedPhoneYears: Int
-    let showAnimation: Bool
-    let animateRedSpread: Bool
+    private func startAnimations() {
+        withAnimation(.linear(duration: 2.2).repeatForever(autoreverses: false)) {
+            timerRotation = 360
+        }
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 12)
+        countingTask?.cancel()
+        countingTask = Task {
+            let steps = 55
+            for step in 1...steps {
+                if Task.isCancelled { return }
+                let progress = Double(step) / Double(steps)
+                let eased = 1 - pow(1 - progress, 3)
 
-    var body: some View {
-        VStack(spacing: 8) {
-            ForEach(0..<years, id: \.self) { year in
-                HStack(spacing: 4) {
-                    ForEach(0..<12, id: \.self) { month in
-                        let cellIndex = year * 12 + month
-                        let isPhoneTime = cellIndex < (projectedPhoneYears * 12)
-
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(cellColor(isPhoneTime: isPhoneTime))
-                            .frame(height: 8)
-                            .opacity(showAnimation ? 1 : 0)
-                            .scaleEffect(showAnimation ? 1 : 0.5, anchor: .center)
-                    }
+                await MainActor.run {
+                    displayedYears = targetYears * eased
                 }
+
+                try? await Task.sleep(nanoseconds: 28_000_000)
+            }
+
+            await MainActor.run {
+                displayedYears = targetYears
             }
         }
-        .padding(12)
-        .background(Color.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.screenSpanNavy.opacity(0.1), lineWidth: 1)
-        )
-    }
-
-    private func cellColor(isPhoneTime: Bool) -> Color {
-        if isPhoneTime {
-            return animateRedSpread ? .screenSpanRed : .screenSpanBlue
-        }
-        return Color.screenSpanNavy.opacity(0.08)
     }
 }

@@ -54,6 +54,17 @@ final class AppGroupManager {
         }
     }
 
+
+    /// Percentage of waking life spent on the phone from onboarding
+    var onboardingWakingPercent: Double {
+        get {
+            userDefaults.double(forKey: SharedConstants.UserDefaultsKey.onboardingWakingPercent.rawValue)
+        }
+        set {
+            userDefaults.set(newValue, forKey: SharedConstants.UserDefaultsKey.onboardingWakingPercent.rawValue)
+        }
+    }
+
     /// Selected DeviceActivity categories
     var selectedCategories: [String] {
         get {

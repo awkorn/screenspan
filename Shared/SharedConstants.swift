@@ -8,6 +8,7 @@ enum SharedConstants {
         case targetAge
         case screenTimeGoalMinutes
         case onboardingProjectedYears
+        case onboardingWakingPercent
         case selectedCategories
         case subscriptionStatus
         case onboardingCompleted
