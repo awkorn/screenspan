@@ -33,6 +33,7 @@ struct AgeInputView: View {
                 } label: {
                     Image(systemName: "chevron.left")
                         .font(.custom("Geist", size: 18, relativeTo: .body).weight(.regular))
+                        .font(.system(size: 18, weight: .regular))
                         .foregroundColor(titleColor)
                         .frame(width: 28, height: 28)
                 }
@@ -45,12 +46,14 @@ struct AgeInputView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Enter your date of birth")
                     .font(.custom("Geist", size: 42, relativeTo: .body).weight(.bold))
+                    .font(.system(size: 42, weight: .bold))
                     .foregroundColor(titleColor)
                     .minimumScaleFactor(0.75)
                     .lineLimit(2)
 
                 Text("This will be used in your calculation")
                     .font(.custom("Geist", size: 19, relativeTo: .body).weight(.regular))
+                    .font(.system(size: 19, weight: .regular))
                     .foregroundColor(subtitleColor)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -79,6 +82,11 @@ struct AgeInputView: View {
 
                 Text("80 years")
                     .font(.custom("Geist", size: 30, relativeTo: .body).weight(.regular))
+                    .font(.system(size: 21, weight: .semibold))
+                    .foregroundColor(titleColor)
+
+                Text("80 years")
+                    .font(.system(size: 30, weight: .regular))
                     .foregroundColor(titleColor)
             }
             .frame(maxWidth: .infinity)
@@ -99,6 +107,7 @@ struct AgeInputView: View {
             } label: {
                 Text("Next")
                     .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
+                    .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)
