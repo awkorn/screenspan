@@ -13,18 +13,18 @@ struct PermissionRequestView: View {
                     // Header
                     VStack(spacing: 8) {
                         Text("Screen Time Access")
-                            .font(.system(size: 32, weight: .bold))
+                            .font(.custom("Geist", size: 32, relativeTo: .body).weight(.bold))
                             .foregroundColor(.screenSpanNavy)
 
                         Text("We need your permission")
-                            .font(.system(size: 15))
+                            .font(.custom("Geist", size: 15, relativeTo: .body))
                             .foregroundColor(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                     // Icon
                     Image(systemName: "iphone.radiowaves.left.and.right")
-                        .font(.system(size: 60))
+                        .font(.custom("Geist", size: 60, relativeTo: .body))
                         .foregroundColor(.screenSpanBlue)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
@@ -55,11 +55,11 @@ struct PermissionRequestView: View {
                         VStack(spacing: 12) {
                             HStack(spacing: 12) {
                                 Image(systemName: "exclamationmark.circle.fill")
-                                    .font(.system(size: 16))
+                                    .font(.custom("Geist", size: 16, relativeTo: .body))
                                     .foregroundColor(.screenSpanRed)
 
                                 Text("Permission needed to continue")
-                                    .font(.system(size: 15, weight: .semibold))
+                                    .font(.custom("Geist", size: 15, relativeTo: .body).weight(.semibold))
                                     .foregroundColor(.screenSpanRed)
 
                                 Spacer()
@@ -77,7 +77,7 @@ struct PermissionRequestView: View {
                                     Image(systemName: "gear")
                                     Text("Open Settings")
                                 }
-                                .font(.system(size: 15, weight: .semibold))
+                                .font(.custom("Geist", size: 15, relativeTo: .body).weight(.semibold))
                                 .foregroundColor(.screenSpanBlue)
                             }
                         }
@@ -94,7 +94,7 @@ struct PermissionRequestView: View {
                 requestScreenTimeAccess()
             }) {
                 Text("Allow Screen Time Access")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)
@@ -128,7 +128,7 @@ struct ExplanationCard: View {
     var body: some View {
         HStack(spacing: 16) {
             Image(systemName: icon)
-                .font(.system(size: 20, weight: .semibold))
+                .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
                 .foregroundColor(.screenSpanRed)
                 .frame(width: 32, height: 32)
                 .background(Color.screenSpanRed.opacity(0.1))
@@ -136,11 +136,11 @@ struct ExplanationCard: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.custom("Geist", size: 16, relativeTo: .body).weight(.semibold))
                     .foregroundColor(.screenSpanNavy)
 
                 Text(description)
-                    .font(.system(size: 14))
+                    .font(.custom("Geist", size: 14, relativeTo: .body))
                     .foregroundColor(.secondary)
                     .lineSpacing(1)
             }

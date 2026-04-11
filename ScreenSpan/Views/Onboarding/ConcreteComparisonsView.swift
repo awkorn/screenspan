@@ -76,12 +76,12 @@ struct ConcreteComparisonsView: View {
                     // Header with projection
                     VStack(spacing: 12) {
                         Text("In \(yearsFormatted) years, you could...")
-                            .font(.system(size: 28, weight: .semibold))
+                            .font(.custom("Geist", size: 28, relativeTo: .body).weight(.semibold))
                             .foregroundColor(.screenSpanNavy)
                             .lineSpacing(1)
 
                         Text("What could you accomplish with that time?")
-                            .font(.system(size: 15))
+                            .font(.custom("Geist", size: 15, relativeTo: .body))
                             .foregroundColor(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -115,7 +115,7 @@ struct ConcreteComparisonsView: View {
                     }
                 }) {
                     Text("What if you could get some of it back?")
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
@@ -150,25 +150,25 @@ struct ComparisonCard: View {
     var body: some View {
         HStack(spacing: 16) {
             Text(item.icon)
-                .font(.system(size: 40))
+                .font(.custom("Geist", size: 40, relativeTo: .body))
                 .frame(width: 56, height: 56)
                 .background(Color.screenSpanRed.opacity(0.1))
                 .cornerRadius(12)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.title)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.custom("Geist", size: 16, relativeTo: .body).weight(.semibold))
                     .foregroundColor(.screenSpanNavy)
 
                 Text(item.subtitle)
-                    .font(.system(size: 14))
+                    .font(.custom("Geist", size: 14, relativeTo: .body))
                     .foregroundColor(.secondary)
             }
 
             Spacer()
 
             Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.custom("Geist", size: 14, relativeTo: .body).weight(.semibold))
                 .foregroundColor(.screenSpanBlue)
         }
         .padding(16)

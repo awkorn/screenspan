@@ -45,11 +45,11 @@ struct PaywallView: View {
                     // Header
                     VStack(spacing: 12) {
                         Text("Get your time back")
-                            .font(.system(size: 28, weight: .semibold))
+                            .font(.custom("Geist", size: 28, relativeTo: .body).weight(.semibold))
                             .foregroundColor(.screenSpanNavy)
 
                         Text("You could reclaim \(reclaimedYearsFormatted) years with your goal")
-                            .font(.system(size: 15))
+                            .font(.custom("Geist", size: 15, relativeTo: .body))
                             .foregroundColor(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -112,7 +112,7 @@ struct PaywallView: View {
                     }
                 }) {
                     Text("Start Free Trial")
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
@@ -126,28 +126,28 @@ struct PaywallView: View {
                     }
                 }) {
                     Text("Maybe later")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.custom("Geist", size: 15, relativeTo: .body).weight(.semibold))
                         .foregroundColor(.screenSpanBlue)
                 }
 
                 // Footer Links
                 HStack(spacing: 12) {
                     Link("Restore Purchases", destination: URL(string: "https://example.com/restore") ?? URL(fileURLWithPath: ""))
-                        .font(.system(size: 12))
+                        .font(.custom("Geist", size: 12, relativeTo: .body))
                         .foregroundColor(.secondary)
 
                     Divider()
                         .frame(height: 12)
 
                     Link("Privacy Policy", destination: URL(string: "https://example.com/privacy") ?? URL(fileURLWithPath: ""))
-                        .font(.system(size: 12))
+                        .font(.custom("Geist", size: 12, relativeTo: .body))
                         .foregroundColor(.secondary)
 
                     Divider()
                         .frame(height: 12)
 
                     Link("Terms", destination: URL(string: "https://example.com/terms") ?? URL(fileURLWithPath: ""))
-                        .font(.system(size: 12))
+                        .font(.custom("Geist", size: 12, relativeTo: .body))
                         .foregroundColor(.secondary)
                 }
                 .frame(maxWidth: .infinity)
@@ -174,17 +174,17 @@ struct BenefitRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 18, weight: .semibold))
+                .font(.custom("Geist", size: 18, relativeTo: .body).weight(.semibold))
                 .foregroundColor(.screenSpanRed)
                 .frame(width: 32, height: 32)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.custom("Geist", size: 15, relativeTo: .body).weight(.semibold))
                     .foregroundColor(.screenSpanNavy)
 
                 Text(subtitle)
-                    .font(.system(size: 13))
+                    .font(.custom("Geist", size: 13, relativeTo: .body))
                     .foregroundColor(.secondary)
             }
 
@@ -201,7 +201,7 @@ struct TrialTimelineView: View {
     var body: some View {
         VStack(spacing: 12) {
             Text("Free trial: 7 days")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.custom("Geist", size: 13, relativeTo: .body).weight(.semibold))
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -212,7 +212,7 @@ struct TrialTimelineView: View {
                         .frame(width: 12, height: 12)
 
                     Text("Today")
-                        .font(.system(size: 12))
+                        .font(.custom("Geist", size: 12, relativeTo: .body))
                         .foregroundColor(.secondary)
                 }
                 .frame(maxWidth: .infinity)
@@ -230,7 +230,7 @@ struct TrialTimelineView: View {
                         .frame(width: 12, height: 12)
 
                     Text("Day 5")
-                        .font(.system(size: 12))
+                        .font(.custom("Geist", size: 12, relativeTo: .body))
                         .foregroundColor(.secondary)
                 }
                 .frame(maxWidth: .infinity)
@@ -248,7 +248,7 @@ struct TrialTimelineView: View {
                         .frame(width: 12, height: 12)
 
                     Text("Day 7")
-                        .font(.system(size: 12))
+                        .font(.custom("Geist", size: 12, relativeTo: .body))
                         .foregroundColor(.secondary)
                 }
                 .frame(maxWidth: .infinity)
@@ -273,12 +273,12 @@ struct PlanCard: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(plan.name)
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.custom("Geist", size: 16, relativeTo: .body).weight(.semibold))
                             .foregroundColor(.screenSpanNavy)
 
                         if plan.isPopular {
                             Text("Save 58%")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.custom("Geist", size: 12, relativeTo: .body).weight(.semibold))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
@@ -291,11 +291,11 @@ struct PlanCard: View {
 
                     VStack(alignment: .trailing, spacing: 2) {
                         Text(plan.price)
-                            .font(.system(size: 20, weight: .bold))
+                            .font(.custom("Geist", size: 20, relativeTo: .body).weight(.bold))
                             .foregroundColor(.screenSpanRed)
 
                         Text(plan.period)
-                            .font(.system(size: 12))
+                            .font(.custom("Geist", size: 12, relativeTo: .body))
                             .foregroundColor(.secondary)
                     }
                 }
@@ -303,9 +303,9 @@ struct PlanCard: View {
                 if plan.isPopular {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 12))
+                            .font(.custom("Geist", size: 12, relativeTo: .body))
                         Text("Recommended")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.custom("Geist", size: 12, relativeTo: .body).weight(.semibold))
                     }
                     .foregroundColor(.screenSpanRed)
                     .frame(maxWidth: .infinity)
