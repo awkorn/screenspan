@@ -1,179 +1,242 @@
 import SwiftUI
 
-// MARK: - Goal Activation View (Step 7)
+// MARK: - Paywall View (Step 8)
 struct PaywallView: View {
     var viewModel: OnboardingViewModel
 
-    private let primaryNavy = Color(hex: "#051425")
-    private let iconBlue = Color(hex: "#0063D6")
-    private let iconBackground = Color(hex: "#D7EAFF")
+    @State private var selectedPlan: Plan = .annual
 
-    private var goalHoursText: String {
-        String(format: "%.1f", viewModel.selectedDailyLimit)
+    private let titleColor = Color(hex: "#051425")
+    private let subtitleColor = Color(hex: "#595959")
+    private let iconColor = Color(hex: "#C82020")
+    private let moneyColor = Color(hex: "#0063D6")
+    private let cardTitleColor = Color(hex: "#051425")
+    private let cardSubtitleColor = Color(hex: "#595959")
+
+    private var reclaimedYearsRounded: Int {
+        Int(viewModel.reclaimedYears.rounded())
     }
 
-    private let selectableCategories: [UsageCategory] = [
-        .social,
-        .entertainment,
-        .games,
-    ]
+    enum Plan {
+        case monthly
+        case annual
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: 20) {
-                    Text("Let’s make it happen")
-                        .font(.custom("Geist", size: 48, relativeTo: .body).weight(.semibold))
-                        .foregroundColor(primaryNavy)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 28)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 12) {
+                    headerSection
+                        .padding(.top, 24)
 
-                    goalSummaryCard
+                    benefitCard(
+                        icon: "shield.lefthalf.filled.badge.checkmark",
+                        title: "Customize daily limits",
+                        subtitle: "Block apps based on your goals"
+                    )
 
-                    categoriesCard
+                    benefitCard(
+                        icon: "bell",
+                        title: "Smart reminders",
+                        subtitle: "Get notified when approaching limits"
+                    )
+
+                    benefitCard(
+                        icon: "chart.xyaxis.line",
+                        title: "Detailed analytics",
+                        subtitle: "See your progress over time"
+                    )
+
+                    trialCard
+                        .padding(.top, 8)
+
+                    planCard(plan: .monthly)
+                    planCard(plan: .annual)
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 24)
+                .padding(.bottom, 20)
             }
 
-            Spacer(minLength: 16)
-
-            Button(action: {
-                Task {
-                    await viewModel.completeOnboarding()
+            VStack(spacing: 14) {
+                Button {
+                    Task {
+                        await viewModel.completeOnboarding()
+                    }
+                } label: {
+                    Text("Start free trial")
+                        .font(.custom("Geist", size: 32, relativeTo: .body).weight(.semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(Color.screenSpanNavy)
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                 }
-            }) {
-                Text("Activate My Plan")
-                    .font(.custom("Geist", size: 32, relativeTo: .body).weight(.semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(primaryNavy)
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+
+                Button {
+                    Task {
+                        await viewModel.completeOnboarding()
+                    }
+                } label: {
+                    Text("maybe later")
+                        .font(.custom("Geist", size: 32, relativeTo: .body).weight(.regular))
+                        .foregroundColor(subtitleColor)
+                }
+                .buttonStyle(.plain)
+
+                HStack(spacing: 10) {
+                    legalButton(title: "Restore Purchases")
+                    legalDivider
+                    legalButton(title: "Privacy Policy")
+                    legalDivider
+                    legalButton(title: "Terms")
+                }
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 32)
+            .padding(.bottom, 24)
         }
         .background(Color.screenSpanOffWhite.ignoresSafeArea())
     }
 
-    private var goalSummaryCard: some View {
-        HStack(spacing: 14) {
-            iconTile(systemName: "target")
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Get your time back")
+                .font(.custom("Geist", size: 48, relativeTo: .body).weight(.semibold))
+                .foregroundColor(titleColor)
+
+            Text("Reclaim those \(reclaimedYearsRounded) years of your life")
+                .font(.custom("Geist", size: 24, relativeTo: .body))
+                .foregroundColor(subtitleColor)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func benefitCard(icon: String, title: String, subtitle: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.custom("Geist", size: 18, relativeTo: .body).weight(.semibold))
+                .foregroundColor(iconColor)
+                .frame(width: 20)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Daily screen time goal")
-                    .font(.custom("Geist", size: 16, relativeTo: .body))
-                    .foregroundColor(.secondary)
+                Text(title)
+                    .font(.custom("Geist", size: 22, relativeTo: .body).weight(.medium))
+                    .foregroundColor(cardTitleColor)
 
-                HStack(spacing: 4) {
-                    Text(goalHoursText)
-                        .font(.custom("Geist", size: 22, relativeTo: .body).weight(.semibold))
-                        .foregroundColor(iconBlue)
-
-                    Text("hours/day")
-                        .font(.custom("Geist", size: 22, relativeTo: .body))
-                        .foregroundColor(primaryNavy.opacity(0.8))
-                }
+                Text(subtitle)
+                    .font(.custom("Geist", size: 17, relativeTo: .body))
+                    .foregroundColor(cardSubtitleColor)
             }
 
             Spacer()
         }
-        .padding(16)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
-    private var categoriesCard: some View {
+    private var trialCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Which categories to limit?")
-                        .font(.custom("Geist", size: 30, relativeTo: .body).weight(.semibold))
-                        .foregroundColor(primaryNavy)
+            Text("Free trial: 7 days")
+                .font(.custom("Geist", size: 30, relativeTo: .body).weight(.medium))
+                .foregroundColor(cardTitleColor)
 
-                    Text("We’ll help you manage these categories within your daily goal")
-                        .font(.custom("Geist", size: 15, relativeTo: .body))
-                        .foregroundColor(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+            VStack(spacing: 4) {
+                HStack(spacing: 0) {
+                    Circle()
+                        .fill(titleColor)
+                        .frame(width: 10, height: 10)
+
+                    Rectangle()
+                        .fill(Color.clear)
+                        .frame(height: 1)
+                        .overlay {
+                            Rectangle()
+                                .stroke(style: StrokeStyle(lineWidth: 1, dash: [2, 3]))
+                                .foregroundColor(titleColor.opacity(0.6))
+                        }
+
+                    Circle()
+                        .fill(titleColor)
+                        .frame(width: 10, height: 10)
                 }
 
-                Spacer(minLength: 12)
-
-                Text("Optional")
-                    .font(.custom("Geist", size: 14, relativeTo: .body))
-                    .foregroundColor(primaryNavy.opacity(0.8))
-            }
-
-            VStack(spacing: 6) {
-                ForEach(selectableCategories, id: \.self) { category in
-                    categoryRow(for: category)
+                HStack {
+                    Text("Today")
+                    Spacer()
+                    Text("Cancel anytime")
+                    Spacer()
+                    Text("Day 7")
                 }
+                .font(.custom("Geist", size: 12, relativeTo: .body))
+                .foregroundColor(cardSubtitleColor)
             }
         }
         .padding(16)
-        .frame(maxWidth: .infinity, minHeight: 420, alignment: .top)
         .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
-    private func categoryRow(for category: UsageCategory) -> some View {
-        let isSelected = viewModel.selectedCategories.contains(category)
+    private func planCard(plan: Plan) -> some View {
+        let isSelected = selectedPlan == plan
 
-        return Button(action: {
-            if isSelected {
-                viewModel.selectedCategories.remove(category)
-            } else {
-                viewModel.selectedCategories.insert(category)
-            }
-        }) {
-            HStack(spacing: 12) {
-                iconTile(systemName: categoryIcon(for: category))
+        return Button {
+            selectedPlan = plan
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(plan == .monthly ? "Monthly" : "Annual")
+                        .font(.custom("Geist", size: 28, relativeTo: .body).weight(.medium))
+                        .foregroundColor(cardTitleColor)
 
-                Text(category.displayName)
-                    .font(.custom("Geist", size: 17, relativeTo: .body).weight(.medium))
-                    .foregroundColor(primaryNavy)
+                    if plan == .annual {
+                        Text("Save 58%")
+                            .font(.custom("Geist", size: 12, relativeTo: .body).weight(.semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(Color(hex: "#F63232"))
+                            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                    }
+                }
 
                 Spacer()
 
-                ZStack {
-                    Circle()
-                        .stroke(isSelected ? iconBlue : .gray.opacity(0.6), lineWidth: 1.5)
-                        .frame(width: 18, height: 18)
+                VStack(alignment: .trailing, spacing: 3) {
+                    Text(plan == .monthly ? "$4.99" : "$29.99")
+                        .font(.custom("Geist", size: 32, relativeTo: .body).weight(.semibold))
+                        .foregroundColor(moneyColor)
 
-                    if isSelected {
-                        Circle()
-                            .fill(iconBlue)
-                            .frame(width: 10, height: 10)
-                    }
+                    Text(plan == .monthly ? "per month" : "per year")
+                        .font(.custom("Geist", size: 14, relativeTo: .body))
+                        .foregroundColor(cardSubtitleColor)
                 }
             }
-            .padding(.vertical, 10)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 13)
+            .background(Color.white)
+            .overlay {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(isSelected ? moneyColor : Color(hex: "#D9DDE3"), lineWidth: isSelected ? 2 : 1)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .buttonStyle(.plain)
     }
 
-    private func iconTile(systemName: String) -> some View {
-        RoundedRectangle(cornerRadius: 6, style: .continuous)
-            .fill(iconBackground)
-            .frame(width: 28, height: 28)
-            .overlay {
-                Image(systemName: systemName)
-                    .font(.custom("Geist", size: 14, relativeTo: .body).weight(.semibold))
-                    .foregroundColor(iconBlue)
-            }
+    private var legalDivider: some View {
+        Text("|")
+            .foregroundColor(cardSubtitleColor.opacity(0.6))
     }
 
-    private func categoryIcon(for category: UsageCategory) -> String {
-        switch category {
-        case .social:
-            return "person.2"
-        case .entertainment:
-            return "tv"
-        case .games:
-            return "gamecontroller"
-        default:
-            return category.sfSymbolIcon
+    private func legalButton(title: String) -> some View {
+        Button {
+            // TODO: Wire legal actions
+        } label: {
+            Text(title)
+                .font(.custom("Geist", size: 12, relativeTo: .body))
+                .foregroundColor(cardSubtitleColor)
         }
+        .buttonStyle(.plain)
     }
 }
