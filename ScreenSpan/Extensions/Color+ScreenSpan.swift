@@ -11,8 +11,8 @@ extension Color {
     /// Blue - Primary action color (#457B9D)
     static let screenSpanBlue = Color(red: 0.271, green: 0.482, blue: 0.616)
 
-    /// Off-white - Background color (#F8F9FA)
-    static let screenSpanOffWhite = Color(red: 0.973, green: 0.976, blue: 0.980)
+    /// Off-white - Background color (#F3F4F6)
+    static let screenSpanOffWhite = Color(red: 0.953, green: 0.957, blue: 0.965)
 
     /// Gray - Muted text color (#A8DADC)
     static let screenSpanGray = Color(red: 0.659, green: 0.855, blue: 0.859)
@@ -47,8 +47,8 @@ extension UIColor {
     /// Blue - Primary action color (#457B9D)
     static let screenSpanBlue = UIColor(red: 0.271, green: 0.482, blue: 0.616, alpha: 1.0)
 
-    /// Off-white - Background color (#F8F9FA)
-    static let screenSpanOffWhite = UIColor(red: 0.973, green: 0.976, blue: 0.980, alpha: 1.0)
+    /// Off-white - Background color (#F3F4F6)
+    static let screenSpanOffWhite = UIColor(red: 0.953, green: 0.957, blue: 0.965, alpha: 1.0)
 
     /// Gray - Muted text color (#A8DADC)
     static let screenSpanGray = UIColor(red: 0.659, green: 0.855, blue: 0.859, alpha: 1.0)

@@ -2,181 +2,169 @@ import SwiftUI
 
 struct ConcreteComparisonsView: View {
     var viewModel: OnboardingViewModel
-    @State private var isAnimating = false
 
-    private var yearsFormatted: String {
-        String(format: "%.1f", viewModel.projectedYearsOnPhone)
+    @State private var arrowPulse = false
+
+    private let titleColor = Color(hex: "051425")
+    private let livedColor = Color(hex: "0063D6")
+    private let screenTimeColor = Color(hex: "F63232")
+    private let remainingColor = Color(hex: "D9D9D9")
+    private let buttonColor = Color(hex: "051425")
+
+    private let columnCount = 30
+    private let spacing: CGFloat = 2
+
+    private var lifeGridData: LifeGridData {
+        let projection = viewModel.projectionResult ?? ProjectionCalculator.calculateProjectionFromDaily(
+            currentAge: viewModel.selectedAge,
+            targetAge: SharedConstants.DefaultValues.targetAge,
+            dailyHours: viewModel.currentDailyAvgHours
+        )
+
+        return ProjectionCalculator.calculateLifeGrid(
+            currentAge: viewModel.selectedAge,
+            targetAge: SharedConstants.DefaultValues.targetAge,
+            monthsOnPhone: projection.monthsOnPhone
+        )
     }
 
-    private var comparisons: [ComparisonItem] {
-        let years = viewModel.projectedYearsOnPhone
+    private var monthStates: [MonthState] {
+        var states: [MonthState] = []
+        states.reserveCapacity(lifeGridData.totalMonths)
 
-        // Scale comparisons based on projection magnitude
-        if years > 10 {
-            return [
-                ComparisonItem(
-                    icon: "🎓",
-                    title: "Multiple degrees",
-                    subtitle: "Master's degrees in any field"
-                ),
-                ComparisonItem(
-                    icon: "🌍",
-                    title: "Around the world",
-                    subtitle: "Extended travel to 50+ countries"
-                ),
-                ComparisonItem(
-                    icon: "🏠",
-                    title: "New skills & hobbies",
-                    subtitle: "Mastery in music, art, or sports"
-                ),
-            ]
-        } else if years > 5 {
-            return [
-                ComparisonItem(
-                    icon: "📚",
-                    title: "Learn something new",
-                    subtitle: "Complete multiple certifications"
-                ),
-                ComparisonItem(
-                    icon: "🌴",
-                    title: "Travel",
-                    subtitle: "Extended trips around the world"
-                ),
-                ComparisonItem(
-                    icon: "💪",
-                    title: "Build fitness",
-                    subtitle: "Train for marathons or compete"
-                ),
-            ]
-        } else {
-            return [
-                ComparisonItem(
-                    icon: "📖",
-                    title: "Read books",
-                    subtitle: "Hundreds of books"
-                ),
-                ComparisonItem(
-                    icon: "🎸",
-                    title: "Learn an instrument",
-                    subtitle: "Become proficient"
-                ),
-                ComparisonItem(
-                    icon: "👥",
-                    title: "Spend time with loved ones",
-                    subtitle: "Thousands of meaningful hours"
-                ),
-            ]
+        for _ in 0..<lifeGridData.monthsLived {
+            states.append(.lived)
         }
+
+        for _ in 0..<lifeGridData.phoneMonths {
+            states.append(.screenTime)
+        }
+
+        for _ in 0..<lifeGridData.freeMonths {
+            states.append(.remaining)
+        }
+
+        if states.count < lifeGridData.totalMonths {
+            states.append(contentsOf: Array(repeating: .remaining, count: lifeGridData.totalMonths - states.count))
+        }
+
+        return Array(states.prefix(lifeGridData.totalMonths))
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Header with projection
-                    VStack(spacing: 12) {
-                        Text("In \(yearsFormatted) years, you could...")
-                            .font(.custom("Geist", size: 28, relativeTo: .body).weight(.semibold))
-                            .foregroundColor(.screenSpanNavy)
-                            .lineSpacing(1)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Your projected life chart")
+                    .font(.custom("Geist", size: 37, relativeTo: .title2).weight(.semibold))
+                    .foregroundStyle(titleColor)
 
-                        Text("What could you accomplish with that time?")
-                            .font(.custom("Geist", size: 15, relativeTo: .body))
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 32)
-
-                    // Comparison Cards
-                    VStack(spacing: 12) {
-                        ForEach(Array(comparisons.enumerated()), id: \.offset) { index, item in
-                            ComparisonCard(item: item)
-                                .opacity(isAnimating ? 1 : 0)
-                                .offset(y: isAnimating ? 0 : 20)
-                                .animation(
-                                    .easeOut(duration: 0.4).delay(Double(index) * 0.1),
-                                    value: isAnimating
-                                )
-                        }
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 24)
-                }
+                Text("1 square = 1 month")
+                    .font(.custom("Geist", size: 12, relativeTo: .caption))
+                    .foregroundStyle(titleColor.opacity(0.6))
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 24)
+            .padding(.horizontal, 24)
 
-            Spacer()
+            chartGrid
+                .padding(.top, 14)
+                .padding(.horizontal, 24)
 
-            // CTA
-            VStack(spacing: 12) {
-                Button(action: {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        viewModel.advance()
-                    }
-                }) {
-                    Text("What if you could get some of it back?")
-                        .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(Color.screenSpanRed)
-                        .cornerRadius(12)
+            legend
+                .padding(.top, 22)
+                .padding(.horizontal, 24)
+
+            Spacer(minLength: 20)
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    viewModel.advance()
                 }
+            } label: {
+                HStack(spacing: 8) {
+                    Text("Reclaim your life")
+                        .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
+
+                    Image(systemName: "arrow.right")
+                        .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
+                        .scaleEffect(arrowPulse ? 1.15 : 0.95)
+                        .opacity(arrowPulse ? 1 : 0.7)
+                        .animation(
+                            .easeInOut(duration: 0.8).repeatForever(autoreverses: true),
+                            value: arrowPulse
+                        )
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(buttonColor)
+                .clipShape(Capsule())
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 32)
+            .padding(.bottom, 26)
         }
-        .background(Color.screenSpanOffWhite.ignoresSafeArea())
+        .background(Color(hex: "F3F4F6").ignoresSafeArea())
         .onAppear {
-            withAnimation {
-                isAnimating = true
-            }
+            viewModel.calculateProjection()
+            arrowPulse = true
         }
     }
-}
 
-// MARK: - Comparison Item Model
-struct ComparisonItem: Identifiable {
-    let id = UUID()
-    let icon: String
-    let title: String
-    let subtitle: String
-}
+    private var chartGrid: some View {
+        GeometryReader { proxy in
+            let availableWidth = proxy.size.width
+            let cellSize = max((availableWidth - (CGFloat(columnCount - 1) * spacing)) / CGFloat(columnCount), 3)
+            let rowCount = Int(ceil(Double(monthStates.count) / Double(columnCount)))
+            let gridHeight = (CGFloat(rowCount) * cellSize) + (CGFloat(max(rowCount - 1, 0)) * spacing)
 
-// MARK: - Comparison Card
-struct ComparisonCard: View {
-    let item: ComparisonItem
+            LazyVGrid(columns: Array(repeating: GridItem(.fixed(cellSize), spacing: spacing), count: columnCount), spacing: spacing) {
+                ForEach(Array(monthStates.enumerated()), id: \.offset) { _, state in
+                    RoundedRectangle(cornerRadius: 1.5)
+                        .fill(color(for: state))
+                        .frame(width: cellSize, height: cellSize)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .frame(height: gridHeight)
+        }
+        .frame(height: 320)
+    }
 
-    var body: some View {
+    private var legend: some View {
         HStack(spacing: 16) {
-            Text(item.icon)
-                .font(.custom("Geist", size: 40, relativeTo: .body))
-                .frame(width: 56, height: 56)
-                .background(Color.screenSpanRed.opacity(0.1))
-                .cornerRadius(12)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.title)
-                    .font(.custom("Geist", size: 16, relativeTo: .body).weight(.semibold))
-                    .foregroundColor(.screenSpanNavy)
-
-                Text(item.subtitle)
-                    .font(.custom("Geist", size: 14, relativeTo: .body))
-                    .foregroundColor(.secondary)
-            }
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.custom("Geist", size: 14, relativeTo: .body).weight(.semibold))
-                .foregroundColor(.screenSpanBlue)
+            legendItem(color: livedColor, label: "Lived")
+            legendItem(color: screenTimeColor, label: "Screen time")
+            legendItem(color: remainingColor, label: "Remaining time")
         }
-        .padding(16)
-        .background(Color.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.screenSpanNavy.opacity(0.1), lineWidth: 1)
-        )
+        .frame(maxWidth: .infinity, alignment: .center)
     }
+
+    private func legendItem(color: Color, label: String) -> some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(color)
+                .frame(width: 7, height: 7)
+
+            Text(label)
+                .font(.custom("Geist", size: 11, relativeTo: .caption2))
+                .foregroundStyle(titleColor)
+        }
+    }
+
+    private func color(for state: MonthState) -> Color {
+        switch state {
+        case .lived:
+            return livedColor
+        case .screenTime:
+            return screenTimeColor
+        case .remaining:
+            return remainingColor
+        }
+    }
+}
+
+private enum MonthState {
+    case lived
+    case screenTime
+    case remaining
 }
