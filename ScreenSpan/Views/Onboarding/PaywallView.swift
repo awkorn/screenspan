@@ -107,8 +107,8 @@ struct PaywallView: View {
             VStack(spacing: 16) {
                 Button(action: {
                     // TODO: Integrate StoreKit for purchases
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        viewModel.advance()
+                    Task {
+                        await viewModel.completeOnboarding()
                     }
                 }) {
                     Text("Start Free Trial")
@@ -121,8 +121,8 @@ struct PaywallView: View {
                 }
 
                 Button(action: {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        viewModel.advance()
+                    Task {
+                        await viewModel.completeOnboarding()
                     }
                 }) {
                     Text("Maybe later")
