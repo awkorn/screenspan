@@ -3,188 +3,158 @@ import SwiftUI
 // MARK: - Goal Setting View
 struct GoalSettingView: View {
     var viewModel: OnboardingViewModel
-    @State private var selectedCategories: Set<String> = []
-    @State private var isAnimating = false
+    @State private var sliderValue: Double = 0
 
-    private var dailyLimitFormatted: String {
-        String(format: "%.1f", viewModel.selectedDailyLimit)
+    private let goalSliderColor = Color(hex: "#C82020")
+    private let currentUsageColor = Color(hex: "#F63232")
+    private let goalUsageColor = Color(hex: "#0063D6")
+    private let reclaimBackgroundColor = Color(hex: "#D7EAFF")
+
+    private var maxSliderValue: Double {
+        max(viewModel.estimatedDailyScreenTime, 0.1)
+    }
+
+    private var currentUsageFormatted: String {
+        String(format: "%.1f", viewModel.estimatedDailyScreenTime)
+    }
+
+    private var goalUsageFormatted: String {
+        String(format: "%.1f", sliderValue)
+    }
+
+    private var reclaimedYearsRounded: Int {
+        Int(viewModel.reclaimedYears.rounded())
     }
 
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(spacing: 24) {
-                    // Header
-                    VStack(spacing: 12) {
-                        Text("Ready to make it happen?")
-                            .font(.custom("Geist", size: 28, relativeTo: .body).weight(.semibold))
+                VStack(spacing: 28) {
+                    VStack(spacing: 8) {
+                        Text("Set your goal")
+                            .font(.custom("Geist", size: 40, relativeTo: .body).weight(.semibold))
                             .foregroundColor(.screenSpanNavy)
 
-                        Text("Your daily limit")
-                            .font(.custom("Geist", size: 15, relativeTo: .body))
+                        Text("How much time would you like\nto spend on your phone?")
+                            .font(.custom("Geist", size: 24, relativeTo: .body))
                             .foregroundColor(.secondary)
+                            .multilineTextAlignment(.leading)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 24)
                     .padding(.top, 32)
 
-                    // Daily Limit Display
-                    HStack(spacing: 12) {
-                        Image(systemName: "target")
-                            .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
-                            .foregroundColor(.screenSpanRed)
-                            .frame(width: 40, height: 40)
-                            .background(Color.screenSpanRed.opacity(0.1))
-                            .cornerRadius(8)
+                    VStack(spacing: 12) {
+                        HStack {
+                            Text("0h")
+                                .font(.custom("Geist", size: 14, relativeTo: .body).weight(.medium))
+                                .foregroundColor(.secondary)
 
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Daily screen time goal")
-                                .font(.custom("Geist", size: 13, relativeTo: .body).weight(.semibold))
+                            Spacer()
+
+                            Text("\(Int(viewModel.estimatedDailyScreenTime.rounded()))h")
+                                .font(.custom("Geist", size: 14, relativeTo: .body).weight(.medium))
+                                .foregroundColor(.secondary)
+                        }
+
+                        Slider(value: $sliderValue, in: 0...maxSliderValue, step: 0.1)
+                            .tint(goalSliderColor)
+                            .onChange(of: sliderValue) { _, newValue in
+                                viewModel.calculateReclaim(newDailyHours: newValue)
+                            }
+                    }
+                    .padding(.horizontal, 24)
+
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Current daily usage")
+                                .font(.custom("Geist", size: 13, relativeTo: .body))
                                 .foregroundColor(.secondary)
 
                             HStack(spacing: 4) {
-                                Text(dailyLimitFormatted)
-                                    .font(.custom("Geist", size: 24, relativeTo: .body).weight(.bold))
-                                    .foregroundColor(.screenSpanRed)
+                                Text(currentUsageFormatted)
+                                    .font(.custom("Geist", size: 22, relativeTo: .body).weight(.semibold))
+                                    .foregroundColor(currentUsageColor)
                                     .monospacedDigit()
 
                                 Text("hours/day")
-                                    .font(.custom("Geist", size: 14, relativeTo: .body))
+                                    .font(.custom("Geist", size: 15, relativeTo: .body))
                                     .foregroundColor(.secondary)
                             }
                         }
 
                         Spacer()
-                    }
-                    .padding(16)
-                    .background(Color.white)
-                    .cornerRadius(12)
-                    .padding(.horizontal, 24)
 
-                    // Category Selection
-                    VStack(spacing: 16) {
-                        VStack(spacing: 12) {
-                            HStack {
-                                Text("Which categories to limit?")
-                                    .font(.custom("Geist", size: 16, relativeTo: .body).weight(.semibold))
-                                    .foregroundColor(.screenSpanNavy)
+                        Image(systemName: "arrow.right")
+                            .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
+                            .foregroundColor(.secondary)
 
-                                Spacer()
+                        Spacer()
 
-                                Text("Optional")
-                                    .font(.custom("Geist", size: 12, relativeTo: .body).weight(.semibold))
-                                    .foregroundColor(.secondary)
-                            }
-
-                            Text("We'll help manage these categories within your daily goal")
+                        VStack(alignment: .trailing, spacing: 6) {
+                            Text("Your new goal")
                                 .font(.custom("Geist", size: 13, relativeTo: .body))
                                 .foregroundColor(.secondary)
-                        }
 
-                        VStack(spacing: 10) {
-                            ForEach(Array(UsageCategory.allCases.enumerated()), id: \.offset) { index, category in
-                                CategoryToggleRow(
-                                    category: category,
-                                    isSelected: selectedCategories.contains(category.rawValue),
-                                    action: {
-                                        if selectedCategories.contains(category.rawValue) {
-                                            selectedCategories.remove(category.rawValue)
-                                        } else {
-                                            selectedCategories.insert(category.rawValue)
-                                        }
-                                    }
-                                )
-                                .opacity(isAnimating ? 1 : 0)
-                                .offset(y: isAnimating ? 0 : 20)
-                                .animation(
-                                    .easeOut(duration: 0.3).delay(Double(index) * 0.05),
-                                    value: isAnimating
-                                )
+                            HStack(spacing: 4) {
+                                Text(goalUsageFormatted)
+                                    .font(.custom("Geist", size: 22, relativeTo: .body).weight(.semibold))
+                                    .foregroundColor(goalUsageColor)
+                                    .monospacedDigit()
+
+                                Text("hours/day")
+                                    .font(.custom("Geist", size: 15, relativeTo: .body))
+                                    .foregroundColor(.secondary)
                             }
                         }
-
                     }
                     .padding(16)
                     .background(Color.white)
-                    .cornerRadius(12)
+                    .cornerRadius(10)
                     .padding(.horizontal, 24)
-                    .padding(.bottom, 24)
+
+                    HStack(spacing: 12) {
+                        Image(systemName: "figure.walk")
+                            .font(.custom("Geist", size: 22, relativeTo: .body).weight(.semibold))
+                            .foregroundColor(goalUsageColor)
+
+                        Text("You'd reclaim \(reclaimedYearsRounded) years of your life!")
+                            .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
+                            .foregroundColor(.screenSpanNavy)
+
+                        Spacer()
+                    }
+                    .padding(16)
+                    .background(reclaimBackgroundColor)
+                    .cornerRadius(10)
+                    .padding(.horizontal, 24)
                 }
+                .padding(.bottom, 24)
             }
 
             Spacer()
 
-            // CTA Button
             Button(action: {
-                // Convert selected categories to UsageCategory
-                let categories = selectedCategories.compactMap { categoryName in
-                    UsageCategory(rawValue: categoryName)
-                }
-                viewModel.selectedCategories = Set(categories)
-
-                // TODO: Integrate FamilyActivityPicker when available
                 withAnimation(.easeInOut(duration: 0.3)) {
                     viewModel.advance()
                 }
             }) {
-                Text("Activate My Plan")
+                Text("Set My Goal")
                     .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)
-                    .background(Color.screenSpanRed)
-                    .cornerRadius(12)
+                    .background(Color.screenSpanNavy)
+                    .cornerRadius(16)
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 32)
         }
         .background(Color.screenSpanOffWhite.ignoresSafeArea())
         .onAppear {
-            withAnimation {
-                isAnimating = true
-            }
-        }
-    }
-}
-
-// MARK: - Category Toggle Row
-struct CategoryToggleRow: View {
-    let category: UsageCategory
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: category.sfSymbolIcon)
-                    .font(.custom("Geist", size: 16, relativeTo: .body).weight(.semibold))
-                    .foregroundColor(isSelected ? .white : Color.screenSpanBlue)
-                    .frame(width: 32, height: 32)
-                    .background(isSelected ? Color.screenSpanBlue : Color.screenSpanBlue.opacity(0.1))
-                    .cornerRadius(8)
-                    .animation(.easeInOut(duration: 0.2), value: isSelected)
-
-                Text(category.displayName)
-                    .font(.custom("Geist", size: 15, relativeTo: .body).weight(.semibold))
-                    .foregroundColor(Color.screenSpanNavy)
-
-                Spacer()
-
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
-                    .foregroundColor(isSelected ? Color.screenSpanRed : Color.screenSpanNavy.opacity(0.3))
-                    .animation(.easeInOut(duration: 0.2), value: isSelected)
-            }
-            .padding(12)
-            .background(Color.white)
-            .cornerRadius(8)
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(
-                        isSelected ? Color.screenSpanRed.opacity(0.3) : Color.clear,
-                        lineWidth: 1
-                    )
-            )
+            sliderValue = viewModel.selectedDailyLimit > 0 ? viewModel.selectedDailyLimit : viewModel.estimatedDailyScreenTime
+            sliderValue = min(max(sliderValue, 0), maxSliderValue)
+            viewModel.calculateReclaim(newDailyHours: sliderValue)
         }
     }
 }
