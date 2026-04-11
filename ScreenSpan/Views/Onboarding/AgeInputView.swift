@@ -2,102 +2,117 @@ import SwiftUI
 
 struct AgeInputView: View {
     var viewModel: OnboardingViewModel
-    @State private var selectedAge: Int = 25
-    @State private var isAnimating = false
 
-    private var isAgeSelected: Bool {
-        viewModel.userAge != nil
+    @State private var selectedDateOfBirth: Date = Calendar.current.date(byAdding: .year, value: -25, to: .now) ?? .now
+
+    private let backgroundColor = Color(hex: "F3F4F6")
+    private let titleColor = Color(hex: "051425")
+    private let subtitleColor = Color(hex: "595959")
+    private let buttonColor = Color(hex: "051425")
+
+    private var minimumDate: Date {
+        Calendar.current.date(byAdding: .year, value: -100, to: .now) ?? .distantPast
+    }
+
+    private var maximumDate: Date {
+        Calendar.current.date(byAdding: .year, value: -13, to: .now) ?? .now
+    }
+
+    private var calculatedAge: Int {
+        let age = Calendar.current.dateComponents([.year], from: selectedDateOfBirth, to: .now).year ?? viewModel.selectedAge
+        return max(age, 0)
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            VStack(spacing: 8) {
-                Text("How old are you?")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundColor(.screenSpanNavy)
+            HStack {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        viewModel.goBack()
+                    }
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .regular))
+                        .foregroundColor(titleColor)
+                        .frame(width: 28, height: 28)
+                }
 
-                Text("This helps us calculate your remaining life")
-                    .font(.system(size: 15))
-                    .foregroundColor(.secondary)
+                Spacer()
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 12)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Enter your date of birth")
+                    .font(.system(size: 42, weight: .bold))
+                    .foregroundColor(titleColor)
+                    .minimumScaleFactor(0.75)
+                    .lineLimit(2)
+
+                Text("This will be used in your calculation")
+                    .font(.system(size: 19, weight: .regular))
+                    .foregroundColor(subtitleColor)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 24)
-            .padding(.top, 32)
-            .padding(.bottom, 40)
+            .padding(.top, 28)
+
+            Spacer().frame(height: 28)
+
+            DatePicker(
+                "Date picker",
+                selection: $selectedDateOfBirth,
+                in: minimumDate...maximumDate,
+                displayedComponents: [.date]
+            )
+            .datePickerStyle(.wheel)
+            .labelsHidden()
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 12)
 
             Spacer()
 
-            // Age Picker
-            VStack(spacing: 16) {
-                // Large display of selected age
-                HStack(spacing: 4) {
-                    Text("\(selectedAge)")
-                        .font(.system(size: 64, weight: .bold, design: .default))
-                        .foregroundColor(.screenSpanRed)
-                        .monospacedDigit()
+            VStack(spacing: 8) {
+                Text("Default life expectancy")
+                    .font(.system(size: 21, weight: .semibold))
+                    .foregroundColor(titleColor)
 
-                    Text("years")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .center)
-
-                // Subtitle about life expectancy
-                VStack(spacing: 8) {
-                    Text("Default life expectancy")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.screenSpanNavy)
-
-                    Text("80 years")
-                        .font(.system(size: 17))
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(Color.screenSpanNavy.opacity(0.06))
-                .cornerRadius(12)
-                .padding(.top, 24)
+                Text("80 years")
+                    .font(.system(size: 30, weight: .regular))
+                    .foregroundColor(titleColor)
             }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 24)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .padding(.horizontal, 24)
 
             Spacer()
 
-            // Wheel Picker
-            VStack(spacing: 24) {
-                Picker("Age", selection: $selectedAge) {
-                    ForEach(18...80, id: \.self) { age in
-                        Text("\(age)").tag(age)
-                    }
+            Button {
+                viewModel.selectedAge = calculatedAge
+                AppGroupManager.shared.currentAge = calculatedAge
+                viewModel.calculateProjection()
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    viewModel.advance()
                 }
-                .pickerStyle(.wheel)
-                .frame(height: 180)
-                .clipped()
-
-                // Continue Button
-                Button(action: {
-                    viewModel.userAge = selectedAge
-                    viewModel.calculateProjection()
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        viewModel.advance()
-                    }
-                }) {
-                    Text("Continue")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(Color.screenSpanRed)
-                        .cornerRadius(12)
-                }
+            } label: {
+                Text("Next")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(buttonColor)
+                    .clipShape(Capsule())
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 32)
+            .padding(.bottom, 34)
         }
-        .background(Color.screenSpanOffWhite.ignoresSafeArea())
+        .background(backgroundColor.ignoresSafeArea())
         .onAppear {
-            if let age = viewModel.userAge {
-                selectedAge = age
+            if viewModel.selectedAge > 0,
+               let dateFromAge = Calendar.current.date(byAdding: .year, value: -viewModel.selectedAge, to: .now) {
+                selectedDateOfBirth = dateFromAge
             }
         }
     }
