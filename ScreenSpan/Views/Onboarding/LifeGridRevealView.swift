@@ -22,16 +22,16 @@ struct LifeGridRevealView: View {
                     VStack(spacing: 12) {
                         HStack(spacing: 8) {
                             Text(yearsFormatted)
-                                .font(.system(size: 72, weight: .bold, design: .default))
+                                .font(.custom("Geist", size: 72, relativeTo: .body).weight(.bold))
                                 .foregroundColor(.screenSpanRed)
                                 .monospacedDigit()
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("YEARS")
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(.custom("Geist", size: 14, relativeTo: .body).weight(.bold))
                                     .foregroundColor(.screenSpanNavy)
                                 Text("of your life")
-                                    .font(.system(size: 12))
+                                    .font(.custom("Geist", size: 12, relativeTo: .body))
                                     .foregroundColor(.secondary)
                             }
                         }
@@ -43,12 +43,12 @@ struct LifeGridRevealView: View {
                     // Subtitle
                     VStack(spacing: 8) {
                         Text("of your waking life will be spent on your phone")
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(.custom("Geist", size: 18, relativeTo: .body).weight(.semibold))
                             .foregroundColor(.screenSpanNavy)
                             .lineSpacing(1)
 
                         Text("That's \(percentageFormatted)% of every waking hour you have left")
-                            .font(.system(size: 15))
+                            .font(.custom("Geist", size: 15, relativeTo: .body))
                             .foregroundColor(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -69,11 +69,11 @@ struct LifeGridRevealView: View {
                     VStack(spacing: 12) {
                         HStack(spacing: 12) {
                             Image(systemName: "info.circle.fill")
-                                .font(.system(size: 16))
+                                .font(.custom("Geist", size: 16, relativeTo: .body))
                                 .foregroundColor(.screenSpanBlue)
 
                             Text("This assumes your current daily screen time of \(String(format: "%.1f", viewModel.estimatedDailyScreenTime)) hours")
-                                .font(.system(size: 14))
+                                .font(.custom("Geist", size: 14, relativeTo: .body))
                                 .foregroundColor(.secondary)
 
                             Spacer()
@@ -96,7 +96,7 @@ struct LifeGridRevealView: View {
                 }
             }) {
                 Text("Continue")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)

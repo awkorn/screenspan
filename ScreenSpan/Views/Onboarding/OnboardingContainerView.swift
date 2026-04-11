@@ -29,6 +29,7 @@ struct OnboardingContainerView: View {
                         PaywallView(viewModel: viewModel)
                     }
                 }
+                .font(.custom("Geist", size: 17, relativeTo: .body))
                 .transition(.opacity.combined(with: .move(edge: .trailing)))
             }
         }

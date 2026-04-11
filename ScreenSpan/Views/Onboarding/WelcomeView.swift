@@ -9,16 +9,16 @@ struct WelcomeView: View {
 
             VStack(alignment: .leading, spacing: 12) {
                 Text("ScreenSpan")
-                    .font(.system(size: 48, weight: .bold))
+                    .font(.custom("Geist", size: 48, relativeTo: .body).weight(.bold))
                     .foregroundColor(Color(hex: "#051425"))
 
                 Text("How much of your life will you spend\non your phone?")
-                    .font(.system(size: 38, weight: .semibold))
+                    .font(.custom("Geist", size: 38, relativeTo: .body).weight(.semibold))
                     .foregroundColor(Color(hex: "#595959"))
                     .lineSpacing(4)
 
                 Text("Gain it back.")
-                    .font(.system(size: 34, weight: .semibold))
+                    .font(.custom("Geist", size: 34, relativeTo: .body).weight(.semibold))
                     .foregroundColor(Color(hex: "#C82020"))
             }
             .padding(.horizontal, 24)
@@ -31,7 +31,7 @@ struct WelcomeView: View {
                 }
             }) {
                 Text("Get Started")
-                    .font(.system(size: 25, weight: .bold))
+                    .font(.custom("Geist", size: 25, relativeTo: .body).weight(.bold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 64)

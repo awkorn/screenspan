@@ -17,11 +17,11 @@ struct GoalSettingView: View {
                     // Header
                     VStack(spacing: 12) {
                         Text("Ready to make it happen?")
-                            .font(.system(size: 28, weight: .semibold))
+                            .font(.custom("Geist", size: 28, relativeTo: .body).weight(.semibold))
                             .foregroundColor(.screenSpanNavy)
 
                         Text("Your daily limit")
-                            .font(.system(size: 15))
+                            .font(.custom("Geist", size: 15, relativeTo: .body))
                             .foregroundColor(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -31,7 +31,7 @@ struct GoalSettingView: View {
                     // Daily Limit Display
                     HStack(spacing: 12) {
                         Image(systemName: "target")
-                            .font(.system(size: 20, weight: .semibold))
+                            .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
                             .foregroundColor(.screenSpanRed)
                             .frame(width: 40, height: 40)
                             .background(Color.screenSpanRed.opacity(0.1))
@@ -39,17 +39,17 @@ struct GoalSettingView: View {
 
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Daily screen time goal")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.custom("Geist", size: 13, relativeTo: .body).weight(.semibold))
                                 .foregroundColor(.secondary)
 
                             HStack(spacing: 4) {
                                 Text(dailyLimitFormatted)
-                                    .font(.system(size: 24, weight: .bold))
+                                    .font(.custom("Geist", size: 24, relativeTo: .body).weight(.bold))
                                     .foregroundColor(.screenSpanRed)
                                     .monospacedDigit()
 
                                 Text("hours/day")
-                                    .font(.system(size: 14))
+                                    .font(.custom("Geist", size: 14, relativeTo: .body))
                                     .foregroundColor(.secondary)
                             }
                         }
@@ -66,18 +66,18 @@ struct GoalSettingView: View {
                         VStack(spacing: 12) {
                             HStack {
                                 Text("Which categories to limit?")
-                                    .font(.system(size: 16, weight: .semibold))
+                                    .font(.custom("Geist", size: 16, relativeTo: .body).weight(.semibold))
                                     .foregroundColor(.screenSpanNavy)
 
                                 Spacer()
 
                                 Text("Optional")
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.custom("Geist", size: 12, relativeTo: .body).weight(.semibold))
                                     .foregroundColor(.secondary)
                             }
 
                             Text("We'll help manage these categories within your daily goal")
-                                .font(.system(size: 13))
+                                .font(.custom("Geist", size: 13, relativeTo: .body))
                                 .foregroundColor(.secondary)
                         }
 
@@ -128,7 +128,7 @@ struct GoalSettingView: View {
                 }
             }) {
                 Text("Activate My Plan")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)
@@ -157,7 +157,7 @@ struct CategoryToggleRow: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Image(systemName: category.sfSymbolIcon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.custom("Geist", size: 16, relativeTo: .body).weight(.semibold))
                     .foregroundColor(isSelected ? .white : Color.screenSpanBlue)
                     .frame(width: 32, height: 32)
                     .background(isSelected ? Color.screenSpanBlue : Color.screenSpanBlue.opacity(0.1))
@@ -165,13 +165,13 @@ struct CategoryToggleRow: View {
                     .animation(.easeInOut(duration: 0.2), value: isSelected)
 
                 Text(category.displayName)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.custom("Geist", size: 15, relativeTo: .body).weight(.semibold))
                     .foregroundColor(Color.screenSpanNavy)
 
                 Spacer()
 
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
                     .foregroundColor(isSelected ? Color.screenSpanRed : Color.screenSpanNavy.opacity(0.3))
                     .animation(.easeInOut(duration: 0.2), value: isSelected)
             }

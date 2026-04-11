@@ -36,11 +36,11 @@ struct ReclaimSliderView: View {
                     // Header
                     VStack(spacing: 12) {
                         Text("Adjust your goal")
-                            .font(.system(size: 28, weight: .semibold))
+                            .font(.custom("Geist", size: 28, relativeTo: .body).weight(.semibold))
                             .foregroundColor(.screenSpanNavy)
 
                         Text("How many hours per day would you like to spend on your phone?")
-                            .font(.system(size: 15))
+                            .font(.custom("Geist", size: 15, relativeTo: .body))
                             .foregroundColor(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -55,16 +55,16 @@ struct ReclaimSliderView: View {
                         HStack(spacing: 12) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Current daily usage")
-                                    .font(.system(size: 13))
+                                    .font(.custom("Geist", size: 13, relativeTo: .body))
                                     .foregroundColor(.secondary)
 
                                 HStack(spacing: 4) {
                                     Text(String(format: "%.1f", viewModel.estimatedDailyScreenTime))
-                                        .font(.system(size: 18, weight: .semibold))
+                                        .font(.custom("Geist", size: 18, relativeTo: .body).weight(.semibold))
                                         .foregroundColor(.screenSpanRed)
 
                                     Text("hours/day")
-                                        .font(.system(size: 13))
+                                        .font(.custom("Geist", size: 13, relativeTo: .body))
                                         .foregroundColor(.secondary)
                                 }
                             }
@@ -72,21 +72,21 @@ struct ReclaimSliderView: View {
                             Spacer()
 
                             Image(systemName: "arrow.right")
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.custom("Geist", size: 16, relativeTo: .body).weight(.semibold))
                                 .foregroundColor(.screenSpanBlue)
 
                             VStack(alignment: .trailing, spacing: 4) {
                                 Text("Your new goal")
-                                    .font(.system(size: 13))
+                                    .font(.custom("Geist", size: 13, relativeTo: .body))
                                     .foregroundColor(.secondary)
 
                                 HStack(spacing: 4) {
                                     Text(dailyLimitFormatted)
-                                        .font(.system(size: 18, weight: .semibold))
+                                        .font(.custom("Geist", size: 18, relativeTo: .body).weight(.semibold))
                                         .foregroundColor(.screenSpanBlue)
 
                                     Text("hours/day")
-                                        .font(.system(size: 13))
+                                        .font(.custom("Geist", size: 13, relativeTo: .body))
                                         .foregroundColor(.secondary)
                                 }
                             }
@@ -102,13 +102,13 @@ struct ReclaimSliderView: View {
                         VStack(spacing: 12) {
                             HStack {
                                 Text("0.5h")
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.custom("Geist", size: 12, relativeTo: .body).weight(.semibold))
                                     .foregroundColor(.secondary)
 
                                 Spacer()
 
                                 Text(String(format: "%.1f", viewModel.estimatedDailyScreenTime) + "h")
-                                    .font(.system(size: 12, weight: .semibold))
+                                    .font(.custom("Geist", size: 12, relativeTo: .body).weight(.semibold))
                                     .foregroundColor(.secondary)
                             }
 
@@ -127,11 +127,11 @@ struct ReclaimSliderView: View {
                         VStack(spacing: 8) {
                             HStack(spacing: 8) {
                                 Image(systemName: "star.fill")
-                                    .font(.system(size: 14))
+                                    .font(.custom("Geist", size: 14, relativeTo: .body))
                                     .foregroundColor(.screenSpanRed)
 
                                 Text("You'd reclaim \(reclaimedYearsFormatted) years of your life")
-                                    .font(.system(size: 15, weight: .semibold))
+                                    .font(.custom("Geist", size: 15, relativeTo: .body).weight(.semibold))
                                     .foregroundColor(.screenSpanNavy)
 
                                 Spacer()
@@ -155,7 +155,7 @@ struct ReclaimSliderView: View {
                 }
             }) {
                 Text("Set My Goal")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)
