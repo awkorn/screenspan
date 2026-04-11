@@ -1,329 +1,179 @@
 import SwiftUI
 
-// MARK: - Plan Model
-struct PricingPlan: Identifiable {
-    let id = UUID()
-    let name: String
-    let price: String
-    let period: String
-    let pricePerMonth: Double
-    let isPopular: Bool
-}
-
-// MARK: - Paywall View
+// MARK: - Goal Activation View (Step 7)
 struct PaywallView: View {
     var viewModel: OnboardingViewModel
-    @State private var selectedPlan: PricingPlan?
-    @State private var isAnimating = false
-    @State private var showTrialDetails = false
 
-    private var reclaimedYearsFormatted: String {
-        String(format: "%.1f", viewModel.reclaimedYears)
+    private let primaryNavy = Color(hex: "#051425")
+    private let iconBlue = Color(hex: "#0063D6")
+    private let iconBackground = Color(hex: "#D7EAFF")
+
+    private var goalHoursText: String {
+        String(format: "%.1f", viewModel.selectedDailyLimit)
     }
 
-    private let plans = [
-        PricingPlan(
-            name: "Monthly",
-            price: "$4.99",
-            period: "per month",
-            pricePerMonth: 4.99,
-            isPopular: false
-        ),
-        PricingPlan(
-            name: "Annual",
-            price: "$29.99",
-            period: "per year",
-            pricePerMonth: 2.50,
-            isPopular: true
-        ),
+    private let selectableCategories: [UsageCategory] = [
+        .social,
+        .entertainment,
+        .games,
     ]
 
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(spacing: 24) {
-                    // Header
-                    VStack(spacing: 12) {
-                        Text("Get your time back")
-                            .font(.custom("Geist", size: 28, relativeTo: .body).weight(.semibold))
-                            .foregroundColor(.screenSpanNavy)
+                VStack(spacing: 20) {
+                    Text("Let’s make it happen")
+                        .font(.custom("Geist", size: 48, relativeTo: .body).weight(.semibold))
+                        .foregroundColor(primaryNavy)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 28)
 
-                        Text("You could reclaim \(reclaimedYearsFormatted) years with your goal")
-                            .font(.custom("Geist", size: 15, relativeTo: .body))
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 32)
+                    goalSummaryCard
 
-                    // Benefits
-                    VStack(spacing: 12) {
-                        BenefitRow(
-                            icon: "target.circle.fill",
-                            title: "Customized daily limits",
-                            subtitle: "Based on your usage patterns"
-                        )
-
-                        BenefitRow(
-                            icon: "bell.badge.fill",
-                            title: "Smart reminders",
-                            subtitle: "Get notified when approaching limits"
-                        )
-
-                        BenefitRow(
-                            icon: "chart.line.uptrend.xyaxis",
-                            title: "Detailed analytics",
-                            subtitle: "Track your progress over time"
-                        )
-                    }
-                    .padding(.horizontal, 24)
-
-                    // Trial Timeline
-                    TrialTimelineView()
-                        .padding(.horizontal, 24)
-
-                    // Pricing Plans
-                    VStack(spacing: 12) {
-                        ForEach(plans) { plan in
-                            PlanCard(
-                                plan: plan,
-                                isSelected: selectedPlan?.id == plan.id,
-                                action: {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        selectedPlan = plan
-                                    }
-                                }
-                            )
-                        }
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 24)
+                    categoriesCard
                 }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
             }
 
-            Spacer()
+            Spacer(minLength: 16)
 
-            // CTA Section
-            VStack(spacing: 16) {
-                Button(action: {
-                    // TODO: Integrate StoreKit for purchases
-                    Task {
-                        await viewModel.completeOnboarding()
-                    }
-                }) {
-                    Text("Start Free Trial")
-                        .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(Color.screenSpanRed)
-                        .cornerRadius(12)
+            Button(action: {
+                Task {
+                    await viewModel.completeOnboarding()
                 }
-
-                Button(action: {
-                    Task {
-                        await viewModel.completeOnboarding()
-                    }
-                }) {
-                    Text("Maybe later")
-                        .font(.custom("Geist", size: 15, relativeTo: .body).weight(.semibold))
-                        .foregroundColor(.screenSpanBlue)
-                }
-
-                // Footer Links
-                HStack(spacing: 12) {
-                    Link("Restore Purchases", destination: URL(string: "https://example.com/restore") ?? URL(fileURLWithPath: ""))
-                        .font(.custom("Geist", size: 12, relativeTo: .body))
-                        .foregroundColor(.secondary)
-
-                    Divider()
-                        .frame(height: 12)
-
-                    Link("Privacy Policy", destination: URL(string: "https://example.com/privacy") ?? URL(fileURLWithPath: ""))
-                        .font(.custom("Geist", size: 12, relativeTo: .body))
-                        .foregroundColor(.secondary)
-
-                    Divider()
-                        .frame(height: 12)
-
-                    Link("Terms", destination: URL(string: "https://example.com/terms") ?? URL(fileURLWithPath: ""))
-                        .font(.custom("Geist", size: 12, relativeTo: .body))
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
+            }) {
+                Text("Activate My Plan")
+                    .font(.custom("Geist", size: 32, relativeTo: .body).weight(.semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(primaryNavy)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 32)
         }
         .background(Color.screenSpanOffWhite.ignoresSafeArea())
-        .onAppear {
-            withAnimation {
-                selectedPlan = plans[1] // Default to Annual
-                isAnimating = true
-            }
-        }
     }
-}
 
-// MARK: - Benefit Row
-struct BenefitRow: View {
-    let icon: String
-    let title: String
-    let subtitle: String
+    private var goalSummaryCard: some View {
+        HStack(spacing: 14) {
+            iconTile(systemName: "target")
 
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.custom("Geist", size: 18, relativeTo: .body).weight(.semibold))
-                .foregroundColor(.screenSpanRed)
-                .frame(width: 32, height: 32)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.custom("Geist", size: 15, relativeTo: .body).weight(.semibold))
-                    .foregroundColor(.screenSpanNavy)
-
-                Text(subtitle)
-                    .font(.custom("Geist", size: 13, relativeTo: .body))
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Daily screen time goal")
+                    .font(.custom("Geist", size: 16, relativeTo: .body))
                     .foregroundColor(.secondary)
+
+                HStack(spacing: 4) {
+                    Text(goalHoursText)
+                        .font(.custom("Geist", size: 22, relativeTo: .body).weight(.semibold))
+                        .foregroundColor(iconBlue)
+
+                    Text("hours/day")
+                        .font(.custom("Geist", size: 22, relativeTo: .body))
+                        .foregroundColor(primaryNavy.opacity(0.8))
+                }
             }
 
             Spacer()
         }
-        .padding(12)
-        .background(Color.white)
-        .cornerRadius(8)
-    }
-}
-
-// MARK: - Trial Timeline View
-struct TrialTimelineView: View {
-    var body: some View {
-        VStack(spacing: 12) {
-            Text("Free trial: 7 days")
-                .font(.custom("Geist", size: 13, relativeTo: .body).weight(.semibold))
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            HStack(spacing: 0) {
-                VStack(spacing: 8) {
-                    Circle()
-                        .fill(Color.screenSpanRed)
-                        .frame(width: 12, height: 12)
-
-                    Text("Today")
-                        .font(.custom("Geist", size: 12, relativeTo: .body))
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-
-                VStack(spacing: 0) {
-                    Divider()
-                        .frame(height: 2)
-                        .background(Color.screenSpanRed.opacity(0.3))
-                }
-                .frame(maxWidth: .infinity)
-
-                VStack(spacing: 8) {
-                    Circle()
-                        .fill(Color.screenSpanRed.opacity(0.5))
-                        .frame(width: 12, height: 12)
-
-                    Text("Day 5")
-                        .font(.custom("Geist", size: 12, relativeTo: .body))
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-
-                VStack(spacing: 0) {
-                    Divider()
-                        .frame(height: 2)
-                        .background(Color.screenSpanRed.opacity(0.3))
-                }
-                .frame(maxWidth: .infinity)
-
-                VStack(spacing: 8) {
-                    Circle()
-                        .fill(Color.screenSpanBlue)
-                        .frame(width: 12, height: 12)
-
-                    Text("Day 7")
-                        .font(.custom("Geist", size: 12, relativeTo: .body))
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .padding(.vertical, 8)
-        }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(12)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
-}
 
-// MARK: - Plan Card
-struct PlanCard: View {
-    let plan: PricingPlan
-    let isSelected: Bool
-    let action: () -> Void
+    private var categoriesCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Which categories to limit?")
+                        .font(.custom("Geist", size: 30, relativeTo: .body).weight(.semibold))
+                        .foregroundColor(primaryNavy)
 
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 12) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(plan.name)
-                            .font(.custom("Geist", size: 16, relativeTo: .body).weight(.semibold))
-                            .foregroundColor(.screenSpanNavy)
-
-                        if plan.isPopular {
-                            Text("Save 58%")
-                                .font(.custom("Geist", size: 12, relativeTo: .body).weight(.semibold))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.screenSpanRed)
-                                .cornerRadius(4)
-                        }
-                    }
-
-                    Spacer()
-
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(plan.price)
-                            .font(.custom("Geist", size: 20, relativeTo: .body).weight(.bold))
-                            .foregroundColor(.screenSpanRed)
-
-                        Text(plan.period)
-                            .font(.custom("Geist", size: 12, relativeTo: .body))
-                            .foregroundColor(.secondary)
-                    }
+                    Text("We’ll help you manage these categories within your daily goal")
+                        .font(.custom("Geist", size: 15, relativeTo: .body))
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
-                if plan.isPopular {
-                    HStack(spacing: 4) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.custom("Geist", size: 12, relativeTo: .body))
-                        Text("Recommended")
-                            .font(.custom("Geist", size: 12, relativeTo: .body).weight(.semibold))
-                    }
-                    .foregroundColor(.screenSpanRed)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(Color.screenSpanRed.opacity(0.1))
-                    .cornerRadius(6)
+                Spacer(minLength: 12)
+
+                Text("Optional")
+                    .font(.custom("Geist", size: 14, relativeTo: .body))
+                    .foregroundColor(primaryNavy.opacity(0.8))
+            }
+
+            VStack(spacing: 6) {
+                ForEach(selectableCategories, id: \.self) { category in
+                    categoryRow(for: category)
                 }
             }
-            .padding(16)
-            .background(Color.white)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(
-                        isSelected ? Color.screenSpanRed : Color.screenSpanNavy.opacity(0.1),
-                        lineWidth: isSelected ? 2 : 1
-                    )
-            )
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 420, alignment: .top)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func categoryRow(for category: UsageCategory) -> some View {
+        let isSelected = viewModel.selectedCategories.contains(category)
+
+        return Button(action: {
+            if isSelected {
+                viewModel.selectedCategories.remove(category)
+            } else {
+                viewModel.selectedCategories.insert(category)
+            }
+        }) {
+            HStack(spacing: 12) {
+                iconTile(systemName: categoryIcon(for: category))
+
+                Text(category.displayName)
+                    .font(.custom("Geist", size: 17, relativeTo: .body).weight(.medium))
+                    .foregroundColor(primaryNavy)
+
+                Spacer()
+
+                ZStack {
+                    Circle()
+                        .stroke(isSelected ? iconBlue : .gray.opacity(0.6), lineWidth: 1.5)
+                        .frame(width: 18, height: 18)
+
+                    if isSelected {
+                        Circle()
+                            .fill(iconBlue)
+                            .frame(width: 10, height: 10)
+                    }
+                }
+            }
+            .padding(.vertical, 10)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func iconTile(systemName: String) -> some View {
+        RoundedRectangle(cornerRadius: 6, style: .continuous)
+            .fill(iconBackground)
+            .frame(width: 28, height: 28)
+            .overlay {
+                Image(systemName: systemName)
+                    .font(.custom("Geist", size: 14, relativeTo: .body).weight(.semibold))
+                    .foregroundColor(iconBlue)
+            }
+    }
+
+    private func categoryIcon(for category: UsageCategory) -> String {
+        switch category {
+        case .social:
+            return "person.2"
+        case .entertainment:
+            return "tv"
+        case .games:
+            return "gamecontroller"
+        default:
+            return category.sfSymbolIcon
         }
     }
 }
