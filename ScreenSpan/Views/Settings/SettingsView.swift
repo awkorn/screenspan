@@ -5,6 +5,7 @@ import SwiftUI
 struct SettingsView: View {
     @State private var viewModel = SettingsViewModel()
     @State private var showRestorePurchases = false
+    @State private var showResetOnboardingAlert = false
     @AppStorage("userAge") private var userAge: Int = 25
     @AppStorage("targetLifespan") private var targetLifespan: Int = 80
     @AppStorage("dailyGoal") private var dailyGoal: Int = 120
@@ -28,6 +29,11 @@ struct SettingsView: View {
 
                 // MARK: - About Section
                 aboutSection
+
+                #if DEBUG
+                // MARK: - Developer Section
+                developerSection
+                #endif
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -286,6 +292,31 @@ struct SettingsView: View {
             }
         }
     }
+
+
+
+#if DEBUG
+    // MARK: - Developer Section
+    private var developerSection: some View {
+        Section(header: Text("DEVELOPER").font(.caption).fontWeight(.semibold).foregroundColor(Color(hex: "#A8DADC"))) {
+            Button(role: .destructive) {
+                showResetOnboardingAlert = true
+            } label: {
+                Text("Reset Onboarding")
+            }
+            .alert("Reset Onboarding?", isPresented: $showResetOnboardingAlert) {
+                Button("Reset", role: .destructive) {
+                    Task {
+                        await viewModel.deleteAllData()
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This will clear onboarding progress and return you to onboarding on next app launch.")
+            }
+        }
+    }
+#endif
 
     // MARK: - Helpers
     private func categoryBadge(_ title: String, _ color: Color) -> some View {
