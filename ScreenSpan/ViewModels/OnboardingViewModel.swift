@@ -159,6 +159,11 @@ final class OnboardingViewModel {
             targetAge: targetAge,
             dailyHours: currentDailyAvgHours
         )
+
+        if let projectionResult {
+            AppGroupManager.shared.onboardingProjectedYears = projectionResult.yearsOnPhone
+            AppGroupManager.shared.onboardingWakingPercent = projectionResult.percentOfWakingLife
+        }
     }
 
     /// Calculate the reclaim benefit of reducing screen time
