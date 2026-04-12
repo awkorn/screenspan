@@ -72,8 +72,8 @@ struct PaywallView: View {
                         await viewModel.completeOnboarding()
                     }
                 } label: {
-                    Text("maybe later")
-                        .font(.system(size: 17, weight: .regular))
+                    Text("Maybe later")
+                        .font(.system(size: 15, weight: .regular))
                         .foregroundColor(subtitleColor)
                 }
                 .buttonStyle(.plain)
@@ -95,11 +95,11 @@ struct PaywallView: View {
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Get your time back")
-                .font(.system(size: 48, weight: .semibold))
+                .font(.system(size: 28, weight: .bold))
                 .foregroundColor(titleColor)
 
             Text("Reclaim those \(reclaimedYearsRounded) years of your life")
-                .font(.system(size: 24))
+                .font(.system(size: 18, weight: .regular))
                 .foregroundColor(subtitleColor)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -108,17 +108,17 @@ struct PaywallView: View {
     private func benefitCard(icon: String, title: String, subtitle: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 18, weight: .semibold))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(iconColor)
                 .frame(width: 20)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: 22, weight: .medium))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(cardTitleColor)
 
                 Text(subtitle)
-                    .font(.system(size: 17))
+                    .font(.system(size: 12, weight: .regular))
                     .foregroundColor(cardSubtitleColor)
             }
 
@@ -133,7 +133,7 @@ struct PaywallView: View {
     private var trialCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Free trial: 7 days")
-                .font(.system(size: 30, weight: .medium))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(cardTitleColor)
 
             VStack(spacing: 4) {
@@ -181,7 +181,7 @@ struct PaywallView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(plan == .monthly ? "Monthly" : "Annual")
-                        .font(.system(size: 28, weight: .medium))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(cardTitleColor)
 
                     if plan == .annual {
@@ -199,11 +199,11 @@ struct PaywallView: View {
 
                 VStack(alignment: .trailing, spacing: 3) {
                     Text(plan == .monthly ? "$4.99" : "$29.99")
-                        .font(.system(size: 32, weight: .semibold))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(moneyColor)
 
                     Text(plan == .monthly ? "per month" : "per year")
-                        .font(.system(size: 14))
+                        .font(.system(size: 13))
                         .foregroundColor(cardSubtitleColor)
                 }
             }

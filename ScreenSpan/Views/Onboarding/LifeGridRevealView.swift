@@ -47,7 +47,7 @@ struct LifeGridRevealView: View {
                     .foregroundStyle(Color(hex: "575757"))
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 16)
             .background(
                 Capsule()
                     .fill(Color(hex: "ECECEF"))
@@ -61,7 +61,7 @@ struct LifeGridRevealView: View {
 
             VStack(spacing: 10) {
                 Text(yearsFormatted)
-                    .font(.system(size: 74, weight: .bold))
+                    .font(.system(size: 80, weight: .bold))
                     .foregroundStyle(yearsTextColor)
                     .monospacedDigit()
                     .shadow(color: .black.opacity(0.20), radius: 2, x: 0, y: 2)
@@ -75,16 +75,16 @@ struct LifeGridRevealView: View {
                     )
 
                 Text("YEARS")
-                    .font(.system(size: 42, weight: .bold))
+                    .font(.system(size: 28, weight: .bold))
                     .foregroundStyle(Color(hex: "C82020"))
 
                 Text("of your waking life")
-                    .font(.system(size: 37, weight: .semibold))
+                    .font(.system(size: 20, weight: .semibold))
                     .italic()
                     .foregroundStyle(mutedColor)
 
                 Text("staring at your phone.")
-                    .font(.system(size: 46, weight: .bold))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(titleColor)
             }
             .multilineTextAlignment(.center)
@@ -98,7 +98,7 @@ struct LifeGridRevealView: View {
                     .foregroundStyle(Color(hex: "D92A2A"))
 
                 Text("That’s \(percentageFormatted)% of every waking hour you have left.")
-                    .font(.system(size: 19, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(titleColor)
                     .lineLimit(2)
 

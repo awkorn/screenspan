@@ -32,12 +32,12 @@ struct PermissionRequestView: View {
 
             VStack(spacing: 8) {
                 Text("Screen Time Access")
-                    .font(.system(size: 42, weight: .bold))
+                    .font(.system(size: 28, weight: .bold))
                     .foregroundColor(titleColor)
                     .multilineTextAlignment(.center)
 
                 Text("We need your permission")
-                    .font(.system(size: 23, weight: .regular))
+                    .font(.system(size: 18, weight: .regular))
                     .foregroundColor(subtitleColor)
                     .multilineTextAlignment(.center)
             }
@@ -127,12 +127,12 @@ struct PermissionExplanationCard: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: 31, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(titleColor)
                     .lineLimit(2)
 
                 Text(description)
-                    .font(.system(size: 23, weight: .regular))
+                    .font(.system(size: 12, weight: .regular))
                     .foregroundColor(descriptionColor)
                     .lineSpacing(1.5)
                     .fixedSize(horizontal: false, vertical: true)

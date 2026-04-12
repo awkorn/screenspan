@@ -53,7 +53,7 @@ struct ConcreteComparisonsView: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Your projected life chart")
-                    .font(.system(size: 37, weight: .semibold))
+                    .font(.system(size: 28, weight: .bold))
                     .foregroundStyle(titleColor)
 
                 Text("1 square = 1 month")

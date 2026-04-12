@@ -30,13 +30,13 @@ struct GoalSettingView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 28) {
-                    VStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: 6) {
                         Text("Set your goal")
-                            .font(.system(size: 40, weight: .semibold))
+                            .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.screenSpanNavy)
 
                         Text("How much time would you like\nto spend on your phone?")
-                            .font(.system(size: 24))
+                            .font(.system(size: 18, weight: .regular))
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.leading)
                     }
@@ -73,7 +73,7 @@ struct GoalSettingView: View {
 
                             HStack(spacing: 4) {
                                 Text(currentUsageFormatted)
-                                    .font(.system(size: 22, weight: .semibold))
+                                    .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(currentUsageColor)
                                     .monospacedDigit()
 
@@ -98,7 +98,7 @@ struct GoalSettingView: View {
 
                             HStack(spacing: 4) {
                                 Text(goalUsageFormatted)
-                                    .font(.system(size: 22, weight: .semibold))
+                                    .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(goalUsageColor)
                                     .monospacedDigit()
 
@@ -119,7 +119,7 @@ struct GoalSettingView: View {
                             .foregroundColor(goalUsageColor)
 
                         Text("You'd reclaim \(reclaimedYearsRounded) years of your life!")
-                            .font(.system(size: 20, weight: .semibold))
+                            .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.screenSpanNavy)
 
                         Spacer()
