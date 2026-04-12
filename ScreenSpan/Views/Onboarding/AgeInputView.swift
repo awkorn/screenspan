@@ -33,7 +33,6 @@ struct AgeInputView: View {
                     }
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.custom("Geist", size: 18, relativeTo: .body).weight(.regular))
                         .font(.system(size: 18, weight: .regular))
                         .foregroundColor(titleColor)
                         .frame(width: 28, height: 28)
@@ -46,14 +45,13 @@ struct AgeInputView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("Enter your date of birth")
-                    .font(.custom("Geist", size: 28))
-                    .fontWeight(.semibold)
+                    .font(.system(size: 28, weight: .semibold))
                     .foregroundColor(titleColor)
                     .minimumScaleFactor(0.75)
                     .lineLimit(2)
 
                 Text("This will be used in your calculation")
-                    .font(.custom("Geist", size: 20, relativeTo: .body).weight(.regular))
+                    .font(.system(size: 20, weight: .medium))
                     .fontWeight(.medium)
                     .foregroundColor(subtitleColor)
             }
