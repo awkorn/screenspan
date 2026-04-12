@@ -5,10 +5,11 @@ struct AgeInputView: View {
 
     @State private var selectedDateOfBirth: Date = Calendar.current.date(byAdding: .year, value: -25, to: .now) ?? .now
 
-    private let backgroundColor = Color(hex: "F3F4F6")
+    private let backgroundColor = Color.white
     private let titleColor = Color(hex: "051425")
     private let subtitleColor = Color(hex: "595959")
     private let buttonColor = Color(hex: "051425")
+    private let secondaryColor = Color(hex: "F6F7FA")
 
     private var minimumDate: Date {
         Calendar.current.date(byAdding: .year, value: -100, to: .now) ?? .distantPast
@@ -45,15 +46,15 @@ struct AgeInputView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("Enter your date of birth")
-                    .font(.custom("Geist", size: 42, relativeTo: .body).weight(.bold))
-                    .font(.system(size: 42, weight: .bold))
+                    .font(.custom("Geist", size: 28))
+                    .fontWeight(.semibold)
                     .foregroundColor(titleColor)
                     .minimumScaleFactor(0.75)
                     .lineLimit(2)
 
                 Text("This will be used in your calculation")
-                    .font(.custom("Geist", size: 19, relativeTo: .body).weight(.regular))
-                    .font(.system(size: 19, weight: .regular))
+                    .font(.custom("Geist", size: 20, relativeTo: .body).weight(.regular))
+                    .fontWeight(.medium)
                     .foregroundColor(subtitleColor)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -84,14 +85,10 @@ struct AgeInputView: View {
                     .font(.custom("Geist", size: 30, relativeTo: .body).weight(.regular))
                     .font(.system(size: 21, weight: .semibold))
                     .foregroundColor(titleColor)
-
-                Text("80 years")
-                    .font(.system(size: 30, weight: .regular))
-                    .foregroundColor(titleColor)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 24)
-            .background(Color.white)
+            .background(secondaryColor)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .padding(.horizontal, 24)
 

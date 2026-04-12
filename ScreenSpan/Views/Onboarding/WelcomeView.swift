@@ -14,17 +14,17 @@ struct WelcomeView: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 Text("ScreenSpan")
-                    .font(.system(size: 22, weight: .semibold))
+                    .font(.system(size: 34, weight: .semibold))
                     .foregroundColor(titleColor)
 
                 Text("How much of your life will you spend on your phone?")
-                    .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
+                    .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
                     .foregroundColor(subtitleColor)
                     .lineSpacing(1)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text("Gain it back.")
-                    .font(.custom("Geist", size: 16, relativeTo: .body).weight(.semibold))
+                    .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
                     .foregroundColor(accentColor)
                     .padding(.top, 4)
             }
