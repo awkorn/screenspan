@@ -64,12 +64,7 @@ struct PaywallView: View {
                     }
                 } label: {
                     Text("Start free trial")
-                        .font(.custom("Geist", size: 32, relativeTo: .body).weight(.semibold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(Color.screenSpanNavy)
-                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .onboardingPrimaryButtonStyle()
                 }
 
                 Button {
@@ -78,7 +73,7 @@ struct PaywallView: View {
                     }
                 } label: {
                     Text("maybe later")
-                        .font(.custom("Geist", size: 32, relativeTo: .body).weight(.regular))
+                        .font(.system(size: 17, weight: .regular))
                         .foregroundColor(subtitleColor)
                 }
                 .buttonStyle(.plain)
@@ -94,17 +89,17 @@ struct PaywallView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
         }
-        .background(Color.screenSpanOffWhite.ignoresSafeArea())
+        .background(Color.white.ignoresSafeArea())
     }
 
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Get your time back")
-                .font(.custom("Geist", size: 48, relativeTo: .body).weight(.semibold))
+                .font(.system(size: 48, weight: .semibold))
                 .foregroundColor(titleColor)
 
             Text("Reclaim those \(reclaimedYearsRounded) years of your life")
-                .font(.custom("Geist", size: 24, relativeTo: .body))
+                .font(.system(size: 24))
                 .foregroundColor(subtitleColor)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -113,17 +108,17 @@ struct PaywallView: View {
     private func benefitCard(icon: String, title: String, subtitle: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.custom("Geist", size: 18, relativeTo: .body).weight(.semibold))
+                .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(iconColor)
                 .frame(width: 20)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.custom("Geist", size: 22, relativeTo: .body).weight(.medium))
+                    .font(.system(size: 22, weight: .medium))
                     .foregroundColor(cardTitleColor)
 
                 Text(subtitle)
-                    .font(.custom("Geist", size: 17, relativeTo: .body))
+                    .font(.system(size: 17))
                     .foregroundColor(cardSubtitleColor)
             }
 
@@ -131,14 +126,14 @@ struct PaywallView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(Color.white)
+        .background(Color.screenSpanCardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     private var trialCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Free trial: 7 days")
-                .font(.custom("Geist", size: 30, relativeTo: .body).weight(.medium))
+                .font(.system(size: 30, weight: .medium))
                 .foregroundColor(cardTitleColor)
 
             VStack(spacing: 4) {
@@ -168,12 +163,12 @@ struct PaywallView: View {
                     Spacer()
                     Text("Day 7")
                 }
-                .font(.custom("Geist", size: 12, relativeTo: .body))
+                .font(.system(size: 12))
                 .foregroundColor(cardSubtitleColor)
             }
         }
         .padding(16)
-        .background(Color.white)
+        .background(Color.screenSpanCardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
@@ -186,12 +181,12 @@ struct PaywallView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(plan == .monthly ? "Monthly" : "Annual")
-                        .font(.custom("Geist", size: 28, relativeTo: .body).weight(.medium))
+                        .font(.system(size: 28, weight: .medium))
                         .foregroundColor(cardTitleColor)
 
                     if plan == .annual {
                         Text("Save 58%")
-                            .font(.custom("Geist", size: 12, relativeTo: .body).weight(.semibold))
+                            .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(.white)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
@@ -204,17 +199,17 @@ struct PaywallView: View {
 
                 VStack(alignment: .trailing, spacing: 3) {
                     Text(plan == .monthly ? "$4.99" : "$29.99")
-                        .font(.custom("Geist", size: 32, relativeTo: .body).weight(.semibold))
+                        .font(.system(size: 32, weight: .semibold))
                         .foregroundColor(moneyColor)
 
                     Text(plan == .monthly ? "per month" : "per year")
-                        .font(.custom("Geist", size: 14, relativeTo: .body))
+                        .font(.system(size: 14))
                         .foregroundColor(cardSubtitleColor)
                 }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 13)
-            .background(Color.white)
+            .background(Color.screenSpanCardBackground)
             .overlay {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .stroke(isSelected ? moneyColor : Color(hex: "#D9DDE3"), lineWidth: isSelected ? 2 : 1)
@@ -234,7 +229,7 @@ struct PaywallView: View {
             // TODO: Wire legal actions
         } label: {
             Text(title)
-                .font(.custom("Geist", size: 12, relativeTo: .body))
+                .font(.system(size: 12))
                 .foregroundColor(cardSubtitleColor)
         }
         .buttonStyle(.plain)

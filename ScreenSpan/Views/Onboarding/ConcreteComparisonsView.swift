@@ -9,8 +9,6 @@ struct ConcreteComparisonsView: View {
     private let livedColor = Color(hex: "0063D6")
     private let screenTimeColor = Color(hex: "F63232")
     private let remainingColor = Color(hex: "D9D9D9")
-    private let buttonColor = Color(hex: "051425")
-
     private let columnCount = 30
     private let spacing: CGFloat = 2
 
@@ -55,11 +53,11 @@ struct ConcreteComparisonsView: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Your projected life chart")
-                    .font(.custom("Geist", size: 37, relativeTo: .title2).weight(.semibold))
+                    .font(.system(size: 37, weight: .semibold))
                     .foregroundStyle(titleColor)
 
                 Text("1 square = 1 month")
-                    .font(.custom("Geist", size: 12, relativeTo: .caption))
+                    .font(.system(size: 12))
                     .foregroundStyle(titleColor.opacity(0.6))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -83,10 +81,10 @@ struct ConcreteComparisonsView: View {
             } label: {
                 HStack(spacing: 8) {
                     Text("Reclaim your life")
-                        .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
+                        .font(.system(size: 15, weight: .semibold))
 
                     Image(systemName: "arrow.right")
-                        .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
+                        .font(.system(size: 15, weight: .semibold))
                         .scaleEffect(arrowPulse ? 1.15 : 0.95)
                         .opacity(arrowPulse ? 1 : 0.7)
                         .animation(
@@ -96,14 +94,12 @@ struct ConcreteComparisonsView: View {
                 }
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(buttonColor)
-                .clipShape(Capsule())
+                .onboardingPrimaryButtonStyle()
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 26)
         }
-        .background(Color(hex: "F3F4F6").ignoresSafeArea())
+        .background(Color.white.ignoresSafeArea())
         .onAppear {
             viewModel.calculateProjection()
             arrowPulse = true
@@ -146,7 +142,7 @@ struct ConcreteComparisonsView: View {
                 .frame(width: 7, height: 7)
 
             Text(label)
-                .font(.custom("Geist", size: 11, relativeTo: .caption2))
+                .font(.system(size: 11))
                 .foregroundStyle(titleColor)
         }
     }

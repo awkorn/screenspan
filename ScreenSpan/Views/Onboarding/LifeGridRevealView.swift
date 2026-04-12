@@ -8,15 +8,13 @@ struct LifeGridRevealView: View {
     @State private var timerRotation: Double = 0
     @State private var countingTask: Task<Void, Never>?
 
-    private let backgroundColor = Color(hex: "F3F4F6")
+    private let backgroundColor = Color.white
     private let titleColor = Color(hex: "051425")
     private let mutedColor = Color(hex: "797979")
     private let blurredRedColor = Color(hex: "F63232")
     private let yearsTextColor = Color.white
     private let boxBackground = Color(hex: "FFC2C2")
     private let boxStroke = Color(hex: "C82020")
-    private let buttonColor = Color(hex: "051425")
-
     private var targetYears: Double {
         max(viewModel.projectedYearsOnPhone, 0)
     }
@@ -40,12 +38,12 @@ struct LifeGridRevealView: View {
             // Top status pill
             HStack(spacing: 8) {
                 Image(systemName: "hourglass")
-                    .font(.custom("Geist", size: 13, relativeTo: .body).weight(.semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Color(hex: "C82020"))
                     .rotationEffect(.degrees(timerRotation))
 
                 Text("TIME ANALYSIS COMPLETE")
-                    .font(.custom("Geist", size: 14, relativeTo: .body).weight(.semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Color(hex: "575757"))
             }
             .padding(.horizontal, 16)
@@ -63,7 +61,7 @@ struct LifeGridRevealView: View {
 
             VStack(spacing: 10) {
                 Text(yearsFormatted)
-                    .font(.custom("Geist", size: 74, relativeTo: .body).weight(.bold))
+                    .font(.system(size: 74, weight: .bold))
                     .foregroundStyle(yearsTextColor)
                     .monospacedDigit()
                     .shadow(color: .black.opacity(0.20), radius: 2, x: 0, y: 2)
@@ -77,16 +75,16 @@ struct LifeGridRevealView: View {
                     )
 
                 Text("YEARS")
-                    .font(.custom("Geist", size: 42, relativeTo: .body).weight(.bold))
+                    .font(.system(size: 42, weight: .bold))
                     .foregroundStyle(Color(hex: "C82020"))
 
                 Text("of your waking life")
-                    .font(.custom("Geist", size: 37, relativeTo: .body).weight(.semibold))
+                    .font(.system(size: 37, weight: .semibold))
                     .italic()
                     .foregroundStyle(mutedColor)
 
                 Text("staring at your phone.")
-                    .font(.custom("Geist", size: 46, relativeTo: .body).weight(.bold))
+                    .font(.system(size: 46, weight: .bold))
                     .foregroundStyle(titleColor)
             }
             .multilineTextAlignment(.center)
@@ -96,11 +94,11 @@ struct LifeGridRevealView: View {
 
             HStack(spacing: 10) {
                 Image(systemName: "clock")
-                    .font(.custom("Geist", size: 18, relativeTo: .body).weight(.semibold))
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Color(hex: "D92A2A"))
 
                 Text("That’s \(percentageFormatted)% of every waking hour you have left.")
-                    .font(.custom("Geist", size: 19, relativeTo: .body).weight(.semibold))
+                    .font(.system(size: 19, weight: .semibold))
                     .foregroundStyle(titleColor)
                     .lineLimit(2)
 
@@ -127,17 +125,15 @@ struct LifeGridRevealView: View {
             } label: {
                 HStack(spacing: 8) {
                     Text("See your life, visualized")
-                        .font(.custom("Geist", size: 28, relativeTo: .body).weight(.semibold))
-                        .foregroundStyle(.white)
+                        .font(.system(size: 15, weight: .semibold))
 
                     Image(systemName: "arrow.right")
-                        .font(.custom("Geist", size: 23, relativeTo: .body).weight(.semibold))
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(.white)
                 }
+                .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 58)
-                .background(buttonColor)
-                .clipShape(Capsule())
+                .onboardingPrimaryButtonStyle()
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 34)

@@ -7,7 +7,7 @@ struct OnboardingContainerView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.screenSpanOffWhite.ignoresSafeArea()
+                Color.white.ignoresSafeArea()
 
                 Group {
                     switch viewModel.currentStep {
@@ -29,7 +29,7 @@ struct OnboardingContainerView: View {
                         PaywallView(viewModel: viewModel)
                     }
                 }
-                .font(.custom("Geist", size: 17, relativeTo: .body))
+                .font(.system(size: 17))
                 .transition(.opacity.combined(with: .move(edge: .trailing)))
             }
         }

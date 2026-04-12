@@ -18,13 +18,13 @@ struct WelcomeView: View {
                     .foregroundColor(titleColor)
 
                 Text("How much of your life will you spend on your phone?")
-                    .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
+                    .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(subtitleColor)
                     .lineSpacing(1)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text("Gain it back.")
-                    .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(accentColor)
                     .padding(.top, 4)
             }
@@ -40,12 +40,7 @@ struct WelcomeView: View {
                 }
             }) {
                 Text("Get Started")
-                    .font(.custom("Geist", size: 15, relativeTo: .body).weight(.semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(titleColor)
-                    .clipShape(Capsule())
+                    .onboardingPrimaryButtonStyle()
             }
             .padding(.horizontal, 38)
             .padding(.top, 12)

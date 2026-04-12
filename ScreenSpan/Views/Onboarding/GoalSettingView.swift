@@ -32,11 +32,11 @@ struct GoalSettingView: View {
                 VStack(spacing: 28) {
                     VStack(spacing: 8) {
                         Text("Set your goal")
-                            .font(.custom("Geist", size: 40, relativeTo: .body).weight(.semibold))
+                            .font(.system(size: 40, weight: .semibold))
                             .foregroundColor(.screenSpanNavy)
 
                         Text("How much time would you like\nto spend on your phone?")
-                            .font(.custom("Geist", size: 24, relativeTo: .body))
+                            .font(.system(size: 24))
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.leading)
                     }
@@ -47,13 +47,13 @@ struct GoalSettingView: View {
                     VStack(spacing: 12) {
                         HStack {
                             Text("0h")
-                                .font(.custom("Geist", size: 14, relativeTo: .body).weight(.medium))
+                                .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(.secondary)
 
                             Spacer()
 
                             Text("\(Int(viewModel.estimatedDailyScreenTime.rounded()))h")
-                                .font(.custom("Geist", size: 14, relativeTo: .body).weight(.medium))
+                                .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(.secondary)
                         }
 
@@ -68,17 +68,17 @@ struct GoalSettingView: View {
                     HStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Current daily usage")
-                                .font(.custom("Geist", size: 13, relativeTo: .body))
+                                .font(.system(size: 13))
                                 .foregroundColor(.secondary)
 
                             HStack(spacing: 4) {
                                 Text(currentUsageFormatted)
-                                    .font(.custom("Geist", size: 22, relativeTo: .body).weight(.semibold))
+                                    .font(.system(size: 22, weight: .semibold))
                                     .foregroundColor(currentUsageColor)
                                     .monospacedDigit()
 
                                 Text("hours/day")
-                                    .font(.custom("Geist", size: 15, relativeTo: .body))
+                                    .font(.system(size: 15))
                                     .foregroundColor(.secondary)
                             }
                         }
@@ -86,40 +86,40 @@ struct GoalSettingView: View {
                         Spacer()
 
                         Image(systemName: "arrow.right")
-                            .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
+                            .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.secondary)
 
                         Spacer()
 
                         VStack(alignment: .trailing, spacing: 6) {
                             Text("Your new goal")
-                                .font(.custom("Geist", size: 13, relativeTo: .body))
+                                .font(.system(size: 13))
                                 .foregroundColor(.secondary)
 
                             HStack(spacing: 4) {
                                 Text(goalUsageFormatted)
-                                    .font(.custom("Geist", size: 22, relativeTo: .body).weight(.semibold))
+                                    .font(.system(size: 22, weight: .semibold))
                                     .foregroundColor(goalUsageColor)
                                     .monospacedDigit()
 
                                 Text("hours/day")
-                                    .font(.custom("Geist", size: 15, relativeTo: .body))
+                                    .font(.system(size: 15))
                                     .foregroundColor(.secondary)
                             }
                         }
                     }
                     .padding(16)
-                    .background(Color.white)
+                    .background(Color.screenSpanCardBackground)
                     .cornerRadius(10)
                     .padding(.horizontal, 24)
 
                     HStack(spacing: 12) {
                         Image(systemName: "figure.walk")
-                            .font(.custom("Geist", size: 22, relativeTo: .body).weight(.semibold))
+                            .font(.system(size: 22, weight: .semibold))
                             .foregroundColor(goalUsageColor)
 
                         Text("You'd reclaim \(reclaimedYearsRounded) years of your life!")
-                            .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
+                            .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.screenSpanNavy)
 
                         Spacer()
@@ -140,17 +140,12 @@ struct GoalSettingView: View {
                 }
             }) {
                 Text("Set My Goal")
-                    .font(.custom("Geist", size: 17, relativeTo: .body).weight(.semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(Color.screenSpanNavy)
-                    .cornerRadius(16)
+                    .onboardingPrimaryButtonStyle()
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 32)
         }
-        .background(Color.screenSpanOffWhite.ignoresSafeArea())
+        .background(Color.white.ignoresSafeArea())
         .onAppear {
             sliderValue = viewModel.selectedDailyLimit > 0 ? viewModel.selectedDailyLimit : viewModel.estimatedDailyScreenTime
             sliderValue = min(max(sliderValue, 0), maxSliderValue)

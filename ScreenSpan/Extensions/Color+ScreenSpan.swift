@@ -14,6 +14,9 @@ extension Color {
     /// Off-white - Background color (#F3F4F6)
     static let screenSpanOffWhite = Color(red: 0.953, green: 0.957, blue: 0.965)
 
+    /// Off-white card color used in onboarding (#F6F7FA)
+    static let screenSpanCardBackground = Color(red: 0.965, green: 0.969, blue: 0.980)
+
     /// Gray - Muted text color (#A8DADC)
     static let screenSpanGray = Color(red: 0.659, green: 0.855, blue: 0.859)
 
@@ -50,9 +53,30 @@ extension UIColor {
     /// Off-white - Background color (#F3F4F6)
     static let screenSpanOffWhite = UIColor(red: 0.953, green: 0.957, blue: 0.965, alpha: 1.0)
 
+    /// Off-white card color used in onboarding (#F6F7FA)
+    static let screenSpanCardBackground = UIColor(red: 0.965, green: 0.969, blue: 0.980, alpha: 1.0)
+
     /// Gray - Muted text color (#A8DADC)
     static let screenSpanGray = UIColor(red: 0.659, green: 0.855, blue: 0.859, alpha: 1.0)
 
     /// Light gray - Subtle backgrounds (#E5E5E5)
     static let screenSpanLightGray = UIColor(red: 0.898, green: 0.898, blue: 0.898, alpha: 1.0)
+}
+
+struct OnboardingPrimaryButtonModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 44)
+            .background(Color(hex: "#051425"))
+            .clipShape(Capsule())
+    }
+}
+
+extension View {
+    func onboardingPrimaryButtonStyle() -> some View {
+        modifier(OnboardingPrimaryButtonModifier())
+    }
 }

@@ -9,7 +9,7 @@ struct AgeInputView: View {
     private let titleColor = Color(hex: "051425")
     private let subtitleColor = Color(hex: "595959")
     private let buttonColor = Color(hex: "051425")
-    private let secondaryColor = Color(hex: "F6F7FA")
+    private let secondaryColor = Color.screenSpanCardBackground
 
     private var minimumDate: Date {
         Calendar.current.date(byAdding: .year, value: -100, to: .now) ?? .distantPast
@@ -76,11 +76,10 @@ struct AgeInputView: View {
 
             VStack(spacing: 8) {
                 Text("Default life expectancy")
-                    .font(.custom("Geist", size: 21, relativeTo: .body).weight(.semibold))
+                    .font(.system(size: 21, weight: .semibold))
                     .foregroundColor(titleColor)
 
                 Text("80 years")
-                    .font(.custom("Geist", size: 30, relativeTo: .body).weight(.regular))
                     .font(.system(size: 21, weight: .semibold))
                     .foregroundColor(titleColor)
             }
@@ -101,13 +100,7 @@ struct AgeInputView: View {
                 }
             } label: {
                 Text("Next")
-                    .font(.custom("Geist", size: 20, relativeTo: .body).weight(.semibold))
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(buttonColor)
-                    .clipShape(Capsule())
+                    .onboardingPrimaryButtonStyle()
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 34)

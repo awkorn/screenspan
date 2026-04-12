@@ -3,10 +3,10 @@ import SwiftUI
 struct PermissionRequestView: View {
     var viewModel: OnboardingViewModel
 
-    private let backgroundColor = Color(hex: "F3F4F6")
+    private let backgroundColor = Color.white
     private let titleColor = Color(hex: "051425")
     private let subtitleColor = Color(hex: "595959")
-    private let cardBackgroundColor = Color.white.opacity(0.6)
+    private let cardBackgroundColor = Color.screenSpanCardBackground
     private let iconBackgroundColor = Color(hex: "FDECEC")
     private let iconColor = Color(hex: "E85A5A")
     private let buttonColor = Color(hex: "051425")
@@ -20,7 +20,7 @@ struct PermissionRequestView: View {
                     }
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.custom("Geist", size: 18, relativeTo: .body).weight(.regular))
+                        .font(.system(size: 18, weight: .regular))
                         .foregroundColor(titleColor)
                         .frame(width: 28, height: 28)
                 }
@@ -32,12 +32,12 @@ struct PermissionRequestView: View {
 
             VStack(spacing: 8) {
                 Text("Screen Time Access")
-                    .font(.custom("Geist", size: 42, relativeTo: .body).weight(.bold))
+                    .font(.system(size: 42, weight: .bold))
                     .foregroundColor(titleColor)
                     .multilineTextAlignment(.center)
 
                 Text("We need your permission")
-                    .font(.custom("Geist", size: 23, relativeTo: .body).weight(.regular))
+                    .font(.system(size: 23, weight: .regular))
                     .foregroundColor(subtitleColor)
                     .multilineTextAlignment(.center)
             }
@@ -85,12 +85,7 @@ struct PermissionRequestView: View {
 
             Button(action: requestScreenTimeAccess) {
                 Text("Allow Screen Time Access")
-                    .font(.custom("Geist", size: 28, relativeTo: .body).weight(.semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(buttonColor)
-                    .clipShape(Capsule())
+                    .onboardingPrimaryButtonStyle()
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 34)
@@ -124,7 +119,7 @@ struct PermissionExplanationCard: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.custom("Geist", size: 15, relativeTo: .body).weight(.semibold))
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(iconColor)
                 .frame(width: 28, height: 28)
                 .background(iconBackgroundColor)
@@ -132,12 +127,12 @@ struct PermissionExplanationCard: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.custom("Geist", size: 31, relativeTo: .body).weight(.semibold))
+                    .font(.system(size: 31, weight: .semibold))
                     .foregroundColor(titleColor)
                     .lineLimit(2)
 
                 Text(description)
-                    .font(.custom("Geist", size: 23, relativeTo: .body).weight(.regular))
+                    .font(.system(size: 23, weight: .regular))
                     .foregroundColor(descriptionColor)
                     .lineSpacing(1.5)
                     .fixedSize(horizontal: false, vertical: true)
