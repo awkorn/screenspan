@@ -2,121 +2,104 @@ import SwiftUI
 
 struct LifeGridRevealView: View {
     var viewModel: OnboardingViewModel
-    var animation: Namespace.ID
 
-    @State private var displayedYears: Double = 0
-    @State private var timerRotation: Double = 0
-    @State private var countingTask: Task<Void, Never>?
+    @State private var arrowPulse = false
 
-    private let backgroundColor = Color.white
     private let titleColor = Color(hex: "051425")
-    private let mutedColor = Color(hex: "797979")
-    private let blurredRedColor = Color(hex: "F63232")
-    private let yearsTextColor = Color.white
-    private let boxBackground = Color(hex: "FFC2C2")
-    private let boxStroke = Color(hex: "C82020")
-    private var targetYears: Double {
-        max(viewModel.projectedYearsOnPhone, 0)
+    private let livedColor = Color(hex: "0063D6")
+    private let screenTimeColor = Color(hex: "F63232")
+    private let remainingColor = Color(hex: "D9D9D9")
+    private let columnCount = 26
+    private let spacing: CGFloat = 3
+    private let horizontalPadding: CGFloat = 24
+
+    private var lifeGridData: LifeGridData {
+        let projection = viewModel.projectionResult ?? ProjectionCalculator.calculateProjectionFromDaily(
+            currentAge: viewModel.selectedAge,
+            targetAge: SharedConstants.DefaultValues.targetAge,
+            dailyHours: viewModel.currentDailyAvgHours
+        )
+
+        return ProjectionCalculator.calculateLifeGrid(
+            currentAge: viewModel.selectedAge,
+            targetAge: SharedConstants.DefaultValues.targetAge,
+            monthsOnPhone: projection.monthsOnPhone
+        )
     }
 
-    private var targetPercent: Double {
-        max(viewModel.percentageOfWakingHours, 0)
+    private var monthStates: [MonthState] {
+        var states: [MonthState] = []
+        states.reserveCapacity(lifeGridData.totalMonths)
+
+        for _ in 0..<lifeGridData.monthsLived {
+            states.append(.lived)
+        }
+
+        for _ in 0..<lifeGridData.phoneMonths {
+            states.append(.screenTime)
+        }
+
+        for _ in 0..<lifeGridData.freeMonths {
+            states.append(.remaining)
+        }
+
+        if states.count < lifeGridData.totalMonths {
+            states.append(contentsOf: Array(repeating: .remaining, count: lifeGridData.totalMonths - states.count))
+        }
+
+        return Array(states.prefix(lifeGridData.totalMonths))
     }
 
-    private var yearsFormatted: String {
-        String(format: "%.1f", displayedYears)
+    private var gridWidth: CGFloat {
+        UIScreen.main.bounds.width - (horizontalPadding * 2)
     }
 
-    private var percentageFormatted: String {
-        String(format: "%.0f", targetPercent)
+    private var cellSize: CGFloat {
+        max((gridWidth - (CGFloat(columnCount - 1) * spacing)) / CGFloat(columnCount), 4)
+    }
+
+    private var rowCount: Int {
+        Int(ceil(Double(monthStates.count) / Double(columnCount)))
+    }
+
+    private var gridHeight: CGFloat {
+        (CGFloat(rowCount) * cellSize) + (CGFloat(max(rowCount - 1, 0)) * spacing)
+    }
+
+    private var gridColumns: [GridItem] {
+        Array(
+            repeating: GridItem(.fixed(cellSize), spacing: spacing, alignment: .top),
+            count: columnCount
+        )
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer(minLength: 16)
-
-            // Top status pill
-            HStack(spacing: 8) {
-                Image(systemName: "hourglass")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Color(hex: "C82020"))
-                    .rotationEffect(.degrees(timerRotation))
-
-                Text("TIME ANALYSIS COMPLETE")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color(hex: "575757"))
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 16)
-            .background(
-                Capsule()
-                    .fill(Color(hex: "ECECEF"))
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.black.opacity(0.08), lineWidth: 1)
-                    )
-            )
-
-            Spacer(minLength: 44)
-
-            VStack(spacing: 10) {
-                Text(yearsFormatted)
-                    .font(.system(size: 80, weight: .bold))
-                    .foregroundStyle(yearsTextColor)
-                    .monospacedDigit()
-                    .shadow(color: .black.opacity(0.20), radius: 2, x: 0, y: 2)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    .background(
-                        Circle()
-                            .fill(blurredRedColor.opacity(0.42))
-                            .frame(width: 270, height: 210)
-                            .blur(radius: 36)
-                    )
-
-                Text("YEARS")
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Your projected life chart")
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundStyle(Color(hex: "C82020"))
-
-                Text("of your waking life")
-                    .font(.system(size: 20, weight: .semibold))
-                    .italic()
-                    .foregroundStyle(mutedColor)
-
-                Text("staring at your phone.")
-                    .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(titleColor)
             }
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 24)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 24)
+            .padding(.horizontal, horizontalPadding)
 
-            Spacer(minLength: 36)
+            Text("1 square = 1 month")
+                .font(.system(size: 11))
+                .foregroundStyle(titleColor.opacity(0.6))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 12)
+                .padding(.horizontal, horizontalPadding)
 
-            HStack(spacing: 10) {
-                Image(systemName: "clock")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(Color(hex: "D92A2A"))
+            chartGrid
+                .padding(.top, 14)
+                .padding(.horizontal, horizontalPadding)
+                .padding(.bottom, 18)
 
-                Text("That’s \(percentageFormatted)% of every waking hour you have left.")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(titleColor)
-                    .lineLimit(2)
+            legend
+                .padding(.horizontal, horizontalPadding)
 
-                Spacer(minLength: 0)
-            }
-            .padding(.vertical, 18)
-            .padding(.horizontal, 16)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(boxBackground)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(boxStroke, lineWidth: 1)
-                    )
-            )
-            .padding(.horizontal, 24)
-
-            Spacer()
+            Spacer(minLength: 20)
 
             Button {
                 withAnimation(.easeInOut(duration: 0.3)) {
@@ -124,53 +107,79 @@ struct LifeGridRevealView: View {
                 }
             } label: {
                 HStack(spacing: 8) {
-                    Text("See your life, visualized")
+                    Text("Reclaim your life")
                         .font(.system(size: 15, weight: .semibold))
 
                     Image(systemName: "arrow.right")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .scaleEffect(arrowPulse ? 1.15 : 0.95)
+                        .opacity(arrowPulse ? 1 : 0.7)
+                        .animation(
+                            .easeInOut(duration: 0.8).repeatForever(autoreverses: true),
+                            value: arrowPulse
+                        )
                 }
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .onboardingPrimaryButtonStyle()
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 34)
+            .padding(.bottom, 26)
         }
-        .background(backgroundColor.ignoresSafeArea())
+        .background(Color.white.ignoresSafeArea())
         .onAppear {
             viewModel.calculateProjection()
-            startAnimations()
-        }
-        .onDisappear {
-            countingTask?.cancel()
+            arrowPulse = true
         }
     }
 
-    private func startAnimations() {
-        withAnimation(.linear(duration: 2.2).repeatForever(autoreverses: false)) {
-            timerRotation = 360
+    private var chartGrid: some View {
+        LazyVGrid(columns: gridColumns, spacing: spacing) {
+            ForEach(Array(monthStates.enumerated()), id: \.offset) { _, state in
+                RoundedRectangle(cornerRadius: 1.5)
+                    .fill(color(for: state))
+                    .frame(width: cellSize, height: cellSize)
+            }
         }
+        .frame(width: gridWidth, height: gridHeight, alignment: .topLeading)
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
 
-        countingTask?.cancel()
-        countingTask = Task {
-            let steps = 55
-            for step in 1...steps {
-                if Task.isCancelled { return }
-                let progress = Double(step) / Double(steps)
-                let eased = 1 - pow(1 - progress, 3)
+    private var legend: some View {
+        HStack(spacing: 16) {
+            legendItem(color: livedColor, label: "Lived")
+            legendItem(color: screenTimeColor, label: "Screen time")
+            legendItem(color: remainingColor, label: "Remaining time")
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
 
-                await MainActor.run {
-                    displayedYears = targetYears * eased
-                }
+    private func legendItem(color: Color, label: String) -> some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(color)
+                .frame(width: 7, height: 7)
 
-                try? await Task.sleep(nanoseconds: 28_000_000)
-            }
-
-            await MainActor.run {
-                displayedYears = targetYears
-            }
+            Text(label)
+                .font(.system(size: 12))
+                .foregroundStyle(titleColor)
         }
     }
+
+    private func color(for state: MonthState) -> Color {
+        switch state {
+        case .lived:
+            return livedColor
+        case .screenTime:
+            return screenTimeColor
+        case .remaining:
+            return remainingColor
+        }
+    }
+}
+
+private enum MonthState {
+    case lived
+    case screenTime
+    case remaining
 }

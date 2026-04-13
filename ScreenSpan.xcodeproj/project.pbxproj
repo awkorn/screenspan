@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		02A82E570EFC46C6635F0920 /* ScreenSpanReport.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = C8EA298EF7CB1876A1B306BF /* ScreenSpanReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		0A09C2D0988C6FC3F0D7CCC1 /* ConcreteComparisonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE6B4D762CFBC0C755D07416 /* ConcreteComparisonsView.swift */; };
+		0A09C2D0988C6FC3F0D7CCC1 /* LifeGridRevealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE6B4D762CFBC0C755D07416 /* LifeGridRevealView.swift */; };
 		0F572863C112270027377EE5 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F4A4A71CB8C9A7C783A67D8 /* MainTabView.swift */; };
 		11CF3293D9AB51F1E145B07F /* DonutChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CBA21D08EA526F73C7A2E7F /* DonutChartView.swift */; };
 		1C04A2C31387C6632D4B8737 /* Environment+ScreenSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98B2E6C7985B4098510525C /* Environment+ScreenSpan.swift */; };
@@ -38,7 +38,7 @@
 		7CA6D26D4488504C8E363E2A /* Color+ScreenSpanReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51463CC93AF1FC395F23A659 /* Color+ScreenSpanReport.swift */; };
 		8919445EF7490602BAA2D63E /* ProjectionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */; };
 		8F0240414A51F7444F3A2F90 /* HistoryReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B745744BA2354B4E399F1C41 /* HistoryReportView.swift */; };
-		9434CDFDB5BFDD3D31E7EC09 /* LifeGridRevealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5661E444673C60B141FDD277 /* LifeGridRevealView.swift */; };
+		9434CDFDB5BFDD3D31E7EC09 /* ProjectionRevealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5661E444673C60B141FDD277 /* ProjectionRevealView.swift */; };
 		9A0AF529672DD47AE388D675 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21AA338A8BC8C3E45D8D551 /* OnboardingViewModel.swift */; };
 		9DB102EEFD27E1CF5149435F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA623384754EB8634D457F80 /* ContentView.swift */; };
 		A3AB714CFC74FF3CD8ADCDFB /* AppGroupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756444A3B2BC26E2CCD3993F /* AppGroupManager.swift */; };
@@ -98,7 +98,7 @@
 		4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedConstants.swift; sourceTree = "<group>"; };
 		4DCF7DEE10E84FCB52021934 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		51463CC93AF1FC395F23A659 /* Color+ScreenSpanReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+ScreenSpanReport.swift"; sourceTree = "<group>"; };
-		5661E444673C60B141FDD277 /* LifeGridRevealView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeGridRevealView.swift; sourceTree = "<group>"; };
+		5661E444673C60B141FDD277 /* ProjectionRevealView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectionRevealView.swift; sourceTree = "<group>"; };
 		5A1386C8E8351CD19946B3E8 /* AuthorizationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthorizationService.swift; sourceTree = "<group>"; };
 		5AC2AE376C93D5CA9A49DACE /* OnboardingContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingContainerView.swift; sourceTree = "<group>"; };
 		66C5EF5160BAE399C0FF89A1 /* Date+ScreenSpan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+ScreenSpan.swift"; sourceTree = "<group>"; };
@@ -117,7 +117,7 @@
 		9B7D83D181F6D3AF608C6F5D /* StatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsViewModel.swift; sourceTree = "<group>"; };
 		AA623384754EB8634D457F80 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		AC7D5F6A44622236803D7EED /* StoreKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitService.swift; sourceTree = "<group>"; };
-		AE6B4D762CFBC0C755D07416 /* ConcreteComparisonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcreteComparisonsView.swift; sourceTree = "<group>"; };
+		AE6B4D762CFBC0C755D07416 /* LifeGridRevealView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeGridRevealView.swift; sourceTree = "<group>"; };
 		AF9074527819B4C453EF03BE /* StatsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsTabView.swift; sourceTree = "<group>"; };
 		B21AA338A8BC8C3E45D8D551 /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
 		B3EF9894059FC751764278F8 /* HistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewModel.swift; sourceTree = "<group>"; };
@@ -158,9 +158,9 @@
 			isa = PBXGroup;
 			children = (
 				BB7C2C906DF72C56290CB002 /* AgeInputView.swift */,
-				AE6B4D762CFBC0C755D07416 /* ConcreteComparisonsView.swift */,
+				AE6B4D762CFBC0C755D07416 /* LifeGridRevealView.swift */,
 				6D39E827280278510CD8E4A1 /* GoalSettingView.swift */,
-				5661E444673C60B141FDD277 /* LifeGridRevealView.swift */,
+				5661E444673C60B141FDD277 /* ProjectionRevealView.swift */,
 				5AC2AE376C93D5CA9A49DACE /* OnboardingContainerView.swift */,
 				D6335E4D884CF036670B084F /* PaywallView.swift */,
 				39154E949451B6CF3E2EE0BE /* PermissionRequestView.swift */,
@@ -448,7 +448,7 @@
 				F7250C587E1F3CB0892FDA1B /* ChartTabView.swift in Sources */,
 				DF5E2C6764FF1FD529274BC6 /* ChartViewModel.swift in Sources */,
 				EEFC74152742F33836C9D61D /* Color+ScreenSpan.swift in Sources */,
-				0A09C2D0988C6FC3F0D7CCC1 /* ConcreteComparisonsView.swift in Sources */,
+				0A09C2D0988C6FC3F0D7CCC1 /* LifeGridRevealView.swift in Sources */,
 				9DB102EEFD27E1CF5149435F /* ContentView.swift in Sources */,
 				43C8D153FC53E264AD147C97 /* Date+ScreenSpan.swift in Sources */,
 				11CF3293D9AB51F1E145B07F /* DonutChartView.swift in Sources */,
@@ -457,7 +457,7 @@
 				4563E169F175B2DA1D5A7836 /* GoalSettingView.swift in Sources */,
 				6437C9D2833542C4BB5FD4B8 /* HistoryTabView.swift in Sources */,
 				46A751C021C1635BB9A738F2 /* HistoryViewModel.swift in Sources */,
-				9434CDFDB5BFDD3D31E7EC09 /* LifeGridRevealView.swift in Sources */,
+				9434CDFDB5BFDD3D31E7EC09 /* ProjectionRevealView.swift in Sources */,
 				4BCCF2433646C026A195EBF9 /* LifeGridView.swift in Sources */,
 				0F572863C112270027377EE5 /* MainTabView.swift in Sources */,
 				3F41162A39F0FF7F6E097804 /* NotificationService.swift in Sources */,

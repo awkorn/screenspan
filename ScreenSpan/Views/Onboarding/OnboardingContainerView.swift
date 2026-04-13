@@ -18,9 +18,9 @@ struct OnboardingContainerView: View {
                     case .permission:
                         PermissionRequestView(viewModel: viewModel)
                     case .lifeGridReveal:
-                        LifeGridRevealView(viewModel: viewModel, animation: animation)
+                        ProjectionRevealView(viewModel: viewModel, animation: animation)
                     case .comparisons:
-                        ConcreteComparisonsView(viewModel: viewModel)
+                        LifeGridRevealView(viewModel: viewModel)
                     case .goalSetting:
                         GoalSettingView(viewModel: viewModel)
                     case .paywall:
