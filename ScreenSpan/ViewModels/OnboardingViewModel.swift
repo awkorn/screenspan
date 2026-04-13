@@ -8,9 +8,8 @@ enum OnboardingStep: Int, Equatable {
     case permission = 2
     case lifeGridReveal = 3
     case comparisons = 4
-    case reclaimSlider = 5
-    case goalSetting = 6
-    case paywall = 7
+    case goalSetting = 5
+    case paywall = 6
 }
 
 /// ViewModel managing the onboarding flow for new users

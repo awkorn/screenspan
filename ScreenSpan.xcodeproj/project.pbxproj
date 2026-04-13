@@ -39,7 +39,6 @@
 		8919445EF7490602BAA2D63E /* ProjectionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */; };
 		8F0240414A51F7444F3A2F90 /* HistoryReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B745744BA2354B4E399F1C41 /* HistoryReportView.swift */; };
 		9434CDFDB5BFDD3D31E7EC09 /* LifeGridRevealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5661E444673C60B141FDD277 /* LifeGridRevealView.swift */; };
-		98FFB5EC86CBB9B989A7643A /* ReclaimSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FBF41C319C7B79D44F3F65F /* ReclaimSliderView.swift */; };
 		9A0AF529672DD47AE388D675 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21AA338A8BC8C3E45D8D551 /* OnboardingViewModel.swift */; };
 		9DB102EEFD27E1CF5149435F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA623384754EB8634D457F80 /* ContentView.swift */; };
 		A3AB714CFC74FF3CD8ADCDFB /* AppGroupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756444A3B2BC26E2CCD3993F /* AppGroupManager.swift */; };
@@ -112,7 +111,6 @@
 		7644C84804CDFEA305490E75 /* StatsReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsReportView.swift; sourceTree = "<group>"; };
 		7B8A84266D5C67D2A5DA73E8 /* UserGoal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserGoal.swift; sourceTree = "<group>"; };
 		8CBA21D08EA526F73C7A2E7F /* DonutChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DonutChartView.swift; sourceTree = "<group>"; };
-		8FBF41C319C7B79D44F3F65F /* ReclaimSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReclaimSliderView.swift; sourceTree = "<group>"; };
 		9454C7ED8B41B24B9FC8F2ED /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
 		9801013D24B5FFBF50A18946 /* ChartViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartViewModel.swift; sourceTree = "<group>"; };
 		9A4D8FAD2211C2AAFF1DED04 /* ScreenSpanApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSpanApp.swift; sourceTree = "<group>"; };
@@ -166,7 +164,6 @@
 				5AC2AE376C93D5CA9A49DACE /* OnboardingContainerView.swift */,
 				D6335E4D884CF036670B084F /* PaywallView.swift */,
 				39154E949451B6CF3E2EE0BE /* PermissionRequestView.swift */,
-				8FBF41C319C7B79D44F3F65F /* ReclaimSliderView.swift */,
 				1281DF0923E1F2BF29939CD2 /* WelcomeView.swift */,
 			);
 			path = Onboarding;
@@ -470,7 +467,6 @@
 				D9B4D9BDD484D0CE6BFBC295 /* PermissionRequestView.swift in Sources */,
 				5899087DD153621F52A860BE /* ProjectionCalculator.swift in Sources */,
 				E909B357CB330BF565FBA9B9 /* ProjectionModel.swift in Sources */,
-				98FFB5EC86CBB9B989A7643A /* ReclaimSliderView.swift in Sources */,
 				AFAE3FD26CE8D5923D988FCF /* ScreenSpanApp.swift in Sources */,
 				D84D7A276B739F6E73F38281 /* SettingsView.swift in Sources */,
 				5B0830CCC30FAF4B16FA4F4A /* SettingsViewModel.swift in Sources */,

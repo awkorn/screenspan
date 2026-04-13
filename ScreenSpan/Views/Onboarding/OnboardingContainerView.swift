@@ -21,8 +21,6 @@ struct OnboardingContainerView: View {
                         LifeGridRevealView(viewModel: viewModel, animation: animation)
                     case .comparisons:
                         ConcreteComparisonsView(viewModel: viewModel)
-                    case .reclaimSlider:
-                        ReclaimSliderView(viewModel: viewModel)
                     case .goalSetting:
                         GoalSettingView(viewModel: viewModel)
                     case .paywall:
