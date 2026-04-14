@@ -6,20 +6,30 @@ import Observation
 final class ChartViewModel {
     // MARK: - Properties
 
-    var lifeGridData: LifeGridData?
+    var averageGridData: LifeGridData = .mockData(months: 960)
+    var goalGridData: LifeGridData = .mockData(months: 960)
+    var averageDailyHours: Double = SharedConstants.DefaultValues.defaultDailyAvgHours
+    var selectedGoalHours: Double = SharedConstants.DefaultValues.defaultDailyAvgHours
     var isLoading: Bool = false
-
-    var gridData: LifeGridData {
-        if let lifeGridData {
-            return lifeGridData
-        }
-
-        return LifeGridData.mockData()
-    }
 
     // MARK: - Initialization
 
-    init() {}
+    init() {
+        loadData()
+    }
+
+    var maxSliderHours: Double {
+        max(averageDailyHours, 0.1)
+    }
+
+    var shouldShowComparison: Bool {
+        abs(averageGridData.phoneMonths - goalGridData.phoneMonths) > 1
+    }
+
+    var comparisonProgress: Double {
+        guard maxSliderHours > 0 else { return 1 }
+        return selectedGoalHours / maxSliderHours
+    }
 
     // MARK: - Public Methods
 
@@ -28,27 +38,87 @@ final class ChartViewModel {
         isLoading = true
         defer { isLoading = false }
 
-        let currentAge = AppGroupManager.shared.currentAge
-        let targetAge = AppGroupManager.shared.targetAge
-        let dailyAvgHours = AppGroupManager.shared.screenTimeGoalMinutes / 60
+        let currentAge = max(AppGroupManager.shared.currentAge, 1)
+        let targetAge = max(AppGroupManager.shared.targetAge, currentAge)
+        let resolvedAverageHours = resolveAverageDailyHours(currentAge: currentAge, targetAge: targetAge)
+        let storedGoalHours = AppGroupManager.shared.screenTimeGoalMinutes > 0
+            ? AppGroupManager.shared.screenTimeGoalMinutes / 60
+            : resolvedAverageHours
 
-        let projection = ProjectionCalculator.calculateProjectionFromDaily(
+        averageDailyHours = resolvedAverageHours
+        selectedGoalHours = min(max(storedGoalHours, 0), maxSliderHours)
+
+        averageGridData = buildGridData(
             currentAge: currentAge,
             targetAge: targetAge,
-            dailyHours: dailyAvgHours > 0 ? dailyAvgHours : SharedConstants.DefaultValues.defaultDailyAvgHours
+            dailyHours: averageDailyHours
         )
 
-        let gridData = ProjectionCalculator.calculateLifeGrid(
+        goalGridData = buildGridData(
             currentAge: currentAge,
             targetAge: targetAge,
-            monthsOnPhone: projection.monthsOnPhone
+            dailyHours: selectedGoalHours
         )
+    }
 
-        self.lifeGridData = gridData
+    func updateGoalHours(_ hours: Double) {
+        let clampedHours = min(max(hours, 0), maxSliderHours)
+        guard clampedHours != selectedGoalHours else { return }
+
+        selectedGoalHours = clampedHours
+        AppGroupManager.shared.screenTimeGoalMinutes = clampedHours * 60
+
+        let currentAge = max(AppGroupManager.shared.currentAge, 1)
+        let targetAge = max(AppGroupManager.shared.targetAge, currentAge)
+
+        goalGridData = buildGridData(
+            currentAge: currentAge,
+            targetAge: targetAge,
+            dailyHours: selectedGoalHours
+        )
     }
 
     /// Refresh chart data
     func refresh() {
         loadData()
+    }
+
+    // MARK: - Private Methods
+
+    private func resolveAverageDailyHours(currentAge: Int, targetAge: Int) -> Double {
+        let onboardingWakingPercent = AppGroupManager.shared.onboardingWakingPercent
+        if onboardingWakingPercent > 0 {
+            return (onboardingWakingPercent / 100) * SharedConstants.DefaultValues.wakeHoursPerDay
+        }
+
+        let projectedYears = AppGroupManager.shared.onboardingProjectedYears
+        if projectedYears > 0, targetAge > currentAge {
+            let remainingYears = Double(targetAge - currentAge)
+            let derivedHours = (projectedYears * SharedConstants.DefaultValues.hoursPerYear) / (remainingYears * 365)
+            if derivedHours > 0 {
+                return derivedHours
+            }
+        }
+
+        let storedGoalHours = AppGroupManager.shared.screenTimeGoalMinutes / 60
+        if storedGoalHours > 0 {
+            return storedGoalHours
+        }
+
+        return SharedConstants.DefaultValues.defaultDailyAvgHours
+    }
+
+    private func buildGridData(currentAge: Int, targetAge: Int, dailyHours: Double) -> LifeGridData {
+        let projection = ProjectionCalculator.calculateProjectionFromDaily(
+            currentAge: currentAge,
+            targetAge: targetAge,
+            dailyHours: dailyHours
+        )
+
+        return ProjectionCalculator.calculateLifeGrid(
+            currentAge: currentAge,
+            targetAge: targetAge,
+            monthsOnPhone: projection.monthsOnPhone
+        )
     }
 }

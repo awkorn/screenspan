@@ -1,95 +1,125 @@
 import SwiftUI
 
 /// Reusable grid component displaying months of life
-/// Each square represents one month, colored by activity type
-/// Colors: blue (lived), red (phone-consumed), gray (free)
+/// Colors: blue (lived), red (screen time), gray (remaining)
 struct LifeGridView: View {
-    let gridData: LifeGridData
-    private let columnCount = 12
+    let goalGridData: LifeGridData
+    let averageGridData: LifeGridData?
+    let comparisonProgress: Double?
 
-    private var months: [GridMonth] {
-        var generatedMonths: [GridMonth] = []
+    private let columnCount = 26
+    private let cellSpacing: CGFloat = 4
+    private let livedColor = Color(hex: "#0063D6")
+    private let screenTimeColor = Color(hex: "#F63232")
+    private let remainingColor = Color(hex: "#D9D9D9")
 
-        // Generate months: lived first, then phone-consumed, then free
-        for i in 0..<gridData.monthsLived {
-            generatedMonths.append(GridMonth(id: i, status: .lived))
+    private var rowCount: Int {
+        Int(ceil(Double(goalGridData.totalMonths) / Double(columnCount)))
+    }
+
+    private var gridCells: [GridMonth.Status] {
+        let totalCellCount = rowCount * columnCount
+
+        guard
+            let averageGridData,
+            let comparisonProgress,
+            averageGridData.phoneMonths != goalGridData.phoneMonths
+        else {
+            return scaledCells(for: goalGridData, cellCount: totalCellCount)
         }
 
-        for i in gridData.monthsLived..<(gridData.monthsLived + gridData.phoneMonths) {
-            generatedMonths.append(GridMonth(id: i, status: .phoneConsumed))
+        let splitColumns = min(max(Int((comparisonProgress * Double(columnCount)).rounded()), 1), columnCount - 1)
+        let goalColumns = splitColumns
+        let averageColumns = columnCount - splitColumns
+        let goalCells = scaledCells(for: goalGridData, cellCount: rowCount * goalColumns)
+        let averageCells = scaledCells(for: averageGridData, cellCount: rowCount * averageColumns)
+
+        var combinedCells: [GridMonth.Status] = []
+        combinedCells.reserveCapacity(totalCellCount)
+
+        for row in 0..<rowCount {
+            let goalStart = row * goalColumns
+            let averageStart = row * averageColumns
+
+            combinedCells.append(contentsOf: goalCells[goalStart..<(goalStart + goalColumns)])
+            combinedCells.append(contentsOf: averageCells[averageStart..<(averageStart + averageColumns)])
         }
 
-        for i in (gridData.monthsLived + gridData.phoneMonths)..<gridData.totalMonths {
-            generatedMonths.append(GridMonth(id: i, status: .free))
-        }
-
-        return generatedMonths
+        return combinedCells
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            // MARK: - Grid
-            gridContent
+        VStack(alignment: .leading, spacing: 16) {
+            Text("1 square = 1 month")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Color(hex: "#595959"))
 
-            // MARK: - Legend
-            legend
+            gridContent
         }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 16)
+        .background(Color.white)
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(livedColor.opacity(0.18), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 
     private var gridContent: some View {
-        VStack(spacing: 8) {
-            let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: columnCount)
+        GeometryReader { proxy in
+            let cellSize = max((proxy.size.width - (CGFloat(columnCount - 1) * cellSpacing)) / CGFloat(columnCount), 6)
+            let columns = Array(
+                repeating: GridItem(.fixed(cellSize), spacing: cellSpacing, alignment: .top),
+                count: columnCount
+            )
 
-            LazyVGrid(columns: columns, spacing: 6) {
-                ForEach(0..<months.count, id: \.self) { index in
-                    let month = months[index]
-
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(colorForMonth(month))
-                        .aspectRatio(1, contentMode: .fit)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
-                        )
+            LazyVGrid(columns: columns, spacing: cellSpacing) {
+                ForEach(Array(gridCells.enumerated()), id: \.offset) { _, status in
+                    RoundedRectangle(cornerRadius: 3.2, style: .continuous)
+                        .fill(color(for: status))
+                        .frame(width: cellSize, height: cellSize)
                 }
             }
         }
+        .frame(height: gridHeight)
     }
 
-    private var legend: some View {
-        VStack(spacing: 10) {
-            Text("1 square = 1 month")
-                .font(.caption2)
-                .foregroundColor(Color(hex: "#A8DADC"))
+    private var gridHeight: CGFloat {
+        let screenWidth = UIScreen.main.bounds.width - 48
+        let cellSize = max((screenWidth - (CGFloat(columnCount - 1) * cellSpacing)) / CGFloat(columnCount), 6)
+        return (CGFloat(rowCount) * cellSize) + (CGFloat(max(rowCount - 1, 0)) * cellSpacing)
+    }
 
-            HStack(spacing: 16) {
-                legendItem(color: Color(hex: "#457B9D"), label: "Lived")
-                legendItem(color: Color(hex: "#E63946"), label: "Phone Time")
-                legendItem(color: Color(hex: "#A8DADC"), label: "Free")
-            }
+    private func scaledCells(for gridData: LifeGridData, cellCount: Int) -> [GridMonth.Status] {
+        let totalMonths = max(gridData.totalMonths, 1)
+        var livedCount = Int((Double(gridData.monthsLived) / Double(totalMonths) * Double(cellCount)).rounded())
+        var screenTimeCount = Int((Double(gridData.phoneMonths) / Double(totalMonths) * Double(cellCount)).rounded())
+        let remainingCount = max(cellCount - livedCount - screenTimeCount, 0)
+
+        let overflow = livedCount + screenTimeCount + remainingCount - cellCount
+        if overflow > 0 {
+            screenTimeCount = max(screenTimeCount - overflow, 0)
         }
+
+        livedCount = min(livedCount, cellCount)
+        screenTimeCount = min(screenTimeCount, max(cellCount - livedCount, 0))
+
+        let finalRemainingCount = max(cellCount - livedCount - screenTimeCount, 0)
+
+        return Array(repeating: .lived, count: livedCount)
+            + Array(repeating: .phoneConsumed, count: screenTimeCount)
+            + Array(repeating: .free, count: finalRemainingCount)
     }
 
-    private func legendItem(color: Color, label: String) -> some View {
-        HStack(spacing: 6) {
-            Circle()
-                .fill(color)
-                .frame(width: 10, height: 10)
-
-            Text(label)
-                .font(.caption)
-                .foregroundColor(Color(hex: "#1B2A4A"))
-        }
-    }
-
-    private func colorForMonth(_ month: GridMonth) -> Color {
-        switch month.status {
+    private func color(for status: GridMonth.Status) -> Color {
+        switch status {
         case .lived:
-            return Color(hex: "#457B9D")
+            return livedColor
         case .phoneConsumed:
-            return Color(hex: "#E63946")
+            return screenTimeColor
         case .free:
-            return Color(hex: "#A8DADC")
+            return remainingColor
         }
     }
 }

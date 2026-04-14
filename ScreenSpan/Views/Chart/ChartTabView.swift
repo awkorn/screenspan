@@ -1,139 +1,149 @@
 import SwiftUI
 
 /// Life grid chart tab
-/// Displays a visual grid representing months of life and phone consumption
-/// In production, this view renders within the extension.
-/// The LifeGridView component shows the grid of months colored by activity.
 struct ChartTabView: View {
     @State private var viewModel = ChartViewModel()
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // MARK: - Grid Title
-                    VStack(spacing: 8) {
-                        Text("Life Grid")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(Color(hex: "#1B2A4A"))
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 28) {
+                sliderSection
+                    .padding(.top, 28)
 
-                        Text("Each square represents one month of your life")
-                            .font(.caption)
-                            .foregroundColor(Color(hex: "#A8DADC"))
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
+                LifeGridView(
+                    goalGridData: viewModel.goalGridData,
+                    averageGridData: viewModel.shouldShowComparison ? viewModel.averageGridData : nil,
+                    comparisonProgress: viewModel.shouldShowComparison ? viewModel.comparisonProgress : nil
+                )
 
-                    // MARK: - Life Grid
-                    VStack(spacing: 16) {
-                        LifeGridView(gridData: viewModel.gridData)
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(12)
-                            .padding(.horizontal)
-                    }
-
-                    // MARK: - Legend
-                    legendSection
-
-                    // MARK: - Summary
-                    summarySection
-
-                    Spacer()
-                }
-                .padding(.vertical)
+                legendSection
+                    .padding(.bottom, 12)
             }
-            .navigationTitle("Life Grid")
-            .navigationBarTitleDisplayMode(.inline)
-            .background(Color(hex: "#F8F9FA"))
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
+        }
+        .background(Color.white.ignoresSafeArea())
+        .task {
+            viewModel.loadData()
         }
     }
 
-    // MARK: - Legend Section
-    private var legendSection: some View {
-        VStack(spacing: 12) {
-            Text("Legend")
-                .font(.headline)
-                .foregroundColor(Color(hex: "#1B2A4A"))
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            HStack(spacing: 20) {
-                legendItem(
-                    color: Color(hex: "#457B9D"),
-                    label: "Lived"
-                )
-
-                legendItem(
-                    color: Color(hex: "#E63946"),
-                    label: "Phone Time"
-                )
-
-                legendItem(
-                    color: Color(hex: "#A8DADC"),
-                    label: "Free"
-                )
-            }
-            .padding()
-            .background(Color.white)
-            .cornerRadius(12)
-        }
-        .padding(.horizontal)
-    }
-
-    // MARK: - Summary Section
-    private var summarySection: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Phone vs Life")
-                        .font(.headline)
-                        .foregroundColor(Color(hex: "#1B2A4A"))
-
-                    Text("Last 30 days")
-                        .font(.caption)
-                        .foregroundColor(Color(hex: "#A8DADC"))
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("35%")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .foregroundColor(Color(hex: "#E63946"))
-
-                    Text("of waking hours")
-                        .font(.caption2)
-                        .foregroundColor(Color(hex: "#A8DADC"))
-                }
-            }
-            .padding()
-            .background(
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color(hex: "#E63946").opacity(0.1),
-                        Color(hex: "#457B9D").opacity(0.05)
-                    ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+    private var sliderSection: some View {
+        VStack(spacing: 8) {
+            GoalComparisonSlider(
+                value: Binding(
+                    get: { viewModel.selectedGoalHours },
+                    set: { viewModel.updateGoalHours($0) }
+                ),
+                maxValue: viewModel.maxSliderHours
             )
-            .cornerRadius(12)
         }
-        .padding(.horizontal)
     }
 
-    // MARK: - Helper: Legend Item
+    private var legendSection: some View {
+        HStack(spacing: 24) {
+            legendItem(color: Color(hex: "#0063D6"), label: "Lived")
+            legendItem(color: Color(hex: "#F63232"), label: "Screen time")
+            legendItem(color: Color(hex: "#D9D9D9"), label: "Remaining")
+        }
+        .frame(maxWidth: .infinity)
+    }
+
     private func legendItem(color: Color, label: String) -> some View {
         HStack(spacing: 8) {
             Circle()
                 .fill(color)
-                .frame(width: 12, height: 12)
+                .frame(width: 14, height: 14)
 
             Text(label)
-                .font(.caption)
-                .foregroundColor(Color(hex: "#1B2A4A"))
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(.black)
         }
+    }
+}
+
+private struct GoalComparisonSlider: View {
+    @Binding var value: Double
+    let maxValue: Double
+
+    private let trackHeight: CGFloat = 7
+    private let thumbWidth: CGFloat = 34
+    private let thumbHeight: CGFloat = 22
+
+    private var normalizedProgress: Double {
+        guard maxValue > 0 else { return 0 }
+        return min(max(value / maxValue, 0), 1)
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            let progress = normalizedProgress
+            let thumbX = progress * width
+
+            VStack(spacing: 10) {
+                HStack {
+                    Text("0h")
+                    Spacer()
+                    Text(formattedHours(maxValue))
+                }
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(Color(hex: "#595959"))
+
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color(hex: "#D9D9D9"))
+                        .frame(height: trackHeight)
+
+                    Capsule()
+                        .fill(Color(hex: "#C82020"))
+                        .frame(width: max(thumbX, 0), height: trackHeight)
+
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .fill(Color(hex: "#F4F4F4"))
+                        .frame(width: thumbWidth, height: thumbHeight)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                                .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                        )
+                        .offset(x: min(max(thumbX - (thumbWidth / 2), 0), width - thumbWidth))
+                }
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { gesture in
+                            let clampedX = min(max(gesture.location.x, 0), width)
+                            let newValue = (clampedX / width) * maxValue
+                            value = (newValue * 10).rounded() / 10
+                        }
+                )
+
+                ZStack(alignment: .leading) {
+                    Text("Goal")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Color(hex: "#595959"))
+                        .position(
+                            x: min(max(thumbX, 24), max(width - 24, 24)),
+                            y: 10
+                        )
+
+                    Text("Avg")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Color(hex: "#595959"))
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+                .frame(height: 20)
+            }
+        }
+        .frame(height: 84)
+    }
+
+    private func formattedHours(_ hours: Double) -> String {
+        let roundedHours = (hours * 10).rounded() / 10
+        if roundedHours == roundedHours.rounded() {
+            return "\(Int(roundedHours))h"
+        }
+
+        return String(format: "%.1fh", roundedHours)
     }
 }
