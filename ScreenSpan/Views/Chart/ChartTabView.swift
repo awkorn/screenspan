@@ -86,7 +86,7 @@ private struct GoalComparisonSlider: View {
                     Spacer()
                     Text(formattedHours(maxValue))
                 }
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Color(hex: "#595959"))
 
                 ZStack(alignment: .leading) {
@@ -124,7 +124,7 @@ private struct GoalComparisonSlider: View {
 
                 ZStack(alignment: .leading) {
                     Text("Goal")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Color(hex: "#595959"))
                         .position(
                             x: min(max(goalMarkerX, 24), max(width - 24, 24)),
@@ -132,7 +132,7 @@ private struct GoalComparisonSlider: View {
                         )
 
                     Text("Avg")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Color(hex: "#595959"))
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }

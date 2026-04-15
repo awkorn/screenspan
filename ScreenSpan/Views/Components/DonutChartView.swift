@@ -32,7 +32,7 @@ struct DonutChartView: View {
 
                 Circle()
                     .trim(from: 0, to: phonePercentage / 100)
-                    .stroke(Color(hex: "#F63232"), style: StrokeStyle(lineWidth: ringWidth, lineCap: .round))
+                    .stroke(Color(hex: "#F63232"), style: StrokeStyle(lineWidth: ringWidth, lineCap: .butt))
                     .rotationEffect(.degrees(-90))
 
                 Circle()
