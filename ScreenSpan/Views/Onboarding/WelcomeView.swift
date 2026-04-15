@@ -18,13 +18,13 @@ struct WelcomeView: View {
                     .foregroundColor(titleColor)
 
                 Text("How much of your life will you spend on your phone?")
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.geist(size: 20, weight: .semibold))
                     .foregroundColor(subtitleColor)
                     .lineSpacing(1)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text("Gain it back.")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.geist(size: 17, weight: .semibold))
                     .foregroundColor(accentColor)
                     .padding(.top, 4)
             }

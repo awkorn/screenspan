@@ -33,7 +33,7 @@ struct AgeInputView: View {
                     }
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .regular))
+                        .font(.geist(size: 18))
                         .foregroundColor(titleColor)
                         .frame(width: 28, height: 28)
                 }
@@ -45,13 +45,13 @@ struct AgeInputView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("Enter your date of birth")
-                    .font(.system(size: 28, weight: .bold))
+                    .font(.geist(size: 28, weight: .bold))
                     .foregroundColor(titleColor)
                     .minimumScaleFactor(0.75)
                     .lineLimit(2)
 
                 Text("This will be used in your calculation")
-                    .font(.system(size: 18, weight: .regular))
+                    .font(.geist(size: 18))
                     .foregroundColor(subtitleColor)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -75,11 +75,11 @@ struct AgeInputView: View {
 
             VStack(spacing: 8) {
                 Text("Default life expectancy")
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.geist(size: 16, weight: .medium))
                     .foregroundColor(titleColor)
 
                 Text("80 years")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.geist(size: 16, weight: .semibold))
                     .foregroundColor(titleColor)
             }
             .frame(maxWidth: .infinity)

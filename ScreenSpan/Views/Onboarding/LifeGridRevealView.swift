@@ -77,7 +77,7 @@ struct LifeGridRevealView: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Your projected life chart")
-                    .font(.system(size: 28, weight: .bold))
+                    .font(.geist(size: 28, weight: .bold))
                     .foregroundStyle(titleColor)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -85,7 +85,7 @@ struct LifeGridRevealView: View {
             .padding(.horizontal, horizontalPadding)
 
             Text("1 square = 1 month")
-                .font(.system(size: 11))
+                .font(.geist(size: 11))
                 .foregroundStyle(titleColor.opacity(0.6))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 12)
@@ -108,10 +108,10 @@ struct LifeGridRevealView: View {
             } label: {
                 HStack(spacing: 8) {
                     Text("Reclaim your life")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.geist(size: 15, weight: .semibold))
 
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.geist(size: 15, weight: .semibold))
                         .scaleEffect(arrowPulse ? 1.15 : 0.95)
                         .opacity(arrowPulse ? 1 : 0.7)
                         .animation(
@@ -161,7 +161,7 @@ struct LifeGridRevealView: View {
                 .frame(width: 7, height: 7)
 
             Text(label)
-                .font(.system(size: 12))
+                .font(.geist(size: 12))
                 .foregroundStyle(titleColor)
         }
     }

@@ -20,7 +20,7 @@ struct PermissionRequestView: View {
                     }
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .regular))
+                        .font(.geist(size: 18))
                         .foregroundColor(titleColor)
                         .frame(width: 28, height: 28)
                 }
@@ -32,12 +32,12 @@ struct PermissionRequestView: View {
 
             VStack(spacing: 8) {
                 Text("Screen Time Access")
-                    .font(.system(size: 28, weight: .bold))
+                    .font(.geist(size: 28, weight: .bold))
                     .foregroundColor(titleColor)
                     .multilineTextAlignment(.center)
 
                 Text("We need your permission")
-                    .font(.system(size: 18, weight: .regular))
+                    .font(.geist(size: 18))
                     .foregroundColor(subtitleColor)
                     .multilineTextAlignment(.center)
             }
@@ -119,7 +119,7 @@ struct PermissionExplanationCard: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 15, weight: .semibold))
+                .font(.geist(size: 15, weight: .semibold))
                 .foregroundColor(iconColor)
                 .frame(width: 28, height: 28)
                 .background(iconBackgroundColor)
@@ -127,12 +127,12 @@ struct PermissionExplanationCard: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.geist(size: 16, weight: .semibold))
                     .foregroundColor(titleColor)
                     .lineLimit(2)
 
                 Text(description)
-                    .font(.system(size: 12, weight: .regular))
+                    .font(.geist(size: 12))
                     .foregroundColor(descriptionColor)
                     .lineSpacing(1.5)
                     .fixedSize(horizontal: false, vertical: true)

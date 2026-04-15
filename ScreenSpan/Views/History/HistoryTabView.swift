@@ -17,9 +17,15 @@ struct HistoryTabView: View {
                     lockedContent
                 }
             }
-            .navigationTitle("History")
             .navigationBarTitleDisplayMode(.inline)
             .background(Color(hex: "#F8F9FA"))
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("History")
+                        .font(.geist(.headline, weight: .semibold))
+                        .foregroundStyle(Color(hex: "#1B2A4A"))
+                }
+            }
             .sheet(isPresented: $showPaywall) {
                 HistoryPaywallSheet(isPresented: $showPaywall)
             }
@@ -55,16 +61,16 @@ struct HistoryTabView: View {
 
             VStack(spacing: 16) {
                 Image(systemName: "lock.fill")
-                    .font(.system(size: 48))
+                    .font(.geist(size: 48))
                     .foregroundColor(Color(hex: "#E63946"))
 
                 VStack(spacing: 8) {
                     Text("Upgrade to unlock trends")
-                        .font(.headline)
+                        .font(.geist(.headline))
                         .foregroundColor(Color(hex: "#1B2A4A"))
 
                     Text("See how your screen time has evolved over time and identify patterns to improve your digital wellness.")
-                        .font(.subheadline)
+                        .font(.geist(.subheadline))
                         .foregroundColor(Color(hex: "#A8DADC"))
                         .multilineTextAlignment(.center)
                 }
@@ -76,10 +82,10 @@ struct HistoryTabView: View {
             Button(action: { showPaywall = true }) {
                 HStack {
                     Text("Upgrade to Premium")
-                        .font(.headline)
+                        .font(.geist(.headline))
 
                     Image(systemName: "arrow.right")
-                        .font(.subheadline)
+                        .font(.geist(.subheadline))
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
@@ -99,7 +105,7 @@ struct HistoryTabView: View {
             ForEach(["1M", "3M", "6M", "1Y"], id: \.self) { period in
                 Button(action: { viewModel.selectedPeriod = period }) {
                     Text(period)
-                        .font(.caption)
+                        .font(.geist(.caption))
                         .fontWeight(.semibold)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
@@ -127,7 +133,7 @@ struct HistoryTabView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Trend")
                     .textCase( .uppercase )
-                    .font(.caption)
+                    .font(.geist(.caption))
                     .foregroundColor(Color(hex: "#A8DADC"))
                 
                 HStack(spacing: 4) {
@@ -135,7 +141,7 @@ struct HistoryTabView: View {
                         .foregroundColor(Color(hex: "#457B9D"))
 
                     Text("12.5% decrease")
-                        .font(.headline)
+                        .font(.geist(.headline))
                         .foregroundColor(Color(hex: "#1B2A4A"))
                 }
             }
@@ -143,7 +149,7 @@ struct HistoryTabView: View {
             Spacer()
 
             Text("vs previous period")
-                .font(.caption2)
+                .font(.geist(.caption2))
                 .foregroundColor(Color(hex: "#A8DADC"))
         }
         .padding()
@@ -155,7 +161,7 @@ struct HistoryTabView: View {
     private var chartSection: some View {
         VStack(spacing: 12) {
             Text("Screen Time Trend")
-                .font(.headline)
+                .font(.geist(.headline))
                 .foregroundColor(Color(hex: "#1B2A4A"))
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -198,11 +204,11 @@ struct HistoryTabView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Life Reclaimed")
-                        .font(.headline)
+                        .font(.geist(.headline))
                         .foregroundColor(Color(hex: "#1B2A4A"))
 
                     Text("Last 3 months")
-                        .font(.caption)
+                        .font(.geist(.caption))
                         .foregroundColor(Color(hex: "#A8DADC"))
                 }
 
@@ -210,13 +216,13 @@ struct HistoryTabView: View {
 
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("28h 30m")
-                        .font(.title3)
+                        .font(.geist(.title3))
                         .fontWeight(.semibold)
                         .foregroundColor(Color(hex: "#457B9D"))
 
                     Text("of screen time reduced"
                     )
-                        .font(.caption2)
+                        .font(.geist(.caption2))
                         .foregroundColor(Color(hex: "#A8DADC"))
                 }
             }
@@ -244,7 +250,7 @@ struct HistoryPaywallSheet: View {
         NavigationStack {
             VStack {
                 Text("Upgrade to Premium")
-                    .font(.title)
+                    .font(.geist(.title))
                     .fontWeight(.bold)
 
                 Spacer()
@@ -269,9 +275,17 @@ struct HistoryPaywallSheet: View {
             .padding()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Premium")
+                        .font(.geist(.headline, weight: .semibold))
+                        .foregroundStyle(Color(hex: "#1B2A4A"))
+                }
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Close") {
+                    Button {
                         isPresented = false
+                    } label: {
+                        Text("Close")
+                            .font(.geist(.body))
                     }
                 }
             }
@@ -285,11 +299,11 @@ struct HistoryPaywallSheet: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.headline)
+                    .font(.geist(.headline))
                     .foregroundColor(Color(hex: "#1B2A4A"))
 
                 Text(description)
-                    .font(.caption)
+                    .font(.geist(.caption))
                     .foregroundColor(Color(hex: "#A8DADC"))
             }
 

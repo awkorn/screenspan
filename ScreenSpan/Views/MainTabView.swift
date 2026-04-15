@@ -44,7 +44,7 @@ struct MainTabView: View {
                 selectedTab = .settings
             } label: {
                 Image(systemName: "ellipsis")
-                    .font(.system(size: 28, weight: .semibold))
+                    .font(.geist(size: 28, weight: .semibold))
                     .foregroundStyle(selectedTab == .settings ? .white : Color(hex: "#5E5E5E"))
                     .frame(width: 62, height: 62)
                     .background(selectedTab == .settings ? Color(hex: "#102847") : Color(hex: "#F0F2F6"))
@@ -64,10 +64,10 @@ struct MainTabView: View {
         } label: {
             VStack(spacing: 4) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.geist(size: 16, weight: .medium))
 
                 Text(title)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.geist(size: 12, weight: .semibold))
             }
             .foregroundStyle(selectedTab == tab ? .white : Color(hex: "#5E5E5E"))
             .frame(maxWidth: .infinity)

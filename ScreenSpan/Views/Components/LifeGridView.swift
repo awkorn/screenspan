@@ -23,7 +23,7 @@ struct LifeGridView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("1 square = 1 month")
-                .font(.system(size: 12, weight: .medium))
+                .font(.geist(size: 12, weight: .medium))
                 .foregroundStyle(Color(hex: "#595959"))
 
             gridContent

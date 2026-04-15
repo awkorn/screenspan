@@ -22,6 +22,7 @@ targets:
       path: ScreenSpan/Info.plist
       uses: [.plist]
       properties:
+        UILaunchStoryboardName: LaunchScreen
         UIAppFonts:
           - GeistVF.ttf
           - GeistItalicVF.ttf
@@ -32,6 +33,7 @@ targets:
       uses: [.plist]
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.app
+      TARGETED_DEVICE_FAMILY: 1
       CODE_SIGNING_ALLOWED: NO
       CODE_SIGNING_REQUIRED: NO
     dependencies:
@@ -48,10 +50,17 @@ targets:
         excludes:
           - "*.entitlements"
       - path: Shared
+      - path: ScreenSpan/Resources/Fonts/Geist
+        buildPhase: resources
     info:
       path: ScreenSpanReport/Info.plist
       uses: [.plist]
       properties:
+        UIAppFonts:
+          - GeistVF.ttf
+          - GeistItalicVF.ttf
+          - GeistMonoVF.ttf
+          - GeistMonoItalicVF.ttf
         EXAppExtensionAttributes:
           EXExtensionPointIdentifier: com.apple.deviceactivityui.report-extension
     entitlements:
@@ -59,6 +68,7 @@ targets:
       uses: [.plist]
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.app.report
+      TARGETED_DEVICE_FAMILY: 1
       CODE_SIGNING_ALLOWED: NO
       CODE_SIGNING_REQUIRED: NO
     frameworks:

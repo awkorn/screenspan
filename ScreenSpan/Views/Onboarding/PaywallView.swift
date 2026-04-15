@@ -73,7 +73,7 @@ struct PaywallView: View {
                     }
                 } label: {
                     Text("Maybe later")
-                        .font(.system(size: 15, weight: .regular))
+                        .font(.geist(size: 15))
                         .foregroundColor(subtitleColor)
                 }
                 .buttonStyle(.plain)
@@ -95,11 +95,11 @@ struct PaywallView: View {
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Get your time back")
-                .font(.system(size: 28, weight: .bold))
+                .font(.geist(size: 28, weight: .bold))
                 .foregroundColor(titleColor)
 
             Text("Reclaim those \(reclaimedYearsRounded) years of your life")
-                .font(.system(size: 18, weight: .regular))
+                .font(.geist(size: 18))
                 .foregroundColor(subtitleColor)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -108,17 +108,17 @@ struct PaywallView: View {
     private func benefitCard(icon: String, title: String, subtitle: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.geist(size: 16, weight: .semibold))
                 .foregroundColor(iconColor)
                 .frame(width: 20)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.geist(size: 16, weight: .semibold))
                     .foregroundColor(cardTitleColor)
 
                 Text(subtitle)
-                    .font(.system(size: 12, weight: .regular))
+                    .font(.geist(size: 12))
                     .foregroundColor(cardSubtitleColor)
             }
 
@@ -133,7 +133,7 @@ struct PaywallView: View {
     private var trialCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Free trial: 7 days")
-                .font(.system(size: 16, weight: .semibold))
+                .font(.geist(size: 16, weight: .semibold))
                 .foregroundColor(cardTitleColor)
 
             VStack(spacing: 4) {
@@ -163,7 +163,7 @@ struct PaywallView: View {
                     Spacer()
                     Text("Day 7")
                 }
-                .font(.system(size: 12))
+                .font(.geist(size: 12))
                 .foregroundColor(cardSubtitleColor)
             }
         }
@@ -181,12 +181,12 @@ struct PaywallView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(plan == .monthly ? "Monthly" : "Annual")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.geist(size: 16, weight: .semibold))
                         .foregroundColor(cardTitleColor)
 
                     if plan == .annual {
                         Text("Save 58%")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.geist(size: 12, weight: .semibold))
                             .foregroundColor(.white)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
@@ -199,11 +199,11 @@ struct PaywallView: View {
 
                 VStack(alignment: .trailing, spacing: 3) {
                     Text(plan == .monthly ? "$4.99" : "$29.99")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.geist(size: 16, weight: .semibold))
                         .foregroundColor(moneyColor)
 
                     Text(plan == .monthly ? "per month" : "per year")
-                        .font(.system(size: 13))
+                        .font(.geist(size: 13))
                         .foregroundColor(cardSubtitleColor)
                 }
             }
@@ -229,7 +229,7 @@ struct PaywallView: View {
             // TODO: Wire legal actions
         } label: {
             Text(title)
-                .font(.system(size: 12))
+                .font(.geist(size: 12))
                 .foregroundColor(cardSubtitleColor)
         }
         .buttonStyle(.plain)

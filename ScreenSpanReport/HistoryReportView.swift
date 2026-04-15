@@ -36,6 +36,7 @@ struct HistoryReportView: View {
             }
             .padding()
         }
+        .font(.geist(.body))
         .onAppear {
             if isPremium {
                 generateWeeklyData()
@@ -84,7 +85,7 @@ struct PremiumHistoryContent: View {
             // Weekly Trend Chart
             VStack(spacing: 12) {
                 Text("Weekly Average")
-                    .font(.headline)
+                    .font(.geist(.headline))
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 if hasLoadedData && !weeklyData.isEmpty {
@@ -156,22 +157,22 @@ struct PremiumGateView: View {
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "lock.fill")
-                .font(.system(size: 48))
+                .font(.geist(size: 48))
                 .foregroundColor(.screenSpanBlue)
 
             VStack(spacing: 8) {
                 Text("Premium Feature")
-                    .font(.headline)
+                    .font(.geist(.headline))
 
                 Text("Weekly trends and insights are available with a Premium subscription.")
-                    .font(.body)
+                    .font(.geist(.body))
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
             }
 
             Button(action: {}) {
                 Text("Upgrade to Premium")
-                    .font(.headline)
+                    .font(.geist(.headline))
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color.screenSpanBlue)
@@ -190,14 +191,14 @@ struct EmptyStateView: View {
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: "chart.bar")
-                .font(.title2)
+                .font(.geist(.title2))
                 .foregroundColor(.gray)
 
             Text("Not Enough Data")
-                .font(.headline)
+                .font(.geist(.headline))
 
             Text("Check back after tracking for a full week to see trends.")
-                .font(.caption)
+                .font(.geist(.caption))
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
         }
@@ -225,16 +226,16 @@ struct TrendDeltaCard: View {
     var body: some View {
         HStack {
             Text(label)
-                .font(.body)
+                .font(.geist(.body))
                 .foregroundColor(.gray)
 
             Spacer()
 
             HStack(spacing: 4) {
                 Image(systemName: delta < 0 ? "arrow.down" : "arrow.up")
-                    .font(.caption)
+                    .font(.geist(.caption))
                 Text(deltaLabel)
-                    .font(.headline)
+                    .font(.geist(.headline))
             }
             .foregroundColor(deltaColor)
         }
@@ -253,7 +254,7 @@ struct LifeReclaimedCallout: View {
                 .foregroundColor(.screenSpanBlue)
 
             Text(message)
-                .font(.body)
+                .font(.geist(.body))
                 .foregroundColor(.primary)
 
             Spacer()
@@ -279,7 +280,7 @@ struct CelebrationMessage: View {
 
     var body: some View {
         Text(celebrationText)
-            .font(.caption)
+            .font(.geist(.caption))
             .foregroundColor(.screenSpanBlue)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding()

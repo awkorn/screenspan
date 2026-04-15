@@ -41,12 +41,12 @@ struct DonutChartView: View {
 
                 VStack(spacing: 6) {
                     Text(formattedPercentage)
-                        .font(.system(size: size * 0.16, weight: .bold))
+                        .font(.geist(size: size * 0.16, weight: .bold))
                         .foregroundStyle(Color(hex: "#0D141C"))
                         .monospacedDigit()
 
                     Text("of your waking life")
-                        .font(.system(size: size * 0.06, weight: .semibold))
+                        .font(.geist(size: size * 0.06, weight: .semibold))
                         .foregroundStyle(Color(hex: "#595959"))
                 }
                 .multilineTextAlignment(.center)
@@ -86,7 +86,7 @@ struct DonutChartView: View {
                 .frame(width: 8, height: 8)
 
             Text(label)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.geist(size: 12, weight: .semibold))
                 .foregroundStyle(Color(hex: "#0D141C"))
         }
     }

@@ -16,6 +16,13 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>GeistVF.ttf</string>
+		<string>GeistItalicVF.ttf</string>
+		<string>GeistMonoVF.ttf</string>
+		<string>GeistMonoItalicVF.ttf</string>
+	</array>
 	<key>EXAppExtensionAttributes</key>
 	<dict>
 		<key>EXExtensionPointIdentifier</key>

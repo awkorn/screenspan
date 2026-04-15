@@ -27,7 +27,6 @@ struct OnboardingContainerView: View {
                         PaywallView(viewModel: viewModel)
                     }
                 }
-                .font(.system(size: 17))
                 .transition(.opacity.combined(with: .move(edge: .trailing)))
             }
         }

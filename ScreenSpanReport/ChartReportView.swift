@@ -22,12 +22,12 @@ struct ChartReportView: View {
                 // Title
                 VStack(spacing: 8) {
                     Text("Your Life Grid")
-                        .font(.title2)
+                        .font(.geist(.title2))
                         .fontWeight(.bold)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     Text("Each square represents one week. Blue shows weeks you've reclaimed.")
-                        .font(.caption)
+                        .font(.geist(.caption))
                         .foregroundColor(.gray)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -56,7 +56,7 @@ struct ChartReportView: View {
                                 .fill(Color.screenSpanBlue)
                                 .frame(width: 12, height: 12)
                             Text("Reclaimed")
-                                .font(.caption)
+                                .font(.geist(.caption))
                         }
 
                         HStack(spacing: 8) {
@@ -64,7 +64,7 @@ struct ChartReportView: View {
                                 .fill(Color.screenSpanRed)
                                 .frame(width: 12, height: 12)
                             Text("Lived")
-                                .font(.caption)
+                                .font(.geist(.caption))
                         }
 
                         HStack(spacing: 8) {
@@ -72,7 +72,7 @@ struct ChartReportView: View {
                                 .fill(Color.screenSpanLightGray)
                                 .frame(width: 12, height: 12)
                             Text("Future")
-                                .font(.caption)
+                                .font(.geist(.caption))
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -99,6 +99,7 @@ struct ChartReportView: View {
             }
             .padding()
         }
+        .font(.geist(.body))
     }
 
     private func isWeekReclaimed(_ index: Int) -> Bool {
@@ -146,11 +147,11 @@ struct InfoRow: View {
     var body: some View {
         HStack {
             Text(label)
-                .font(.body)
+                .font(.geist(.body))
                 .foregroundColor(.gray)
             Spacer()
             Text(value)
-                .font(.headline)
+                .font(.geist(.headline))
                 .foregroundColor(.primary)
         }
         .padding()

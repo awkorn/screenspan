@@ -38,12 +38,12 @@ struct ProjectionRevealView: View {
             // Top status pill
             HStack(spacing: 8) {
                 Image(systemName: "hourglass")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.geist(size: 13, weight: .semibold))
                     .foregroundStyle(Color(hex: "C82020"))
                     .rotationEffect(.degrees(timerRotation))
 
                 Text("TIME ANALYSIS COMPLETE")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.geist(size: 14, weight: .semibold))
                     .foregroundStyle(Color(hex: "575757"))
             }
             .padding(.horizontal, 16)
@@ -61,7 +61,7 @@ struct ProjectionRevealView: View {
 
             VStack(spacing: 10) {
                 Text(yearsFormatted)
-                    .font(.system(size: 80, weight: .bold))
+                    .font(.geist(size: 80, weight: .bold))
                     .foregroundStyle(yearsTextColor)
                     .monospacedDigit()
                     .shadow(color: .black.opacity(0.20), radius: 2, x: 0, y: 2)
@@ -75,16 +75,16 @@ struct ProjectionRevealView: View {
                     )
 
                 Text("YEARS")
-                    .font(.system(size: 28, weight: .bold))
+                    .font(.geist(size: 28, weight: .bold))
                     .foregroundStyle(Color(hex: "C82020"))
 
                 Text("of your waking life")
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.geist(size: 20, weight: .semibold))
                     .italic()
                     .foregroundStyle(mutedColor)
 
                 Text("staring at your phone.")
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.geist(size: 24, weight: .bold))
                     .foregroundStyle(titleColor)
             }
             .multilineTextAlignment(.center)
@@ -94,11 +94,11 @@ struct ProjectionRevealView: View {
 
             HStack(spacing: 10) {
                 Image(systemName: "clock")
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.geist(size: 18, weight: .semibold))
                     .foregroundStyle(Color(hex: "D92A2A"))
 
                 Text("That’s \(percentageFormatted)% of every waking hour you have left.")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.geist(size: 16, weight: .semibold))
                     .foregroundStyle(titleColor)
                     .lineLimit(2)
 
@@ -125,10 +125,10 @@ struct ProjectionRevealView: View {
             } label: {
                 HStack(spacing: 8) {
                     Text("See your life, visualized")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.geist(size: 15, weight: .semibold))
 
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.geist(size: 15, weight: .semibold))
                         .foregroundStyle(.white)
                 }
                 .foregroundStyle(.white)

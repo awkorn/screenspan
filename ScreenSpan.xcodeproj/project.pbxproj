@@ -10,8 +10,10 @@
 		02A82E570EFC46C6635F0920 /* ScreenSpanReport.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = C8EA298EF7CB1876A1B306BF /* ScreenSpanReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		0F572863C112270027377EE5 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F4A4A71CB8C9A7C783A67D8 /* MainTabView.swift */; };
 		11CF3293D9AB51F1E145B07F /* DonutChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CBA21D08EA526F73C7A2E7F /* DonutChartView.swift */; };
+		167DBF2AC44011F5336F91DA /* GeistVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 27A0813948392BCAE1B3FCA3 /* GeistVF.ttf */; };
 		1C04A2C31387C6632D4B8737 /* Environment+ScreenSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98B2E6C7985B4098510525C /* Environment+ScreenSpan.swift */; };
 		1EF93A0969318E46DB80B9E8 /* UserGoal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8A84266D5C67D2A5DA73E8 /* UserGoal.swift */; };
+		1F2E15C436B13BB384055DC0 /* GeistMonoVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BE34D57A0A7DEE22E6C522B7 /* GeistMonoVF.ttf */; };
 		304900B8BDC5296E96DF6319 /* AppGroupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756444A3B2BC26E2CCD3993F /* AppGroupManager.swift */; };
 		340E77222A147F4C7E7E270F /* DeviceActivityReport+Contexts.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0F714E1B0C5B35DE43F7A7 /* DeviceActivityReport+Contexts.swift */; };
 		36E9E3C27D1C542C47003FF1 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9454C7ED8B41B24B9FC8F2ED /* AppConstants.swift */; };
@@ -25,9 +27,13 @@
 		47CD9456C5A021217B34D7CE /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
 		4A3615A03C774FAFD8D2ABB9 /* UserDefaults+AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C48EC6DDF3E57788CA87B /* UserDefaults+AppGroup.swift */; };
 		4AE75ABCD7B0AC96A6737209 /* OnboardingContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AC2AE376C93D5CA9A49DACE /* OnboardingContainerView.swift */; };
+		4B7F9D3C7FAC707351844A01 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A56375C9303772106FD27DA /* LaunchScreen.storyboard */; };
 		4BCCF2433646C026A195EBF9 /* LifeGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1379251AF5D1F8D8ACF4AAFB /* LifeGridView.swift */; };
+		4D42BF2AF42679266C007C6F /* GeistFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2210D930D532B57F4473C84 /* GeistFont.swift */; };
+		4DA70EE7E40E3A0E1C184C68 /* GeistFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2210D930D532B57F4473C84 /* GeistFont.swift */; };
 		50F8A89C5A98944613AECC53 /* UserDefaults+AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C48EC6DDF3E57788CA87B /* UserDefaults+AppGroup.swift */; };
 		5899087DD153621F52A860BE /* ProjectionCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C243C4B38CF92C03D01F92AB /* ProjectionCalculator.swift */; };
+		592C7462F3ADB44C070A8E3A /* GeistMonoItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D541E0CE886AB9530162F9E3 /* GeistMonoItalicVF.ttf */; };
 		5B0830CCC30FAF4B16FA4F4A /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DCF7DEE10E84FCB52021934 /* SettingsViewModel.swift */; };
 		5C367FC644651AFE4F80A3DB /* ScreenSpanReportExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68EB2E6FD7CF107932E803D2 /* ScreenSpanReportExtension.swift */; };
 		5E88766087C202317A5BEEC7 /* GeistMonoItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D541E0CE886AB9530162F9E3 /* GeistMonoItalicVF.ttf */; };
@@ -59,6 +65,7 @@
 		E497BD738F5227E4D7D4335D /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
 		E909B357CB330BF565FBA9B9 /* ProjectionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */; };
 		EEFC74152742F33836C9D61D /* Color+ScreenSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B64696CA1F5AF4236B8F96 /* Color+ScreenSpan.swift */; };
+		F420A4DEF7335FF818D107A2 /* GeistItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */; };
 		F51CE5698164331490E5433C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 086D3D5A2EE570B7E1E8DEBA /* Assets.xcassets */; };
 		F7250C587E1F3CB0892FDA1B /* ChartTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C81C7FF094260103C3D6646 /* ChartTabView.swift */; };
 		FE7DE6A2DD2B620D93E404D3 /* ProjectionRevealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E01766A5870C681061ABBAF /* ProjectionRevealView.swift */; };
@@ -101,6 +108,7 @@
 		39154E949451B6CF3E2EE0BE /* PermissionRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionRequestView.swift; sourceTree = "<group>"; };
 		3D0C74C00317100ECF78D95A /* ChartReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartReportView.swift; sourceTree = "<group>"; };
 		3E01766A5870C681061ABBAF /* ProjectionRevealView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectionRevealView.swift; sourceTree = "<group>"; };
+		4A56375C9303772106FD27DA /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedConstants.swift; sourceTree = "<group>"; };
 		4DCF7DEE10E84FCB52021934 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		51463CC93AF1FC395F23A659 /* Color+ScreenSpanReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+ScreenSpanReport.swift"; sourceTree = "<group>"; };
@@ -121,6 +129,7 @@
 		9801013D24B5FFBF50A18946 /* ChartViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartViewModel.swift; sourceTree = "<group>"; };
 		9A4D8FAD2211C2AAFF1DED04 /* ScreenSpanApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSpanApp.swift; sourceTree = "<group>"; };
 		9B7D83D181F6D3AF608C6F5D /* StatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsViewModel.swift; sourceTree = "<group>"; };
+		A2210D930D532B57F4473C84 /* GeistFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeistFont.swift; sourceTree = "<group>"; };
 		AA623384754EB8634D457F80 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		AC7D5F6A44622236803D7EED /* StoreKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitService.swift; sourceTree = "<group>"; };
 		AF9074527819B4C453EF03BE /* StatsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsTabView.swift; sourceTree = "<group>"; };
@@ -191,6 +200,7 @@
 			isa = PBXGroup;
 			children = (
 				756444A3B2BC26E2CCD3993F /* AppGroupManager.swift */,
+				A2210D930D532B57F4473C84 /* GeistFont.swift */,
 				C243C4B38CF92C03D01F92AB /* ProjectionCalculator.swift */,
 				0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */,
 				4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */,
@@ -232,6 +242,7 @@
 			isa = PBXGroup;
 			children = (
 				086D3D5A2EE570B7E1E8DEBA /* Assets.xcassets */,
+				4A56375C9303772106FD27DA /* LaunchScreen.storyboard */,
 				5DB3FDF2CB907D51DC900D6E /* Fonts */,
 			);
 			path = Resources;
@@ -392,6 +403,7 @@
 			buildConfigurationList = 9C19951B8ED87E6CD19E4345 /* Build configuration list for PBXNativeTarget "ScreenSpanReport" */;
 			buildPhases = (
 				64D3689A12B30F552C7CF77A /* Sources */,
+				E4EE5F8AC6CBAEA516368600 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -436,6 +448,17 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		E4EE5F8AC6CBAEA516368600 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F420A4DEF7335FF818D107A2 /* GeistItalicVF.ttf in Resources */,
+				592C7462F3ADB44C070A8E3A /* GeistMonoItalicVF.ttf in Resources */,
+				1F2E15C436B13BB384055DC0 /* GeistMonoVF.ttf in Resources */,
+				167DBF2AC44011F5336F91DA /* GeistVF.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FE39FCFE93CEE1D94FE5FE97 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -445,6 +468,7 @@
 				5E88766087C202317A5BEEC7 /* GeistMonoItalicVF.ttf in Resources */,
 				D437D6C50F289BE97635B5BE /* GeistMonoVF.ttf in Resources */,
 				CC7193538DCD95E3D84A9607 /* GeistVF.ttf in Resources */,
+				4B7F9D3C7FAC707351844A01 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -459,6 +483,7 @@
 				63A96DF2A8F6EAF116D2B484 /* ChartReportView.swift in Sources */,
 				7CA6D26D4488504C8E363E2A /* Color+ScreenSpanReport.swift in Sources */,
 				340E77222A147F4C7E7E270F /* DeviceActivityReport+Contexts.swift in Sources */,
+				4DA70EE7E40E3A0E1C184C68 /* GeistFont.swift in Sources */,
 				8F0240414A51F7444F3A2F90 /* HistoryReportView.swift in Sources */,
 				70508DE61057684BEC9A80B9 /* ProjectionCalculator.swift in Sources */,
 				8919445EF7490602BAA2D63E /* ProjectionModel.swift in Sources */,
@@ -484,6 +509,7 @@
 				43C8D153FC53E264AD147C97 /* Date+ScreenSpan.swift in Sources */,
 				11CF3293D9AB51F1E145B07F /* DonutChartView.swift in Sources */,
 				1C04A2C31387C6632D4B8737 /* Environment+ScreenSpan.swift in Sources */,
+				4D42BF2AF42679266C007C6F /* GeistFont.swift in Sources */,
 				CA2D5C7D0E6A414F6F1BDC64 /* GoalService.swift in Sources */,
 				4563E169F175B2DA1D5A7836 /* GoalSettingView.swift in Sources */,
 				6437C9D2833542C4BB5FD4B8 /* HistoryTabView.swift in Sources */,
@@ -538,7 +564,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.screenspan.app.report;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -555,7 +581,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.screenspan.app.report;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -574,7 +600,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.screenspan.app;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -716,7 +742,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.screenspan.app;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

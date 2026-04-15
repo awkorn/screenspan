@@ -35,16 +35,22 @@ struct SettingsView: View {
                 developerSection
                 #endif
             }
-            .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .background(Color(hex: "#F8F9FA"))
             .scrollContentBackground(.hidden)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Settings")
+                        .font(.geist(.headline, weight: .semibold))
+                        .foregroundStyle(Color(hex: "#1B2A4A"))
+                }
+            }
         }
     }
 
     // MARK: - Profile Section
     private var profileSection: some View {
-        Section(header: Text("PROFILE").font(.caption).fontWeight(.semibold).foregroundColor(Color(hex: "#A8DADC"))) {
+        Section(header: Text("PROFILE").font(.geist(.caption)).fontWeight(.semibold).foregroundColor(Color(hex: "#A8DADC"))) {
             VStack(spacing: 16) {
                 // Age Editor
                 HStack {
@@ -83,7 +89,7 @@ struct SettingsView: View {
                         Spacer()
 
                         Text("\(targetLifespan) years")
-                            .font(.headline)
+                            .font(.geist(.headline))
                             .foregroundColor(Color(hex: "#457B9D"))
                     }
 
@@ -95,13 +101,13 @@ struct SettingsView: View {
 
                     HStack(spacing: 20) {
                         Text("70")
-                            .font(.caption2)
+                            .font(.geist(.caption2))
                             .foregroundColor(Color(hex: "#A8DADC"))
 
                         Spacer()
 
                         Text("100")
-                            .font(.caption2)
+                            .font(.geist(.caption2))
                             .foregroundColor(Color(hex: "#A8DADC"))
                     }
                 }
@@ -111,7 +117,7 @@ struct SettingsView: View {
 
     // MARK: - Goal Section
     private var goalSection: some View {
-        Section(header: Text("GOAL").font(.caption).fontWeight(.semibold).foregroundColor(Color(hex: "#A8DADC"))) {
+        Section(header: Text("GOAL").font(.geist(.caption)).fontWeight(.semibold).foregroundColor(Color(hex: "#A8DADC"))) {
             VStack(spacing: 16) {
                 // Daily Goal Slider
                 VStack(alignment: .leading, spacing: 8) {
@@ -122,7 +128,7 @@ struct SettingsView: View {
                         Spacer()
 
                         Text(formatMinutes(dailyGoal))
-                            .font(.headline)
+                            .font(.geist(.headline))
                             .foregroundColor(Color(hex: "#E63946"))
                     }
 
@@ -134,13 +140,13 @@ struct SettingsView: View {
 
                     HStack(spacing: 20) {
                         Text("30m")
-                            .font(.caption2)
+                            .font(.geist(.caption2))
                             .foregroundColor(Color(hex: "#A8DADC"))
 
                         Spacer()
 
                         Text("8h")
-                            .font(.caption2)
+                            .font(.geist(.caption2))
                             .foregroundColor(Color(hex: "#A8DADC"))
                     }
                 }
@@ -150,7 +156,7 @@ struct SettingsView: View {
                 // Selected Categories
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Tracked Categories")
-                        .font(.subheadline)
+                        .font(.geist(.subheadline))
                         .foregroundColor(Color(hex: "#1B2A4A"))
 
                     HStack(spacing: 8) {
@@ -168,7 +174,7 @@ struct SettingsView: View {
                                 .foregroundColor(Color(hex: "#457B9D"))
 
                             Text("Upgrade to customize categories")
-                                .font(.caption)
+                                .font(.geist(.caption))
                                 .foregroundColor(Color(hex: "#1B2A4A"))
 
                             Spacer()
@@ -184,7 +190,7 @@ struct SettingsView: View {
 
     // MARK: - Notifications Section
     private var notificationsSection: some View {
-        Section(header: Text("NOTIFICATIONS").font(.caption).fontWeight(.semibold).foregroundColor(Color(hex: "#A8DADC"))) {
+        Section(header: Text("NOTIFICATIONS").font(.geist(.caption)).fontWeight(.semibold).foregroundColor(Color(hex: "#A8DADC"))) {
             Toggle("Weekly Summary", isOn: $notificationsEnabled)
                 .tint(Color(hex: "#457B9D"))
         }
@@ -192,18 +198,18 @@ struct SettingsView: View {
 
     // MARK: - Subscription Section
     private var subscriptionSection: some View {
-        Section(header: Text("SUBSCRIPTION").font(.caption).fontWeight(.semibold).foregroundColor(Color(hex: "#A8DADC"))) {
+        Section(header: Text("SUBSCRIPTION").font(.geist(.caption)).fontWeight(.semibold).foregroundColor(Color(hex: "#A8DADC"))) {
             VStack(spacing: 12) {
                 // Status Display
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Status")
                             .textCase(.uppercase)
-                            .font(.caption)
+                            .font(.geist(.caption))
                             .foregroundColor(Color(hex: "#A8DADC"))
 
                         Text(isPremium ? "Premium" : "Free")
-                            .font(.headline)
+                            .font(.geist(.headline))
                             .foregroundColor(Color(hex: "#1B2A4A"))
                     }
 
@@ -256,7 +262,7 @@ struct SettingsView: View {
 
     // MARK: - About Section
     private var aboutSection: some View {
-        Section(header: Text("ABOUT").font(.caption).fontWeight(.semibold).foregroundColor(Color(hex: "#A8DADC"))) {
+        Section(header: Text("ABOUT").font(.geist(.caption)).fontWeight(.semibold).foregroundColor(Color(hex: "#A8DADC"))) {
             Link(destination: URL(string: "https://screenspan.app/methodology")!) {
                 HStack {
                     Text("Methodology")
@@ -298,7 +304,7 @@ struct SettingsView: View {
 #if DEBUG
     // MARK: - Developer Section
     private var developerSection: some View {
-        Section(header: Text("DEVELOPER").font(.caption).fontWeight(.semibold).foregroundColor(Color(hex: "#A8DADC"))) {
+        Section(header: Text("DEVELOPER").font(.geist(.caption)).fontWeight(.semibold).foregroundColor(Color(hex: "#A8DADC"))) {
             Button(role: .destructive) {
                 showResetOnboardingAlert = true
             } label: {
@@ -321,7 +327,7 @@ struct SettingsView: View {
     // MARK: - Helpers
     private func categoryBadge(_ title: String, _ color: Color) -> some View {
         Text(title)
-            .font(.caption)
+            .font(.geist(.caption))
             .fontWeight(.semibold)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)

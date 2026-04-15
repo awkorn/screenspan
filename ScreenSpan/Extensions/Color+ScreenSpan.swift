@@ -66,7 +66,7 @@ extension UIColor {
 struct OnboardingPrimaryButtonModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.system(size: 15, weight: .semibold))
+            .font(.geist(size: 15, weight: .semibold))
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
             .frame(height: 44)

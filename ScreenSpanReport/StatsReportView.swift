@@ -46,11 +46,11 @@ struct StatsReportView: View {
                 // Hero Years Number
                 VStack(spacing: 8) {
                     Text("Years Reclaimed")
-                        .font(.caption)
+                        .font(.geist(.caption))
                         .foregroundColor(.gray)
 
                     Text(String(format: "%.1f", reclaim.yearsReclaimed))
-                        .font(.system(size: 48, weight: .bold, design: .default))
+                        .font(.geist(size: 48, weight: .bold))
                         .foregroundColor(.screenSpanBlue)
                 }
                 .frame(maxWidth: .infinity)
@@ -83,14 +83,14 @@ struct StatsReportView: View {
                                 .fill(Color.screenSpanBlue)
                                 .frame(width: 12, height: 12)
                             Text("Reclaimed")
-                                .font(.caption)
+                                .font(.geist(.caption))
                         }
                         HStack(spacing: 8) {
                             Circle()
                                 .fill(Color.screenSpanLightGray)
                                 .frame(width: 12, height: 12)
                             Text("Without Change")
-                                .font(.caption)
+                                .font(.geist(.caption))
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -121,12 +121,12 @@ struct StatsReportView: View {
                 // Reclaim Preview
                 VStack(spacing: 12) {
                     Text("Your Potential")
-                        .font(.headline)
+                        .font(.geist(.headline))
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     VStack(alignment: .leading, spacing: 8) {
                         Text("At current pace, you'll reclaim \(String(format: "%.1f", reclaim.yearsReclaimed)) years.")
-                            .font(.body)
+                            .font(.geist(.body))
                             .foregroundColor(.primary)
                     }
                     .padding()
@@ -138,6 +138,7 @@ struct StatsReportView: View {
             }
             .padding()
         }
+        .font(.geist(.body))
     }
 }
 
@@ -149,7 +150,7 @@ struct StatCard: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.title2)
+                .font(.geist(.title2))
                 .foregroundColor(.screenSpanBlue)
                 .frame(width: 32, height: 32)
                 .background(Color.screenSpanBlue.opacity(0.1))
@@ -157,10 +158,10 @@ struct StatCard: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(label)
-                    .font(.caption)
+                    .font(.geist(.caption))
                     .foregroundColor(.gray)
                 Text(value)
-                    .font(.headline)
+                    .font(.geist(.headline))
                     .foregroundColor(.primary)
             }
 

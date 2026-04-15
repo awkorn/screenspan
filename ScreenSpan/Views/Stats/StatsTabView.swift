@@ -24,13 +24,13 @@ struct StatsTabView: View {
     private var heroYearsSection: some View {
         VStack(spacing: 8) {
             Text(yearsTitle)
-                .font(.system(size: 36, weight: .heavy))
+                .font(.geist(size: 36, weight: .heavy))
                 .foregroundStyle(Color(hex: "#0A1F38"))
                 .multilineTextAlignment(.center)
                 .monospacedDigit()
 
             Text("projected on your phone")
-                .font(.system(size: 16, weight: .medium))
+                .font(.geist(size: 16, weight: .medium))
                 .foregroundStyle(Color(hex: "#595959"))
         }
         .frame(maxWidth: .infinity)
@@ -80,19 +80,19 @@ struct StatsTabView: View {
     private func statTile(icon: String, value: String, label: String) -> some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.system(size: 18, weight: .semibold))
+                .font(.geist(size: 18, weight: .semibold))
                 .foregroundStyle(Color(hex: "#235187"))
                 .frame(height: 20)
 
             Text(value)
-                .font(.system(size: 16, weight: .bold))
+                .font(.geist(size: 16, weight: .bold))
                 .foregroundStyle(Color(hex: "#0D141C"))
                 .monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
 
             Text(label)
-                .font(.system(size: 14, weight: .medium))
+                .font(.geist(size: 14, weight: .medium))
                 .foregroundStyle(Color(hex: "#595959"))
         }
         .frame(maxWidth: .infinity)

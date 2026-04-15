@@ -32,11 +32,11 @@ struct GoalSettingView: View {
                 VStack(spacing: 28) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Set your goal")
-                            .font(.system(size: 28, weight: .bold))
+                            .font(.geist(size: 28, weight: .bold))
                             .foregroundColor(.screenSpanNavy)
 
                         Text("How much time would you like\nto spend on your phone?")
-                            .font(.system(size: 18, weight: .regular))
+                            .font(.geist(size: 18))
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.leading)
                     }
@@ -45,15 +45,15 @@ struct GoalSettingView: View {
                     .padding(.top, 32)
 
                     VStack(spacing: 12) {
-                        HStack {
+                    HStack {
                             Text("0h")
-                                .font(.system(size: 14, weight: .medium))
+                                .font(.geist(size: 14, weight: .medium))
                                 .foregroundColor(.secondary)
 
                             Spacer()
 
                             Text("\(Int(viewModel.estimatedDailyScreenTime.rounded()))h")
-                                .font(.system(size: 14, weight: .medium))
+                                .font(.geist(size: 14, weight: .medium))
                                 .foregroundColor(.secondary)
                         }
 
@@ -68,17 +68,17 @@ struct GoalSettingView: View {
                     HStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Current daily usage")
-                                .font(.system(size: 13))
+                                .font(.geist(size: 13))
                                 .foregroundColor(.secondary)
 
                             HStack(spacing: 4) {
                                 Text(currentUsageFormatted)
-                                    .font(.system(size: 16, weight: .semibold))
+                                    .font(.geist(size: 16, weight: .semibold))
                                     .foregroundColor(currentUsageColor)
                                     .monospacedDigit()
 
                                 Text("hours/day")
-                                    .font(.system(size: 15))
+                                    .font(.geist(size: 15))
                                     .foregroundColor(.secondary)
                             }
                         }
@@ -86,24 +86,24 @@ struct GoalSettingView: View {
                         Spacer()
 
                         Image(systemName: "arrow.right")
-                            .font(.system(size: 20, weight: .semibold))
+                            .font(.geist(size: 20, weight: .semibold))
                             .foregroundColor(.secondary)
 
                         Spacer()
 
                         VStack(alignment: .trailing, spacing: 6) {
                             Text("Your new goal")
-                                .font(.system(size: 13))
+                                .font(.geist(size: 13))
                                 .foregroundColor(.secondary)
 
                             HStack(spacing: 4) {
                                 Text(goalUsageFormatted)
-                                    .font(.system(size: 16, weight: .semibold))
+                                    .font(.geist(size: 16, weight: .semibold))
                                     .foregroundColor(goalUsageColor)
                                     .monospacedDigit()
 
                                 Text("hours/day")
-                                    .font(.system(size: 15))
+                                    .font(.geist(size: 15))
                                     .foregroundColor(.secondary)
                             }
                         }
@@ -115,11 +115,11 @@ struct GoalSettingView: View {
 
                     HStack(spacing: 12) {
                         Image(systemName: "figure.walk")
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(.geist(size: 22, weight: .semibold))
                             .foregroundColor(goalUsageColor)
 
                         Text("You'd reclaim \(reclaimedYearsRounded) years of your life!")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.geist(size: 16, weight: .semibold))
                             .foregroundColor(.screenSpanNavy)
 
                         Spacer()
