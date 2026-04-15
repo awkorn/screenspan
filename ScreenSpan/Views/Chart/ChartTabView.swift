@@ -10,11 +10,7 @@ struct ChartTabView: View {
                 sliderSection
                     .padding(.top, 28)
 
-                LifeGridView(
-                    goalGridData: viewModel.goalGridData,
-                    averageGridData: viewModel.shouldShowComparison ? viewModel.averageGridData : nil,
-                    comparisonProgress: viewModel.shouldShowComparison ? viewModel.comparisonProgress : nil
-                )
+                LifeGridView(goalGridData: viewModel.goalGridData)
 
                 legendSection
                     .padding(.bottom, 12)
@@ -35,7 +31,8 @@ struct ChartTabView: View {
                     get: { viewModel.selectedGoalHours },
                     set: { viewModel.updateGoalHours($0) }
                 ),
-                maxValue: viewModel.maxSliderHours
+                maxValue: viewModel.maxSliderHours,
+                goalMarkerProgress: viewModel.fixedGoalProgress
             )
         }
     }
@@ -65,6 +62,7 @@ struct ChartTabView: View {
 private struct GoalComparisonSlider: View {
     @Binding var value: Double
     let maxValue: Double
+    let goalMarkerProgress: Double
 
     private let trackHeight: CGFloat = 7
     private let thumbWidth: CGFloat = 34
@@ -80,6 +78,7 @@ private struct GoalComparisonSlider: View {
             let width = proxy.size.width
             let progress = normalizedProgress
             let thumbX = progress * width
+            let goalMarkerX = goalMarkerProgress * width
 
             VStack(spacing: 10) {
                 HStack {
@@ -98,6 +97,11 @@ private struct GoalComparisonSlider: View {
                     Capsule()
                         .fill(Color(hex: "#C82020"))
                         .frame(width: max(thumbX, 0), height: trackHeight)
+
+                    Rectangle()
+                        .fill(Color(hex: "#595959"))
+                        .frame(width: 2, height: 18)
+                        .offset(x: min(max(goalMarkerX - 1, 0), max(width - 2, 0)))
 
                     RoundedRectangle(cornerRadius: 11, style: .continuous)
                         .fill(Color(hex: "#F4F4F4"))
@@ -123,7 +127,7 @@ private struct GoalComparisonSlider: View {
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(Color(hex: "#595959"))
                         .position(
-                            x: min(max(thumbX, 24), max(width - 24, 24)),
+                            x: min(max(goalMarkerX, 24), max(width - 24, 24)),
                             y: 10
                         )
 
@@ -135,7 +139,7 @@ private struct GoalComparisonSlider: View {
                 .frame(height: 20)
             }
         }
-        .frame(height: 84)
+        .frame(height: 70)
     }
 
     private func formattedHours(_ hours: Double) -> String {

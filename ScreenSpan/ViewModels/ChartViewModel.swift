@@ -9,6 +9,7 @@ final class ChartViewModel {
     var averageGridData: LifeGridData = .mockData(months: 960)
     var goalGridData: LifeGridData = .mockData(months: 960)
     var averageDailyHours: Double = SharedConstants.DefaultValues.defaultDailyAvgHours
+    var fixedGoalHours: Double = SharedConstants.DefaultValues.defaultDailyAvgHours
     var selectedGoalHours: Double = SharedConstants.DefaultValues.defaultDailyAvgHours
     var isLoading: Bool = false
 
@@ -22,13 +23,9 @@ final class ChartViewModel {
         max(averageDailyHours, 0.1)
     }
 
-    var shouldShowComparison: Bool {
-        abs(averageGridData.phoneMonths - goalGridData.phoneMonths) > 1
-    }
-
-    var comparisonProgress: Double {
-        guard maxSliderHours > 0 else { return 1 }
-        return selectedGoalHours / maxSliderHours
+    var fixedGoalProgress: Double {
+        guard maxSliderHours > 0 else { return 0 }
+        return min(max(fixedGoalHours / maxSliderHours, 0), 1)
     }
 
     // MARK: - Public Methods
@@ -46,7 +43,8 @@ final class ChartViewModel {
             : resolvedAverageHours
 
         averageDailyHours = resolvedAverageHours
-        selectedGoalHours = min(max(storedGoalHours, 0), maxSliderHours)
+        fixedGoalHours = min(max(storedGoalHours, 0), maxSliderHours)
+        selectedGoalHours = fixedGoalHours
 
         averageGridData = buildGridData(
             currentAge: currentAge,
@@ -66,7 +64,6 @@ final class ChartViewModel {
         guard clampedHours != selectedGoalHours else { return }
 
         selectedGoalHours = clampedHours
-        AppGroupManager.shared.screenTimeGoalMinutes = clampedHours * 60
 
         let currentAge = max(AppGroupManager.shared.currentAge, 1)
         let targetAge = max(AppGroupManager.shared.targetAge, currentAge)

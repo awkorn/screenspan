@@ -4,8 +4,6 @@ import SwiftUI
 /// Colors: blue (lived), red (screen time), gray (remaining)
 struct LifeGridView: View {
     let goalGridData: LifeGridData
-    let averageGridData: LifeGridData?
-    let comparisonProgress: Double?
 
     private let columnCount = 26
     private let cellSpacing: CGFloat = 4
@@ -19,33 +17,7 @@ struct LifeGridView: View {
 
     private var gridCells: [GridMonth.Status] {
         let totalCellCount = rowCount * columnCount
-
-        guard
-            let averageGridData,
-            let comparisonProgress,
-            averageGridData.phoneMonths != goalGridData.phoneMonths
-        else {
-            return scaledCells(for: goalGridData, cellCount: totalCellCount)
-        }
-
-        let splitColumns = min(max(Int((comparisonProgress * Double(columnCount)).rounded()), 1), columnCount - 1)
-        let goalColumns = splitColumns
-        let averageColumns = columnCount - splitColumns
-        let goalCells = scaledCells(for: goalGridData, cellCount: rowCount * goalColumns)
-        let averageCells = scaledCells(for: averageGridData, cellCount: rowCount * averageColumns)
-
-        var combinedCells: [GridMonth.Status] = []
-        combinedCells.reserveCapacity(totalCellCount)
-
-        for row in 0..<rowCount {
-            let goalStart = row * goalColumns
-            let averageStart = row * averageColumns
-
-            combinedCells.append(contentsOf: goalCells[goalStart..<(goalStart + goalColumns)])
-            combinedCells.append(contentsOf: averageCells[averageStart..<(averageStart + averageColumns)])
-        }
-
-        return combinedCells
+        return scaledCells(for: goalGridData, cellCount: totalCellCount)
     }
 
     var body: some View {
