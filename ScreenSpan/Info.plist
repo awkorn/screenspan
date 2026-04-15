@@ -18,7 +18,12 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>UILaunchScreen</key>
-	<dict/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>GeistVF.ttf</string>
+		<string>GeistItalicVF.ttf</string>
+		<string>GeistMonoVF.ttf</string>
+		<string>GeistMonoItalicVF.ttf</string>
+	</array>
 </dict>
 </plist>

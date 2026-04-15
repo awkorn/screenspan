@@ -21,6 +21,12 @@ targets:
     info:
       path: ScreenSpan/Info.plist
       uses: [.plist]
+      properties:
+        UIAppFonts:
+          - GeistVF.ttf
+          - GeistItalicVF.ttf
+          - GeistMonoVF.ttf
+          - GeistMonoItalicVF.ttf
     entitlements:
       path: ScreenSpan/ScreenSpan.entitlements
       uses: [.plist]
