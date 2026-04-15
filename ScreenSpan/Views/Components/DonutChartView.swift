@@ -8,104 +8,86 @@ struct DonutChartView: View {
     let totalWakingHours: Double
 
     private var phonePercentage: Double {
-        (phoneTime / totalWakingHours) * 100
-    }
-
-    private var restPercentage: Double {
-        100 - phonePercentage
+        guard totalWakingHours > 0 else { return 0 }
+        return min(max((phoneTime / totalWakingHours) * 100, 0), 100)
     }
 
     var body: some View {
         VStack(spacing: 24) {
-            // MARK: - Donut Chart
             donutChart
 
-            // MARK: - Legend
             legend
         }
     }
 
     private var donutChart: some View {
-        ZStack {
-            // MARK: - Donut Circle
-            Circle()
-                .trim(from: 0, to: phonePercentage / 100)
-                .stroke(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(hex: "#E63946"),
-                            Color(hex: "#E63946").opacity(0.8)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 20
-                )
-                .rotationEffect(.degrees(-90))
+        GeometryReader { proxy in
+            let size = min(proxy.size.width, proxy.size.height)
+            let ringWidth = size * 0.18
 
-            Circle()
-                .trim(from: phonePercentage / 100, to: 1)
-                .stroke(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(hex: "#457B9D"),
-                            Color(hex: "#457B9D").opacity(0.8)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 20
-                )
-                .rotationEffect(.degrees(-90))
+            ZStack {
+                Circle()
+                    .stroke(Color(hex: "#0063D6"), style: StrokeStyle(lineWidth: ringWidth, lineCap: .round))
+                    .shadow(color: Color.black.opacity(0.07), radius: 12, x: 0, y: 4)
 
-            // MARK: - Center Label
-            VStack(spacing: 6) {
-                Text("\(Int(phonePercentage))%")
-                    .font(.system(size: 36, weight: .bold, design: .default))
-                    .foregroundColor(Color(hex: "#1B2A4A"))
+                Circle()
+                    .trim(from: 0, to: phonePercentage / 100)
+                    .stroke(Color(hex: "#F63232"), style: StrokeStyle(lineWidth: ringWidth, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
 
-                Text("of your waking life")
-                    .font(.caption)
-                    .foregroundColor(Color(hex: "#A8DADC"))
+                Circle()
+                    .fill(.white)
+                    .frame(width: size * 0.64, height: size * 0.64)
+
+                VStack(spacing: 6) {
+                    Text(formattedPercentage)
+                        .font(.system(size: size * 0.16, weight: .bold))
+                        .foregroundStyle(Color(hex: "#0D141C"))
+                        .monospacedDigit()
+
+                    Text("of your waking life")
+                        .font(.system(size: size * 0.06, weight: .semibold))
+                        .foregroundStyle(Color(hex: "#595959"))
+                }
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 12)
             }
+            .frame(width: size, height: size)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(height: 200)
+        .frame(height: 260)
+    }
+
+    private var formattedPercentage: String {
+        String(format: "%.1f%%", phonePercentage)
     }
 
     private var legend: some View {
         HStack(spacing: 24) {
             legendDot(
-                color: Color(hex: "#E63946"),
-                label: "Phone Time",
-                value: String(format: "%.1f", phoneTime) + "h"
+                color: Color(hex: "#0063D6"),
+                label: "Rest of Life"
             )
 
             Spacer()
 
             legendDot(
-                color: Color(hex: "#457B9D"),
-                label: "Rest of Life",
-                value: String(format: "%.1f", totalWakingHours - phoneTime) + "h"
+                color: Color(hex: "#F63232"),
+                label: "Phone Time"
             )
         }
+        .padding(.horizontal, 18)
     }
 
-    private func legendDot(color: Color, label: String, value: String) -> some View {
+    private func legendDot(color: Color, label: String) -> some View {
         HStack(spacing: 8) {
             Circle()
                 .fill(color)
-                .frame(width: 12, height: 12)
+                .frame(width: 8, height: 8)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label)
-                    .font(.caption)
-                    .foregroundColor(Color(hex: "#A8DADC"))
-
-                Text(value)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(Color(hex: "#1B2A4A"))
-            }
+            Text(label)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Color(hex: "#0D141C"))
         }
     }
 }

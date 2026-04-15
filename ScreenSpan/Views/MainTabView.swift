@@ -46,7 +46,7 @@ struct MainTabView: View {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 28, weight: .semibold))
                     .foregroundStyle(selectedTab == .settings ? .white : Color(hex: "#5E5E5E"))
-                    .frame(width: 68, height: 68)
+                    .frame(width: 62, height: 62)
                     .background(selectedTab == .settings ? Color(hex: "#102847") : Color(hex: "#F0F2F6"))
                     .clipShape(Circle())
             }
@@ -71,7 +71,7 @@ struct MainTabView: View {
             }
             .foregroundStyle(selectedTab == tab ? .white : Color(hex: "#5E5E5E"))
             .frame(maxWidth: .infinity)
-            .frame(height: 58)
+            .frame(height: 42)
             .background(selectedTab == tab ? Color(hex: "#102847") : Color.clear)
             .clipShape(Capsule())
         }

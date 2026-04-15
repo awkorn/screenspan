@@ -1,174 +1,111 @@
 import SwiftUI
 
 /// Statistics tab displaying user's screen time metrics
-/// In production, this view renders within the DeviceActivityReport extension.
-/// During development, it shows a mock layout for UI testing.
 struct StatsTabView: View {
     @State private var viewModel = StatsViewModel()
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // MARK: - Hero Years Number
-                    heroYearsSection
-
-                    // MARK: - Donut Chart
-                    donutChartSection
-
-                    // MARK: - Stat Cards
-                    statCardsSection
-
-                    // MARK: - Reclaim Preview
-                    reclaimSection
-
-                    Spacer()
-                }
-                .padding()
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 36) {
+                heroYearsSection
+                donutChartSection
+                statCardsSection
             }
-            .navigationTitle("Stats")
-            .navigationBarTitleDisplayMode(.inline)
-            .background(Color(hex: "#F8F9FA"))
+            .padding(.horizontal, 24)
+            .padding(.top, 28)
+            .padding(.bottom, 120)
+        }
+        .background(Color.white.ignoresSafeArea())
+        .task {
+            viewModel.loadData()
         }
     }
 
-    // MARK: - Hero Years Number Section
     private var heroYearsSection: some View {
         VStack(spacing: 8) {
-            Text("Years of Life")
-                .textCase(.uppercase)
-                .font(.caption)
-                .foregroundColor(Color(hex: "#A8DADC"))
+            Text(yearsTitle)
+                .font(.system(size: 36, weight: .heavy))
+                .foregroundStyle(Color(hex: "#0A1F38"))
+                .multilineTextAlignment(.center)
+                .monospacedDigit()
 
-            Text("42.3")
-                .font(.system(size: 56, weight: .bold, design: .default))
-                .foregroundColor(Color(hex: "#1B2A4A"))
-
-            Text("years until target lifespan")
-                .font(.subheadline)
-                .foregroundColor(Color(hex: "#A8DADC"))
+            Text("projected on your phone")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Color(hex: "#595959"))
         }
         .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
+        .padding(.bottom, 24)
     }
 
-    // MARK: - Donut Chart Section
     private var donutChartSection: some View {
-        VStack(spacing: 12) {
-            Text("Daily Activity")
-                .font(.headline)
-                .foregroundColor(Color(hex: "#1B2A4A"))
-                .frame(maxWidth: .infinity, alignment: .leading)
-
+        VStack(spacing: 16) {
             DonutChartView(
-                phoneTime: 4.5,
-                totalWakingHours: 16
+                phoneTime: projection?.dailyPhoneHours ?? 0,
+                totalWakingHours: SharedConstants.DefaultValues.wakeHoursPerDay
             )
-            .frame(height: 240)
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
     }
 
-    // MARK: - Stat Cards Section
     private var statCardsSection: some View {
-        VStack(spacing: 12) {
-            statCard(
-                icon: "timer",
-                label: "Today",
-                value: "4h 32m",
-                color: Color(hex: "#E63946")
-            )
-
-            statCard(
+        HStack(spacing: 14) {
+            statTile(
                 icon: "calendar",
-                label: "This Week",
-                value: "31h 15m",
-                color: Color(hex: "#457B9D")
+                value: projection.map { formatWholeNumber($0.monthsOnPhone) } ?? "--",
+                label: "months"
             )
 
-            statCard(
-                icon: "chart.line.uptrend.xyaxis",
-                label: "Average",
-                value: "4h 28m",
-                color: Color(hex: "#A8DADC")
+            statTile(
+                icon: "sun.max",
+                value: projection.map { formatWholeNumber($0.daysOnPhone) } ?? "--",
+                label: "days"
+            )
+
+            statTile(
+                icon: "clock",
+                value: projection.map { formatWholeNumber($0.hoursOnPhone) } ?? "--",
+                label: "hours"
             )
         }
     }
 
-    // MARK: - Reclaim Section
-    private var reclaimSection: some View {
-        VStack(spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Time Reclaimed")
-                        .font(.headline)
-                        .foregroundColor(Color(hex: "#1B2A4A"))
-
-                    Text("This month")
-                        .font(.caption)
-                        .foregroundColor(Color(hex: "#A8DADC"))
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("12h 45m")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .foregroundColor(Color(hex: "#457B9D"))
-
-                    Text("vs last month")
-                        .font(.caption2)
-                        .foregroundColor(Color(hex: "#A8DADC"))
-                }
-            }
-            .padding()
-            .background(
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color(hex: "#457B9D").opacity(0.1),
-                        Color(hex: "#E63946").opacity(0.05)
-                    ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .cornerRadius(12)
-        }
+    private var projection: ProjectionResult? {
+        viewModel.projection
     }
 
-    // MARK: - Helper: Stat Card
-    private func statCard(
-        icon: String,
-        label: String,
-        value: String,
-        color: Color
-    ) -> some View {
-        HStack(spacing: 12) {
+    private var yearsTitle: String {
+        guard let projection else { return "-- YEARS" }
+        return String(format: "%.1f YEARS", projection.yearsOnPhone)
+    }
+
+    private func statTile(icon: String, value: String, label: String) -> some View {
+        VStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(color)
-                .frame(width: 40)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(Color(hex: "#235187"))
+                .frame(height: 20)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(label)
-                    .textCase(.uppercase)
-                    .font(.caption)
-                    .foregroundColor(Color(hex: "#A8DADC"))
+            Text(value)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(Color(hex: "#0D141C"))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
 
-                Text(value)
-                    .font(.headline)
-                    .foregroundColor(Color(hex: "#1B2A4A"))
-            }
-
-            Spacer()
+            Text(label)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Color(hex: "#595959"))
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
+        .frame(maxWidth: .infinity)
+        .frame(height: 102)
+        .background(Color(hex: "#F6F7FA"))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private func formatWholeNumber(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        formatter.roundingMode = .halfUp
+        return formatter.string(from: NSNumber(value: value)) ?? String(Int(value.rounded()))
     }
 }
