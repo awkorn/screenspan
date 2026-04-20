@@ -46,4 +46,21 @@ extension DeviceActivityFilter {
             devices: .init([.iPhone, .iPad])
         )
     }
+
+    /// Filter covering the last seven completed days. Used by onboarding
+    /// so goal-setting is based on a stable recent daily average rather than
+    /// today's still-in-progress usage.
+    static var screenSpanRecentDailyAverage: DeviceActivityFilter {
+        let calendar = Calendar.current
+        let startOfToday = calendar.startOfDay(for: Date())
+        let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: startOfToday) ?? startOfToday
+
+        return DeviceActivityFilter(
+            segment: .daily(
+                during: DateInterval(start: sevenDaysAgo, end: startOfToday)
+            ),
+            users: .all,
+            devices: .init([.iPhone, .iPad])
+        )
+    }
 }

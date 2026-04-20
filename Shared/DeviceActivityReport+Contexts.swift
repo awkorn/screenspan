@@ -19,4 +19,7 @@ extension DeviceActivityReport.Context {
 
     /// History view: weekly trends (premium-gated).
     static let history = Self("history")
+
+    /// Onboarding goal-setting module rendered by the report extension.
+    static let onboardingGoal = Self("onboardingGoal")
 }

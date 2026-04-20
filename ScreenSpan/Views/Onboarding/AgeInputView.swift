@@ -57,7 +57,7 @@ struct AgeInputView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 24)
-            .padding(.top, 28)
+            .padding(.vertical, 28)
 
             Spacer().frame(height: 28)
 

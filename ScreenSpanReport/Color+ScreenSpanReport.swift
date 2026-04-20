@@ -16,6 +16,9 @@ extension Color {
     /// Off-white - Background color (#F8F9FA)
     static let screenSpanOffWhite = Color(red: 0.973, green: 0.976, blue: 0.980)
 
+    /// Off-white card color used throughout onboarding cards (#F6F7FA)
+    static let screenSpanCardBackground = Color(red: 0.965, green: 0.969, blue: 0.980)
+
     /// Gray - Muted text color (#A8DADC)
     static let screenSpanGray = Color(red: 0.659, green: 0.855, blue: 0.859)
 

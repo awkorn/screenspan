@@ -200,10 +200,15 @@ final class OnboardingViewModel {
         calculateProjection()
         calculateReclaim()
 
+        let existingGoalMinutes = AppGroupManager.shared.screenTimeGoalMinutes
+        let resolvedGoalMinutes = existingGoalMinutes > 0
+            ? existingGoalMinutes
+            : sliderTargetHours * 60
+
         // Save data to AppGroupManager
         AppGroupManager.shared.currentAge = selectedAge
         AppGroupManager.shared.targetAge = SharedConstants.DefaultValues.targetAge
-        AppGroupManager.shared.screenTimeGoalMinutes = sliderTargetHours * 60
+        AppGroupManager.shared.screenTimeGoalMinutes = resolvedGoalMinutes
 
         // Save selected categories as strings
         let categoryStrings = selectedCategories.map { $0.rawValue }
