@@ -1,153 +1,66 @@
 import SwiftUI
+import DeviceActivity
 
-/// Life grid chart tab
+/// Life grid chart tab.
+///
+/// PRIVACY MODEL
+/// -------------
+/// The life grid visualization is derived from daily screen time hours,
+/// which are per-user Screen Time data. Per Apple's privacy model, that
+/// data may only be touched inside the `DeviceActivityReport` extension.
+/// This view is a thin host that embeds the `ScreenSpanReport` extension
+/// via `DeviceActivityReport(.chart, filter:)`; the grid, the goal
+/// slider's usage-derived reference values, and the legend are all drawn
+/// by the extension process.
 struct ChartTabView: View {
-    @State private var viewModel = ChartViewModel()
+    @EnvironmentObject private var authService: AuthorizationService
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 28) {
-                sliderSection
-                    .padding(.top, 28)
-
-                LifeGridView(goalGridData: viewModel.goalGridData)
-
-                legendSection
-                    .padding(.bottom, 12)
+        Group {
+            if authService.isAuthorized {
+                DeviceActivityReport(
+                    .chart,
+                    filter: .screenSpanDaily
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                authorizationRequiredView
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
         }
         .background(Color.white.ignoresSafeArea())
-        .task {
-            viewModel.loadData()
-        }
     }
 
-    private var sliderSection: some View {
-        VStack(spacing: 8) {
-            GoalComparisonSlider(
-                value: Binding(
-                    get: { viewModel.selectedGoalHours },
-                    set: { viewModel.updateGoalHours($0) }
-                ),
-                maxValue: viewModel.maxSliderHours,
-                goalMarkerProgress: viewModel.fixedGoalProgress
-            )
-        }
-    }
+    private var authorizationRequiredView: some View {
+        VStack(spacing: 18) {
+            Spacer()
 
-    private var legendSection: some View {
-        HStack(spacing: 24) {
-            legendItem(color: Color(hex: "#0063D6"), label: "Lived")
-            legendItem(color: Color(hex: "#F63232"), label: "Screen time")
-            legendItem(color: Color(hex: "#D9D9D9"), label: "Remaining")
-        }
-        .frame(maxWidth: .infinity)
-    }
+            Image(systemName: "square.grid.3x3.topleft.filled")
+                .font(.geist(size: 40, weight: .semibold))
+                .foregroundStyle(Color(hex: "#102847"))
 
-    private func legendItem(color: Color, label: String) -> some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(color)
-                .frame(width: 14, height: 14)
+            VStack(spacing: 8) {
+                Text("Enable Screen Time to load your Life Grid")
+                    .font(.geist(size: 22, weight: .bold))
+                    .foregroundStyle(Color(hex: "#102847"))
 
-            Text(label)
-                .font(.geist(size: 14, weight: .medium))
-                .foregroundStyle(.black)
-        }
-    }
-}
-
-private struct GoalComparisonSlider: View {
-    @Binding var value: Double
-    let maxValue: Double
-    let goalMarkerProgress: Double
-
-    private let trackHeight: CGFloat = 7
-    private let thumbWidth: CGFloat = 34
-    private let thumbHeight: CGFloat = 22
-
-    private var normalizedProgress: Double {
-        guard maxValue > 0 else { return 0 }
-        return min(max(value / maxValue, 0), 1)
-    }
-
-    var body: some View {
-        GeometryReader { proxy in
-            let width = proxy.size.width
-            let progress = normalizedProgress
-            let thumbX = progress * width
-            let goalMarkerX = goalMarkerProgress * width
-
-            VStack(spacing: 10) {
-                HStack {
-                    Text("0h")
-                    Spacer()
-                    Text(formattedHours(maxValue))
-                }
-                .font(.geist(size: 14, weight: .semibold))
-                .foregroundStyle(Color(hex: "#595959"))
-
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color(hex: "#D9D9D9"))
-                        .frame(height: trackHeight)
-
-                    Capsule()
-                        .fill(Color(hex: "#C82020"))
-                        .frame(width: max(thumbX, 0), height: trackHeight)
-
-                    Rectangle()
-                        .fill(Color(hex: "#595959"))
-                        .frame(width: 2, height: 18)
-                        .offset(x: min(max(goalMarkerX - 1, 0), max(width - 2, 0)))
-
-                    RoundedRectangle(cornerRadius: 11, style: .continuous)
-                        .fill(Color(hex: "#F4F4F4"))
-                        .frame(width: thumbWidth, height: thumbHeight)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                                .stroke(Color.black.opacity(0.08), lineWidth: 1)
-                        )
-                        .offset(x: min(max(thumbX - (thumbWidth / 2), 0), width - thumbWidth))
-                }
-                .contentShape(Rectangle())
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { gesture in
-                            let clampedX = min(max(gesture.location.x, 0), width)
-                            let newValue = (clampedX / width) * maxValue
-                            value = (newValue * 10).rounded() / 10
-                        }
-                )
-
-                ZStack(alignment: .leading) {
-                    Text("Goal")
-                        .font(.geist(size: 12, weight: .medium))
-                        .foregroundStyle(Color(hex: "#595959"))
-                        .position(
-                            x: min(max(goalMarkerX, 24), max(width - 24, 24)),
-                            y: 10
-                        )
-
-                    Text("Avg")
-                        .font(.geist(size: 12, weight: .medium))
-                        .foregroundStyle(Color(hex: "#595959"))
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                }
-                .frame(height: 20)
+                Text("The Life Grid now comes from the Device Activity report extension, so the chart stays empty until Screen Time access is approved.")
+                    .font(.geist(size: 15))
+                    .foregroundStyle(Color(hex: "#595959"))
+                    .multilineTextAlignment(.center)
             }
-        }
-        .frame(height: 70)
-    }
 
-    private func formattedHours(_ hours: Double) -> String {
-        let roundedHours = (hours * 10).rounded() / 10
-        if roundedHours == roundedHours.rounded() {
-            return "\(Int(roundedHours))h"
-        }
+            Button {
+                Task {
+                    await authService.requestAuthorization()
+                }
+            } label: {
+                Text("Allow Screen Time Access")
+                    .onboardingPrimaryButtonStyle()
+            }
+            .padding(.horizontal, 24)
 
-        return String(format: "%.1fh", roundedHours)
+            Spacer()
+        }
+        .padding(.horizontal, 24)
     }
 }

@@ -150,7 +150,15 @@ final class OnboardingViewModel {
         currentStep = previousStep
     }
 
-    /// Calculate the projection of waking life spent on phone
+    /// Calculate the projection of waking life spent on phone.
+    ///
+    /// The result is kept in-memory (`projectionResult`) for the
+    /// duration of the onboarding flow only. It is deliberately NOT
+    /// persisted to the App Group: even though the input is a user
+    /// self-estimate (which is legal to store), the persisted value
+    /// previously became a back-channel the host used to reconstruct
+    /// daily hours. Keeping this ephemeral guarantees no usage-shaped
+    /// number ever crosses the extension/host boundary.
     func calculateProjection() {
         let targetAge = SharedConstants.DefaultValues.targetAge
         projectionResult = ProjectionCalculator.calculateProjectionFromDaily(
@@ -158,18 +166,13 @@ final class OnboardingViewModel {
             targetAge: targetAge,
             dailyHours: currentDailyAvgHours
         )
-
-        if let projectionResult {
-            AppGroupManager.shared.onboardingProjectedYears = projectionResult.yearsOnPhone
-            AppGroupManager.shared.onboardingWakingPercent = projectionResult.percentOfWakingLife
-        }
     }
 
     /// Calculate the reclaim benefit of reducing screen time
     func calculateReclaim() {
         guard let projection = projectionResult else {
             calculateProjection()
-            guard let projection = projectionResult else { return }
+            guard projectionResult != nil else { return }
             calculateReclaim()
             return
         }
@@ -200,6 +203,7 @@ final class OnboardingViewModel {
         // Save data to AppGroupManager
         AppGroupManager.shared.currentAge = selectedAge
         AppGroupManager.shared.targetAge = SharedConstants.DefaultValues.targetAge
+        AppGroupManager.shared.screenTimeGoalMinutes = sliderTargetHours * 60
 
         // Save selected categories as strings
         let categoryStrings = selectedCategories.map { $0.rawValue }

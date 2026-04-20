@@ -1,97 +1,24 @@
 import Foundation
 import Observation
 
-/// ViewModel for the Stats tab
-/// In production, rendering happens in the extension. This VM is for coordination and fallback.
+/// ViewModel for the Stats tab.
+///
+/// PRIVACY MODEL
+/// -------------
+/// All screen time figures on the Stats tab are rendered by the
+/// `ScreenSpanReport` extension — see `StatsTabView`. The host app is
+/// not permitted to derive, infer, or reverse-engineer daily screen
+/// time hours from any source (not from the Screen Time API, not from
+/// onboarding self-estimates stored in the App Group, and not from
+/// saved goals).
+///
+/// Consequently, this ViewModel no longer performs any usage
+/// calculation. It is kept as a minimal, empty observable so existing
+/// Xcode project membership remains valid. If a future Stats-tab
+/// feature needs host-side state (e.g. a user-chosen time-range
+/// selector), add it here — but never add anything that reads or
+/// computes numeric screen time usage.
 @Observable
 final class StatsViewModel {
-    // MARK: - Properties
-
-    var projection: ProjectionResult?
-    var isLoading: Bool = false
-
-    // MARK: - Public Methods
-
-    /// Load stats data from AppGroupManager
-    func loadData() {
-        isLoading = true
-        defer { isLoading = false }
-
-        let manager = AppGroupManager.shared
-
-        projection = resolveProjection(using: manager)
-    }
-
-    /// Refresh stats from the latest available data
-    func refresh() {
-        loadData()
-    }
-
-    // MARK: - Private Methods
-
-    private func resolveProjection(using manager: AppGroupManager) -> ProjectionResult? {
-        let currentAge = manager.currentAge
-        let targetAge = max(manager.targetAge, currentAge)
-
-        if currentAge > 0, targetAge > currentAge {
-            let dailyHours = resolveAverageDailyHours(
-                currentAge: currentAge,
-                targetAge: targetAge,
-                manager: manager
-            )
-
-            if dailyHours > 0 {
-                return ProjectionCalculator.calculateProjectionFromDaily(
-                    currentAge: currentAge,
-                    targetAge: targetAge,
-                    dailyHours: dailyHours
-                )
-            }
-        }
-
-        let storedYears = manager.onboardingProjectedYears
-        let storedPercent = manager.onboardingWakingPercent
-        guard storedYears > 0 || storedPercent > 0 else { return nil }
-
-        let wakeHoursPerDay = SharedConstants.DefaultValues.wakeHoursPerDay
-        let resolvedDailyHours = storedPercent > 0
-            ? (storedPercent / 100) * wakeHoursPerDay
-            : 0
-
-        return ProjectionResult(
-            yearsOnPhone: storedYears,
-            monthsOnPhone: storedYears * 12,
-            daysOnPhone: storedYears * 365,
-            hoursOnPhone: storedYears * SharedConstants.DefaultValues.hoursPerYear,
-            percentOfWakingLife: storedPercent,
-            dailyPhoneHours: resolvedDailyHours
-        )
-    }
-
-    private func resolveAverageDailyHours(
-        currentAge: Int,
-        targetAge: Int,
-        manager: AppGroupManager
-    ) -> Double {
-        let onboardingWakingPercent = manager.onboardingWakingPercent
-        if onboardingWakingPercent > 0 {
-            return (onboardingWakingPercent / 100) * SharedConstants.DefaultValues.wakeHoursPerDay
-        }
-
-        let projectedYears = manager.onboardingProjectedYears
-        if projectedYears > 0, targetAge > currentAge {
-            let remainingYears = Double(targetAge - currentAge)
-            let derivedHours = (projectedYears * SharedConstants.DefaultValues.hoursPerYear) / (remainingYears * 365)
-            if derivedHours > 0 {
-                return derivedHours
-            }
-        }
-
-        let storedGoalHours = manager.screenTimeGoalMinutes / 60
-        if storedGoalHours > 0 {
-            return storedGoalHours
-        }
-
-        return SharedConstants.DefaultValues.defaultDailyAvgHours
-    }
+    init() {}
 }

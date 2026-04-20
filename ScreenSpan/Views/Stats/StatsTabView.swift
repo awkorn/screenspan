@@ -1,111 +1,66 @@
 import SwiftUI
+import DeviceActivity
 
-/// Statistics tab displaying user's screen time metrics
+/// Statistics tab.
+///
+/// PRIVACY MODEL
+/// -------------
+/// Per Apple's Screen Time privacy model, all per-app and per-category
+/// usage data must be processed inside the `DeviceActivityReport`
+/// extension. This view therefore contains **no** rendering of usage
+/// values — it is a thin host that embeds the `ScreenSpanReport`
+/// extension via `DeviceActivityReport(.stats, filter:)`. Hero years,
+/// donut chart, and stat cards are all drawn by the extension process
+/// and delivered to the host as pixels.
 struct StatsTabView: View {
-    @State private var viewModel = StatsViewModel()
+    @EnvironmentObject private var authService: AuthorizationService
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 36) {
-                heroYearsSection
-                donutChartSection
-                statCardsSection
+        Group {
+            if authService.isAuthorized {
+                DeviceActivityReport(
+                    .stats,
+                    filter: .screenSpanDaily
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                authorizationRequiredView
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 28)
-            .padding(.bottom, 120)
         }
         .background(Color.white.ignoresSafeArea())
-        .task {
-            viewModel.loadData()
+    }
+
+    private var authorizationRequiredView: some View {
+        VStack(spacing: 18) {
+            Spacer()
+
+            Image(systemName: "hourglass.badge.exclamationmark")
+                .font(.geist(size: 40, weight: .semibold))
+                .foregroundStyle(Color(hex: "#102847"))
+
+            VStack(spacing: 8) {
+                Text("Screen Time access is required")
+                    .font(.geist(size: 22, weight: .bold))
+                    .foregroundStyle(Color(hex: "#102847"))
+
+                Text("Your stats now render through the Device Activity report extension, so the app needs Screen Time permission before it can display them.")
+                    .font(.geist(size: 15))
+                    .foregroundStyle(Color(hex: "#595959"))
+                    .multilineTextAlignment(.center)
+            }
+
+            Button {
+                Task {
+                    await authService.requestAuthorization()
+                }
+            } label: {
+                Text("Allow Screen Time Access")
+                    .onboardingPrimaryButtonStyle()
+            }
+            .padding(.horizontal, 24)
+
+            Spacer()
         }
-    }
-
-    private var heroYearsSection: some View {
-        VStack(spacing: 8) {
-            Text(yearsTitle)
-                .font(.geist(size: 36, weight: .heavy))
-                .foregroundStyle(Color(hex: "#0A1F38"))
-                .multilineTextAlignment(.center)
-                .monospacedDigit()
-
-            Text("projected on your phone")
-                .font(.geist(size: 16, weight: .medium))
-                .foregroundStyle(Color(hex: "#595959"))
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.bottom, 24)
-    }
-
-    private var donutChartSection: some View {
-        VStack(spacing: 16) {
-            DonutChartView(
-                phoneTime: projection?.dailyPhoneHours ?? 0,
-                totalWakingHours: SharedConstants.DefaultValues.wakeHoursPerDay
-            )
-        }
-    }
-
-    private var statCardsSection: some View {
-        HStack(spacing: 14) {
-            statTile(
-                icon: "calendar",
-                value: projection.map { formatWholeNumber($0.monthsOnPhone) } ?? "--",
-                label: "months"
-            )
-
-            statTile(
-                icon: "sun.max",
-                value: projection.map { formatWholeNumber($0.daysOnPhone) } ?? "--",
-                label: "days"
-            )
-
-            statTile(
-                icon: "clock",
-                value: projection.map { formatWholeNumber($0.hoursOnPhone) } ?? "--",
-                label: "hours"
-            )
-        }
-    }
-
-    private var projection: ProjectionResult? {
-        viewModel.projection
-    }
-
-    private var yearsTitle: String {
-        guard let projection else { return "-- YEARS" }
-        return String(format: "%.1f YEARS", projection.yearsOnPhone)
-    }
-
-    private func statTile(icon: String, value: String, label: String) -> some View {
-        VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.geist(size: 18, weight: .semibold))
-                .foregroundStyle(Color(hex: "#235187"))
-                .frame(height: 20)
-
-            Text(value)
-                .font(.geist(size: 16, weight: .bold))
-                .foregroundStyle(Color(hex: "#0D141C"))
-                .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-
-            Text(label)
-                .font(.geist(size: 14, weight: .medium))
-                .foregroundStyle(Color(hex: "#595959"))
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 102)
-        .background(Color(hex: "#F6F7FA"))
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
-
-    private func formatWholeNumber(_ value: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 0
-        formatter.roundingMode = .halfUp
-        return formatter.string(from: NSNumber(value: value)) ?? String(Int(value.rounded()))
+        .padding(.horizontal, 24)
     }
 }

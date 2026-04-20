@@ -1,16 +1,27 @@
 import Foundation
 import Observation
 
-/// ViewModel for the History tab
-/// Premium-gated feature: if not premium, isLocked = true
+/// ViewModel for the History tab.
+///
+/// PRIVACY MODEL
+/// -------------
+/// Weekly averages, trend deltas, and life-reclaimed values on the
+/// History tab are Screen Time-derived and are therefore rendered by
+/// the `ScreenSpanReport` extension — see `HistoryTabView`. The host
+/// app must not compute, synthesize, or persist these values.
+///
+/// The previous implementation generated mock weekly averages locally
+/// with a comment noting that production would "pull from ScreenTime
+/// framework or server" — both of those paths are hard App Review
+/// rejections. That logic has been removed.
+///
+/// What remains here is only the premium-gating state, which is driven
+/// by `subscriptionStatus` (a non-usage value that the host is allowed
+/// to read from the App Group).
 @Observable
 final class HistoryViewModel {
     // MARK: - Properties
 
-    var selectedPeriod: String = "3M"
-    var weeklyAverages: [Double] = []
-    var trendDelta: Double?
-    var yearsReclaimed: Double?
     var isLocked: Bool = false
     var showPaywall: Bool = false
 
@@ -20,27 +31,15 @@ final class HistoryViewModel {
 
     // MARK: - Public Methods
 
-    /// Load history data from AppGroupManager
+    /// Refresh premium gating state.
     func loadData() async {
-        // Check premium access first
         await checkPremiumAccess()
-
         if isLocked {
             showPaywall = true
-            return
         }
-
-        // Load weekly averages
-        loadWeeklyAverages()
-
-        // Calculate trend
-        calculateTrendDelta()
-
-        // Load years reclaimed from stored data
-        loadYearsReclaimed()
     }
 
-    /// Check if user has premium subscription
+    /// Check if user has premium subscription.
     func checkPremiumAccess() async {
         let statusString = AppGroupManager.shared.subscriptionStatus
         let status = SubscriptionStatus(rawValue: statusString) ?? .free
@@ -48,43 +47,8 @@ final class HistoryViewModel {
         self.showPaywall = isLocked
     }
 
-    /// Refresh history data
+    /// Refresh gating state.
     func refresh() async {
         await loadData()
-    }
-
-    // MARK: - Private Methods
-
-    /// Load weekly screen time averages (simulated from projection)
-    private func loadWeeklyAverages() {
-        // In production, this would pull from ScreenTime framework or server
-        // For now, generate mock data based on stored daily goal
-        let dailyAvgHours = AppGroupManager.shared.screenTimeGoalMinutes / 60
-        let baseHours = dailyAvgHours > 0 ? dailyAvgHours : SharedConstants.DefaultValues.defaultDailyAvgHours
-
-        var averages: [Double] = []
-        for _ in 0..<12 {
-            let variance = Double.random(in: -0.5...0.5)
-            let weekAverage = baseHours + variance
-            averages.append(max(0, weekAverage))
-        }
-        self.weeklyAverages = averages
-    }
-
-    /// Calculate trend delta (change from first week to most recent)
-    private func calculateTrendDelta() {
-        guard !weeklyAverages.isEmpty else { return }
-
-        let firstWeek = weeklyAverages.first ?? 0
-        let lastWeek = weeklyAverages.last ?? 0
-        self.trendDelta = lastWeek - firstWeek
-    }
-
-    /// Load years reclaimed from stored data
-    private func loadYearsReclaimed() {
-        let projectedYears = AppGroupManager.shared.onboardingProjectedYears
-        if projectedYears > 0 {
-            self.yearsReclaimed = projectedYears
-        }
     }
 }

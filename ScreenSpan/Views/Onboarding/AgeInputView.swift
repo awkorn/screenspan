@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct AgeInputView: View {
     var viewModel: OnboardingViewModel
@@ -60,15 +61,20 @@ struct AgeInputView: View {
 
             Spacer().frame(height: 28)
 
-            DatePicker(
-                "Date picker",
-                selection: $selectedDateOfBirth,
-                in: minimumDate...maximumDate,
-                displayedComponents: [.date]
-            )
-            .datePickerStyle(.wheel)
-            .labelsHidden()
-            .frame(maxWidth: .infinity)
+            VStack(spacing: 12) {
+                Text(selectedDateOfBirth.formatted(date: .complete, time: .omitted))
+                    .font(.geist(size: 18, weight: .medium))
+                    .foregroundColor(titleColor)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+
+                BirthDateWheelPicker(
+                    selectedDate: $selectedDateOfBirth,
+                    minimumDate: minimumDate,
+                    maximumDate: maximumDate
+                )
+                .frame(height: 216)
+            }
             .padding(.horizontal, 12)
 
             Spacer()
@@ -110,6 +116,55 @@ struct AgeInputView: View {
                let dateFromAge = Calendar.current.date(byAdding: .year, value: -viewModel.selectedAge, to: .now) {
                 selectedDateOfBirth = dateFromAge
             }
+        }
+    }
+}
+
+private struct BirthDateWheelPicker: UIViewRepresentable {
+    @Binding var selectedDate: Date
+    let minimumDate: Date
+    let maximumDate: Date
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    func makeUIView(context: Context) -> UIDatePicker {
+        let picker = UIDatePicker()
+        picker.datePickerMode = .date
+        picker.preferredDatePickerStyle = .wheels
+        picker.locale = .current
+        picker.minimumDate = minimumDate
+        picker.maximumDate = maximumDate
+        picker.date = selectedDate
+        picker.overrideUserInterfaceStyle = .light
+        picker.addTarget(
+            context.coordinator,
+            action: #selector(Coordinator.dateChanged(_:)),
+            for: .valueChanged
+        )
+        return picker
+    }
+
+    func updateUIView(_ uiView: UIDatePicker, context: Context) {
+        uiView.minimumDate = minimumDate
+        uiView.maximumDate = maximumDate
+        uiView.overrideUserInterfaceStyle = .light
+
+        if uiView.date != selectedDate {
+            uiView.date = selectedDate
+        }
+    }
+
+    final class Coordinator: NSObject {
+        private var parent: BirthDateWheelPicker
+
+        init(_ parent: BirthDateWheelPicker) {
+            self.parent = parent
+        }
+
+        @objc func dateChanged(_ sender: UIDatePicker) {
+            parent.selectedDate = sender.date
         }
     }
 }

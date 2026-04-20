@@ -1,10 +1,19 @@
 import SwiftUI
+import DeviceActivity
 
-/// Premium-gated history tab showing trends over time
-/// Free users see a locked state with upsell prompt.
-/// Premium users see trend analytics and historical data.
+/// Premium-gated history tab showing trends over time.
+///
+/// PRIVACY MODEL
+/// -------------
+/// Historical screen time trends are Screen Time data and must only be
+/// processed inside the `DeviceActivityReport` extension. The free /
+/// premium gate uses the user's subscription status (allowed in the host
+/// app). When the user is premium, the host embeds the extension via
+/// `DeviceActivityReport(.history, filter:)` — the trend chart, deltas,
+/// and life-reclaimed values are all drawn inside the extension process
+/// and handed back as pixels.
 struct HistoryTabView: View {
-    @State private var viewModel = HistoryViewModel()
+    @EnvironmentObject private var authService: AuthorizationService
     @State private var showPaywall = false
     @AppStorage("isPremium") private var isPremium = false
 
@@ -33,24 +42,20 @@ struct HistoryTabView: View {
     }
 
     // MARK: - Premium Content
+    /// Premium users see the DeviceActivityReport extension embedded here.
+    /// All trend values, weekly averages, and deltas are rendered inside
+    /// the extension process — the host never receives numeric usage data.
     private var premiumContent: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // MARK: - Time Period Selector
-                timePeriodSection
-
-                // MARK: - Trend Indicator
-                trendSection
-
-                // MARK: - Line Chart Placeholder
-                chartSection
-
-                // MARK: - Life Reclaimed Callout
-                lifeReclaimedSection
-
-                Spacer()
+        Group {
+            if authService.isAuthorized {
+                DeviceActivityReport(
+                    .history,
+                    filter: .screenSpanHistory
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                authorizationRequiredView
             }
-            .padding()
         }
     }
 
@@ -99,146 +104,41 @@ struct HistoryTabView: View {
         .padding()
     }
 
-    // MARK: - Time Period Section
-    private var timePeriodSection: some View {
-        HStack(spacing: 8) {
-            ForEach(["1M", "3M", "6M", "1Y"], id: \.self) { period in
-                Button(action: { viewModel.selectedPeriod = period }) {
-                    Text(period)
-                        .font(.geist(.caption))
-                        .fontWeight(.semibold)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            viewModel.selectedPeriod == period
-                                ? Color(hex: "#457B9D")
-                                : Color.white
-                        )
-                        .foregroundColor(
-                            viewModel.selectedPeriod == period
-                                ? .white
-                                : Color(hex: "#1B2A4A")
-                        )
-                        .cornerRadius(6)
-                }
-            }
-
-            Spacer()
-        }
-    }
-
-    // MARK: - Trend Section
-    private var trendSection: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Trend")
-                    .textCase( .uppercase )
-                    .font(.geist(.caption))
-                    .foregroundColor(Color(hex: "#A8DADC"))
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "arrow.down.circle.fill")
-                        .foregroundColor(Color(hex: "#457B9D"))
-
-                    Text("12.5% decrease")
-                        .font(.geist(.headline))
-                        .foregroundColor(Color(hex: "#1B2A4A"))
-                }
-            }
-
+    private var authorizationRequiredView: some View {
+        VStack(spacing: 18) {
             Spacer()
 
-            Text("vs previous period")
-                .font(.geist(.caption2))
-                .foregroundColor(Color(hex: "#A8DADC"))
-        }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-    }
-
-    // MARK: - Chart Section (Placeholder)
-    private var chartSection: some View {
-        VStack(spacing: 12) {
-            Text("Screen Time Trend")
-                .font(.geist(.headline))
+            Image(systemName: "chart.line.uptrend.xyaxis.circle")
+                .font(.geist(size: 40, weight: .semibold))
                 .foregroundColor(Color(hex: "#1B2A4A"))
-                .frame(maxWidth: .infinity, alignment: .leading)
 
-            // Placeholder for line chart
-            RoundedRectangle(cornerRadius: 12)
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(hex: "#457B9D").opacity(0.1),
-                            Color(hex: "#E63946").opacity(0.1)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(height: 180)
-                .overlay(
-                    HStack(spacing: 20) {
-                        ForEach(0..<5, id: \.self) { _ in
-                            VStack(spacing: 8) {
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color(hex: "#457B9D").opacity(0.3))
-                                    .frame(width: 4, height: CGFloat.random(in: 60...140))
+            VStack(spacing: 8) {
+                Text("Enable Screen Time to view trends")
+                    .font(.geist(.headline))
+                    .foregroundColor(Color(hex: "#1B2A4A"))
 
-                                Spacer()
-                            }
-                        }
-                    }
+                Text("History is now rendered by the Device Activity report extension, so we need Screen Time access before those trend screens can load.")
+                    .font(.geist(.subheadline))
+                    .foregroundColor(Color(hex: "#A8DADC"))
+                    .multilineTextAlignment(.center)
+            }
+
+            Button {
+                Task {
+                    await authService.requestAuthorization()
+                }
+            } label: {
+                Text("Allow Screen Time Access")
+                    .frame(maxWidth: .infinity)
                     .padding()
-                )
+                    .background(Color(hex: "#E63946"))
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+
+            Spacer()
         }
         .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-    }
-
-    // MARK: - Life Reclaimed Section
-    private var lifeReclaimedSection: some View {
-        VStack(spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Life Reclaimed")
-                        .font(.geist(.headline))
-                        .foregroundColor(Color(hex: "#1B2A4A"))
-
-                    Text("Last 3 months")
-                        .font(.geist(.caption))
-                        .foregroundColor(Color(hex: "#A8DADC"))
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("28h 30m")
-                        .font(.geist(.title3))
-                        .fontWeight(.semibold)
-                        .foregroundColor(Color(hex: "#457B9D"))
-
-                    Text("of screen time reduced"
-                    )
-                        .font(.geist(.caption2))
-                        .foregroundColor(Color(hex: "#A8DADC"))
-                }
-            }
-            .padding()
-            .background(
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color(hex: "#457B9D").opacity(0.1),
-                        Color(hex: "#A8DADC").opacity(0.05)
-                    ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .cornerRadius(12)
-        }
     }
 }
 

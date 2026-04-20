@@ -44,26 +44,16 @@ final class AppGroupManager {
         }
     }
 
-    /// Projected years on phone from onboarding
-    var onboardingProjectedYears: Double {
-        get {
-            userDefaults.double(forKey: SharedConstants.UserDefaultsKey.onboardingProjectedYears.rawValue)
-        }
-        set {
-            userDefaults.set(newValue, forKey: SharedConstants.UserDefaultsKey.onboardingProjectedYears.rawValue)
-        }
-    }
-
-
-    /// Percentage of waking life spent on the phone from onboarding
-    var onboardingWakingPercent: Double {
-        get {
-            userDefaults.double(forKey: SharedConstants.UserDefaultsKey.onboardingWakingPercent.rawValue)
-        }
-        set {
-            userDefaults.set(newValue, forKey: SharedConstants.UserDefaultsKey.onboardingWakingPercent.rawValue)
-        }
-    }
+    // PRIVACY MODEL
+    // -------------
+    // `onboardingProjectedYears` and `onboardingWakingPercent` were
+    // intentionally removed. Although they were originally populated
+    // from the user's self-estimate (legal input), the host app then
+    // read them to reverse-engineer average daily hours, and the same
+    // channel could trivially be repurposed to leak real Screen Time
+    // values back into the host. Onboarding now keeps its computed
+    // projection in-memory only; nothing usage-derived crosses the
+    // extension/host boundary via this manager.
 
     /// Selected DeviceActivity categories
     var selectedCategories: [String] {

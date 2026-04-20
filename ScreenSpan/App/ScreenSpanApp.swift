@@ -25,10 +25,9 @@ struct ScreenSpanApp: App {
     }
 
     private func setupServices() {
-        // Request DeviceActivity authorization
-        Task {
-            await authService.requestAuthorization()
-        }
+        // Keep our in-memory authorization state in sync on launch. The
+        // onboarding permission step owns the actual system prompt.
+        authService.refreshAuthorizationStatus()
 
         // Initialize StoreKit
         storeKitService.loadProducts()

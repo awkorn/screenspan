@@ -1,14 +1,10 @@
-import DeviceActivity
-import _DeviceActivity_SwiftUI
-
-/// Custom DeviceActivityReport contexts used by ScreenSpan
-extension DeviceActivityReport.Context {
-    /// Stats view: hero years number, donut chart, stat cards, reclaim preview
-    static let stats = Self("stats")
-
-    /// Chart view: life grid visualization
-    static let chart = Self("chart")
-
-    /// History view: weekly trends (premium-gated)
-    static let history = Self("history")
-}
+// MOVED
+// =====
+// The `DeviceActivityReport.Context` extensions (`.stats`, `.chart`,
+// `.history`) now live in `Shared/DeviceActivityReport+Contexts.swift`
+// so both the ScreenSpan host app target and the ScreenSpanReport
+// extension target see identical Context identifiers.
+//
+// This file is intentionally empty and safe to delete from disk and
+// from the Xcode project; it is kept only so XcodeGen regeneration
+// against existing project.pbxproj snapshots does not fail.

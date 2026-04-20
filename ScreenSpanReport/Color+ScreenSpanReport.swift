@@ -21,4 +21,22 @@ extension Color {
 
     /// Light gray - Subtle backgrounds (#E5E5E5)
     static let screenSpanLightGray = Color(red: 0.898, green: 0.898, blue: 0.898)
+
+    /// Initialize color from hex string (e.g., "#1B2A4A").
+    /// Mirrors the host app's `Color(hex:)` initializer so views shared
+    /// with the extension (e.g. `DonutChartView`, `LifeGridView`) and
+    /// the extension's own report views can use the same palette.
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+        let scanner = Scanner(string: hex)
+        var rgbValue: UInt64 = 0
+
+        scanner.scanHexInt64(&rgbValue)
+
+        let r = Double((rgbValue >> 16) & 0xFF) / 255.0
+        let g = Double((rgbValue >> 8) & 0xFF) / 255.0
+        let b = Double(rgbValue & 0xFF) / 255.0
+
+        self.init(red: r, green: g, blue: b)
+    }
 }

@@ -2,6 +2,9 @@ import SwiftUI
 
 struct PermissionRequestView: View {
     var viewModel: OnboardingViewModel
+    @EnvironmentObject private var authService: AuthorizationService
+    @State private var isRequestingAuthorization = false
+    @State private var authorizationMessage: String?
 
     private let backgroundColor = Color.white
     private let titleColor = Color(hex: "051425")
@@ -83,24 +86,58 @@ struct PermissionRequestView: View {
 
             Spacer()
 
-            Button(action: requestScreenTimeAccess) {
-                Text("Allow Screen Time Access")
-                    .onboardingPrimaryButtonStyle()
+            VStack(spacing: 0) {
+                Button(action: requestScreenTimeAccess) {
+                    Text(isRequestingAuthorization ? "Requesting Access..." : "Allow Screen Time Access")
+                        .onboardingPrimaryButtonStyle()
+                }
+                .disabled(isRequestingAuthorization)
+                .padding(.horizontal, 24)
+
+                if let authorizationMessage {
+                    Text(authorizationMessage)
+                        .font(.geist(size: 13))
+                        .foregroundColor(subtitleColor)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                        .padding(.top, 12)
+                }
             }
-            .padding(.horizontal, 24)
             .padding(.bottom, 34)
         }
         .background(backgroundColor.ignoresSafeArea())
     }
 
     private func requestScreenTimeAccess() {
-        // TODO: Implement actual Screen Time permission request
-        // In production, this would request access to Screen Time data
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        Task { @MainActor in
+            isRequestingAuthorization = true
+            authorizationMessage = nil
+
+            await authService.requestAuthorization()
+            isRequestingAuthorization = false
+
+            guard authService.isAuthorized else {
+                authorizationMessage = authService.authorizationErrorMessage ?? fallbackAuthorizationMessage
+                return
+            }
+
             viewModel.screenTimePermissionGranted = true
             withAnimation(.easeInOut(duration: 0.3)) {
                 viewModel.advance()
             }
+        }
+    }
+
+    private var fallbackAuthorizationMessage: String {
+        switch authService.authorizationStatus {
+        case .approved:
+            return ""
+        case .denied:
+            return "Screen Time access was denied. Try again, or enable it in Settings if you denied it earlier."
+        case .notDetermined:
+            return "Screen Time access is still unavailable. Try again once the permission sheet finishes."
+        @unknown default:
+            return "Screen Time access is still unavailable. Try again, or enable it in Settings if you denied it earlier."
         }
     }
 }

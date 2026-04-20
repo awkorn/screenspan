@@ -17,6 +17,8 @@ targets:
       - path: ScreenSpan
         excludes:
           - "*.entitlements"
+          - "Views/Components/DonutChartView.swift"
+          - "Views/Components/LifeGridView.swift"
       - path: Shared
     info:
       path: ScreenSpan/Info.plist
@@ -32,13 +34,12 @@ targets:
       path: ScreenSpan/ScreenSpan.entitlements
       uses: [.plist]
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.app
+      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan
       TARGETED_DEVICE_FAMILY: 1
-      CODE_SIGNING_ALLOWED: NO
-      CODE_SIGNING_REQUIRED: NO
     dependencies:
       - target: ScreenSpanReport
     frameworks:
+      - DeviceActivity
       - FamilyControls
       - StoreKit
 
@@ -49,6 +50,7 @@ targets:
       - path: ScreenSpanReport
         excludes:
           - "*.entitlements"
+          - "DeviceActivityReport+Contexts.swift"
       - path: Shared
       - path: ScreenSpan/Resources/Fonts/Geist
         buildPhase: resources
@@ -67,10 +69,8 @@ targets:
       path: ScreenSpanReport/ScreenSpanReport.entitlements
       uses: [.plist]
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.app.report
+      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.deviceactivity
       TARGETED_DEVICE_FAMILY: 1
-      CODE_SIGNING_ALLOWED: NO
-      CODE_SIGNING_REQUIRED: NO
     frameworks:
       - DeviceActivity
       - FamilyControls

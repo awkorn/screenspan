@@ -1,27 +1,29 @@
 import SwiftUI
 import DeviceActivity
-import Charts
 
-/// Stats view rendered in the DeviceActivityReport extension
-/// Displays hero years number, donut chart, stat cards, and reclaim preview
+/// Stats view rendered inside the `DeviceActivityReport` extension.
+///
+/// IMPORTANT: This view is the ONLY place allowed to render raw numeric
+/// screen-time values. The host app passes no usage data in; it instead
+/// embeds this whole view via `DeviceActivityReport(.stats, filter:)`.
+///
+/// Takes a single scalar (`dailyAverageHours`) that is produced by the
+/// extension's `DeviceActivityReportScene` from `DeviceActivityResults`,
+/// and derives projection math from it + user-entered age settings
+/// (currentAge / targetAge) read from the shared App Group.
+///
+/// Visuals mirror the original `StatsTabView` from the host app:
+///  • hero "X.X YEARS" + "projected on your phone" subtitle
+///  • `DonutChartView` of phone hours vs. remaining waking hours
+///  • three stat tiles (months / days / hours on phone)
 struct StatsReportView: View {
     let dailyAverageHours: Double
 
-    // Shared UserDefaults
     @AppStorage(SharedConstants.UserDefaultsKey.currentAge.rawValue, store: .appGroup)
     private var currentAge: Int = 30
 
     @AppStorage(SharedConstants.UserDefaultsKey.targetAge.rawValue, store: .appGroup)
     private var targetAge: Int = SharedConstants.DefaultValues.targetAge
-
-    @AppStorage(SharedConstants.UserDefaultsKey.screenTimeGoalMinutes.rawValue, store: .appGroup)
-    private var screenTimeGoalMinutes: Int = 120
-
-    @AppStorage(SharedConstants.UserDefaultsKey.onboardingProjectedYears.rawValue, store: .appGroup)
-    private var onboardingProjectedYears: Double = 0
-
-    @AppStorage(SharedConstants.UserDefaultsKey.subscriptionStatus.rawValue, store: .appGroup)
-    private var subscriptionStatus: String = "free"
 
     private var projection: ProjectionResult {
         ProjectionCalculator.calculateProjectionFromDaily(
@@ -31,144 +33,100 @@ struct StatsReportView: View {
         )
     }
 
-    private var reclaim: ReclaimResult {
-        ProjectionCalculator.calculateReclaim(
-            currentProjection: projection,
-            goalDailyMinutes: Double(screenTimeGoalMinutes),
-            currentAge: currentAge,
-            targetAge: targetAge
-        )
-    }
-
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // Hero Years Number
-                VStack(spacing: 8) {
-                    Text("Years Reclaimed")
-                        .font(.geist(.caption))
-                        .foregroundColor(.gray)
-
-                    Text(String(format: "%.1f", reclaim.yearsReclaimed))
-                        .font(.geist(size: 48, weight: .bold))
-                        .foregroundColor(.screenSpanBlue)
-                }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.screenSpanOffWhite)
-                .cornerRadius(12)
-
-                // Donut Chart
-                VStack(spacing: 12) {
-                    Chart {
-                        SectorMark(
-                            angle: .value("Reclaimed", reclaim.yearsReclaimed),
-                            innerRadius: .ratio(0.7),
-                            angularInset: 1.5
-                        )
-                        .foregroundStyle(Color.screenSpanBlue)
-
-                        SectorMark(
-                            angle: .value("Without Change", projection.yearsOnPhone),
-                            innerRadius: .ratio(0.7),
-                            angularInset: 1.5
-                        )
-                        .foregroundStyle(Color.screenSpanLightGray)
-                    }
-                    .frame(height: 200)
-
-                    HStack(spacing: 16) {
-                        HStack(spacing: 8) {
-                            Circle()
-                                .fill(Color.screenSpanBlue)
-                                .frame(width: 12, height: 12)
-                            Text("Reclaimed")
-                                .font(.geist(.caption))
-                        }
-                        HStack(spacing: 8) {
-                            Circle()
-                                .fill(Color.screenSpanLightGray)
-                                .frame(width: 12, height: 12)
-                            Text("Without Change")
-                                .font(.geist(.caption))
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .padding()
-                .background(Color.screenSpanOffWhite)
-                .cornerRadius(12)
-
-                // Stat Cards
-                VStack(spacing: 12) {
-                    StatCard(
-                        label: "Months",
-                        value: String(Int(reclaim.monthsReclaimed)),
-                        icon: "calendar"
-                    )
-                    StatCard(
-                        label: "Days",
-                        value: String(Int(projection.daysOnPhone)),
-                        icon: "calendar.circle"
-                    )
-                    StatCard(
-                        label: "Hours",
-                        value: String(Int(projection.hoursOnPhone)),
-                        icon: "clock"
-                    )
-                }
-
-                // Reclaim Preview
-                VStack(spacing: 12) {
-                    Text("Your Potential")
-                        .font(.geist(.headline))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("At current pace, you'll reclaim \(String(format: "%.1f", reclaim.yearsReclaimed)) years.")
-                            .font(.geist(.body))
-                            .foregroundColor(.primary)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.screenSpanOffWhite)
-                    .cornerRadius(8)
-                }
-                .padding(.top, 12)
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 36) {
+                heroYearsSection
+                donutChartSection
+                statCardsSection
             }
-            .padding()
+            .padding(.horizontal, 24)
+            .padding(.top, 28)
+            .padding(.bottom, 120)
         }
-        .font(.geist(.body))
+        .background(Color.white.ignoresSafeArea())
     }
-}
 
-struct StatCard: View {
-    let label: String
-    let value: String
-    let icon: String
+    private var heroYearsSection: some View {
+        VStack(spacing: 8) {
+            Text(yearsTitle)
+                .font(.geist(size: 36, weight: .heavy))
+                .foregroundStyle(Color(hex: "#0A1F38"))
+                .multilineTextAlignment(.center)
+                .monospacedDigit()
 
-    var body: some View {
-        HStack(spacing: 12) {
+            Text("projected on your phone")
+                .font(.geist(size: 16, weight: .medium))
+                .foregroundStyle(Color(hex: "#595959"))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.bottom, 24)
+    }
+
+    private var donutChartSection: some View {
+        VStack(spacing: 16) {
+            DonutChartView(
+                phoneTime: projection.dailyPhoneHours,
+                totalWakingHours: SharedConstants.DefaultValues.wakeHoursPerDay
+            )
+        }
+    }
+
+    private var statCardsSection: some View {
+        HStack(spacing: 14) {
+            statTile(
+                icon: "calendar",
+                value: formatWholeNumber(projection.monthsOnPhone),
+                label: "months"
+            )
+
+            statTile(
+                icon: "sun.max",
+                value: formatWholeNumber(projection.daysOnPhone),
+                label: "days"
+            )
+
+            statTile(
+                icon: "clock",
+                value: formatWholeNumber(projection.hoursOnPhone),
+                label: "hours"
+            )
+        }
+    }
+
+    private var yearsTitle: String {
+        String(format: "%.1f YEARS", projection.yearsOnPhone)
+    }
+
+    private func statTile(icon: String, value: String, label: String) -> some View {
+        VStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.geist(.title2))
-                .foregroundColor(.screenSpanBlue)
-                .frame(width: 32, height: 32)
-                .background(Color.screenSpanBlue.opacity(0.1))
-                .cornerRadius(6)
+                .font(.geist(size: 18, weight: .semibold))
+                .foregroundStyle(Color(hex: "#235187"))
+                .frame(height: 20)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(label)
-                    .font(.geist(.caption))
-                    .foregroundColor(.gray)
-                Text(value)
-                    .font(.geist(.headline))
-                    .foregroundColor(.primary)
-            }
+            Text(value)
+                .font(.geist(size: 16, weight: .bold))
+                .foregroundStyle(Color(hex: "#0D141C"))
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
 
-            Spacer()
+            Text(label)
+                .font(.geist(size: 14, weight: .medium))
+                .foregroundStyle(Color(hex: "#595959"))
         }
-        .padding()
-        .background(Color.screenSpanOffWhite)
-        .cornerRadius(8)
+        .frame(maxWidth: .infinity)
+        .frame(height: 102)
+        .background(Color(hex: "#F6F7FA"))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private func formatWholeNumber(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        formatter.roundingMode = .halfUp
+        return formatter.string(from: NSNumber(value: value)) ?? String(Int(value.rounded()))
     }
 }
