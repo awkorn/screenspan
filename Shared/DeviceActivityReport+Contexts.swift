@@ -17,6 +17,14 @@ extension DeviceActivityReport.Context {
     /// Chart view: life grid visualization.
     static let chart = Self("chart")
 
+    /// Onboarding projection reveal rendered by the report extension so the
+    /// host never has to read usage-derived values.
+    static let onboardingProjection = Self("onboardingProjection")
+
+    /// Onboarding life chart rendered by the report extension so the host
+    /// never has to read usage-derived values.
+    static let onboardingLifeChart = Self("onboardingLifeChart")
+
     /// History view: weekly trends (premium-gated).
     static let history = Self("history")
 

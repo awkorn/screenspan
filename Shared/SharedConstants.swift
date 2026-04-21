@@ -29,7 +29,6 @@ enum SharedConstants {
         static let targetAge: Int = 80
         static let hoursAsleep: Double = 8
         static let wakeHoursPerDay: Double = 16
-        static let defaultDailyAvgHours: Double = 5.0 // US average fallback
         static let hoursPerYear: Double = 8760
     }
 }

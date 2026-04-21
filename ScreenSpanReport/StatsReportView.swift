@@ -17,13 +17,15 @@ import DeviceActivity
 ///  • `DonutChartView` of phone hours vs. remaining waking hours
 ///  • three stat tiles (months / days / hours on phone)
 struct StatsReportView: View {
-    let dailyAverageHours: Double
+    let payload: ScreenTimeReportPayload
 
     @AppStorage(SharedConstants.UserDefaultsKey.currentAge.rawValue, store: .appGroup)
     private var currentAge: Int = 30
 
     @AppStorage(SharedConstants.UserDefaultsKey.targetAge.rawValue, store: .appGroup)
     private var targetAge: Int = SharedConstants.DefaultValues.targetAge
+
+    private var dailyAverageHours: Double { payload.dailyAverageHours ?? 0 }
 
     private var projection: ProjectionResult {
         ProjectionCalculator.calculateProjectionFromDaily(
@@ -34,15 +36,24 @@ struct StatsReportView: View {
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 36) {
-                heroYearsSection
-                donutChartSection
-                statCardsSection
+        Group {
+            if payload.isAvailable {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 36) {
+                        heroYearsSection
+                        donutChartSection
+                        statCardsSection
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 28)
+                    .padding(.bottom, 120)
+                }
+            } else {
+                ScreenTimeUnavailableView(
+                    title: "We couldn't access your Screen Time data",
+                    message: "Stats are only useful with real Screen Time activity, so we aren't showing a fallback number."
+                )
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 28)
-            .padding(.bottom, 120)
         }
         .background(Color.white.ignoresSafeArea())
     }

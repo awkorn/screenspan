@@ -21,25 +21,36 @@ import Charts
 ///  • screen time line chart
 ///  • Life Reclaimed callout
 struct HistoryReportView: View {
-    let dailyAverageHours: Double
+    let payload: ScreenTimeReportPayload
 
     @AppStorage(SharedConstants.UserDefaultsKey.screenTimeGoalMinutes.rawValue, store: .appGroup)
     private var screenTimeGoalMinutes: Int = 120
+
+    private var dailyAverageHours: Double { payload.dailyAverageHours ?? 0 }
 
     @State private var selectedPeriod: String = "1M"
     private let periods = ["1M", "3M", "6M", "1Y"]
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 20) {
-                timePeriodSection
-                trendSection
-                chartSection
-                lifeReclaimedSection
+        Group {
+            if payload.isAvailable {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        timePeriodSection
+                        trendSection
+                        chartSection
+                        lifeReclaimedSection
 
-                Spacer(minLength: 20)
+                        Spacer(minLength: 20)
+                    }
+                    .padding()
+                }
+            } else {
+                ScreenTimeUnavailableView(
+                    title: "We couldn't access your Screen Time data",
+                    message: "History needs real Screen Time activity, so we aren't rendering synthetic trends."
+                )
             }
-            .padding()
         }
         .background(Color(hex: "#F8F9FA").ignoresSafeArea())
         .font(.geist(.body))

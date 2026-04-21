@@ -21,7 +21,7 @@ import DeviceActivity
 ///  • `LifeGridView` driven by `ProjectionCalculator.calculateLifeGrid`
 ///  • Lived / Screen time / Remaining legend
 struct ChartReportView: View {
-    let dailyAverageHours: Double
+    let payload: ScreenTimeReportPayload
 
     @AppStorage(SharedConstants.UserDefaultsKey.currentAge.rawValue, store: .appGroup)
     private var currentAge: Int = 30
@@ -31,6 +31,8 @@ struct ChartReportView: View {
 
     @AppStorage(SharedConstants.UserDefaultsKey.screenTimeGoalMinutes.rawValue, store: .appGroup)
     private var screenTimeGoalMinutes: Int = 120
+
+    private var dailyAverageHours: Double { payload.dailyAverageHours ?? 0 }
 
     /// Transient slider position in hours — starts at the stored goal,
     /// commits back when the drag settles.
@@ -67,23 +69,32 @@ struct ChartReportView: View {
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 28) {
-                sliderSection
-                    .padding(.top, 28)
+        Group {
+            if payload.isAvailable {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 28) {
+                        sliderSection
+                            .padding(.top, 28)
 
-                LifeGridView(goalGridData: goalGridData)
+                        LifeGridView(goalGridData: goalGridData)
 
-                legendSection
-                    .padding(.bottom, 12)
+                        legendSection
+                            .padding(.bottom, 12)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 24)
+                }
+                .onAppear {
+                    draftGoalHours = min(max(storedGoalHours, 0), maxSliderHours)
+                }
+            } else {
+                ScreenTimeUnavailableView(
+                    title: "We couldn't access your Screen Time data",
+                    message: "We need actual Screen Time activity before we can build your chart or compare it to your goal."
+                )
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
         }
         .background(Color.white.ignoresSafeArea())
-        .onAppear {
-            draftGoalHours = min(max(storedGoalHours, 0), maxSliderHours)
-        }
     }
 
     private var sliderSection: some View {

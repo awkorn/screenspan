@@ -20,8 +20,8 @@ final class OnboardingViewModel {
     var currentStep: OnboardingStep = .welcome
     var selectedAge: Int = 25
     var isPermissionGranted: Bool = false
-    var currentDailyAvgHours: Double = 5.0
-    var sliderTargetHours: Double = 5.0
+    var currentDailyAvgHours: Double = 0
+    var sliderTargetHours: Double = 0
     var selectedCategories: Set<UsageCategory> = []
     var projectionResult: ProjectionResult?
     var reclaimResult: ReclaimResult?

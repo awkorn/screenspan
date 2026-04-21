@@ -27,7 +27,7 @@ struct GoalSettingView: View {
                         .onboardingGoal,
                         filter: .screenSpanRecentDailyAverage
                     )
-                    .frame(height: 240)
+                    .frame(height: 300)
                 }
                 .padding(.bottom, 24)
             }

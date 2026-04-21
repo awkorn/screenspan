@@ -2,7 +2,6 @@ import SwiftUI
 
 struct OnboardingContainerView: View {
     @State private var viewModel = OnboardingViewModel()
-    @Namespace private var animation
 
     var body: some View {
         NavigationStack {
@@ -18,7 +17,7 @@ struct OnboardingContainerView: View {
                     case .permission:
                         PermissionRequestView(viewModel: viewModel)
                     case .lifeGridReveal:
-                        ProjectionRevealView(viewModel: viewModel, animation: animation)
+                        ProjectionRevealView(viewModel: viewModel)
                     case .comparisons:
                         LifeGridRevealView(viewModel: viewModel)
                     case .goalSetting:
