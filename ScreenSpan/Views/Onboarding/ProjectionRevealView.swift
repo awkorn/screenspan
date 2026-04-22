@@ -9,7 +9,7 @@ struct ProjectionRevealView: View {
             VStack(spacing: 0) {
                 DeviceActivityReport(
                     .onboardingProjection,
-                    filter: .screenSpanRecentDailyAverage
+                    filter: .screenSpanProjectionAverage
                 )
                 .frame(
                     maxWidth: .infinity,

@@ -95,6 +95,9 @@ struct OnboardingGoalReportScene: DeviceActivityReportScene {
 /// Extract the average daily Screen Time, in hours, from the
 /// `DeviceActivityResults` handed to the extension.
 ///
+/// For daily projection filters, segments are bucketed by calendar day
+/// before averaging so multiple devices contribute to the same daily total.
+///
 /// PRIVACY MODEL — DO NOT VIOLATE
 /// ------------------------------
 /// The `Double` returned here is a per-user Screen Time-derived value.
@@ -119,21 +122,22 @@ struct OnboardingGoalReportScene: DeviceActivityReportScene {
 private func extractDailyAverage(
     from results: DeviceActivityResults<DeviceActivityData>
 ) async -> ScreenTimeReportPayload {
-    var totalDuration: TimeInterval = 0
-    var segmentCount = 0
+    var durationByDay: [Date: TimeInterval] = [:]
+    let calendar = Calendar.current
 
     for await activityData in results {
         for await segment in activityData.activitySegments {
-            totalDuration += segment.totalActivityDuration
-            segmentCount += 1
+            let day = calendar.startOfDay(for: segment.dateInterval.start)
+            durationByDay[day, default: 0] += segment.totalActivityDuration
         }
     }
 
-    guard segmentCount > 0 else {
+    guard !durationByDay.isEmpty else {
         return .unavailable
     }
 
-    return .available((totalDuration / Double(segmentCount)) / 3600)
+    let totalDuration = durationByDay.values.reduce(0, +)
+    return .available((totalDuration / Double(durationByDay.count)) / 3600)
 }
 
 struct OnboardingProjectionReportView: View {

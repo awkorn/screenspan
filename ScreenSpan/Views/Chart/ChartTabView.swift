@@ -5,13 +5,13 @@ import DeviceActivity
 ///
 /// PRIVACY MODEL
 /// -------------
-/// The life grid visualization is derived from daily screen time hours,
-/// which are per-user Screen Time data. Per Apple's privacy model, that
-/// data may only be touched inside the `DeviceActivityReport` extension.
-/// This view is a thin host that embeds the `ScreenSpanReport` extension
-/// via `DeviceActivityReport(.chart, filter:)`; the grid, the goal
-/// slider's usage-derived reference values, and the legend are all drawn
-/// by the extension process.
+/// The life grid visualization is derived from the shared completed-days
+/// projection average, which is per-user Screen Time data. Per Apple's
+/// privacy model, that data may only be touched inside the
+/// `DeviceActivityReport` extension. This view is a thin host that embeds
+/// the `ScreenSpanReport` extension via `DeviceActivityReport(.chart,
+/// filter:)`; the grid, the goal slider's usage-derived reference values,
+/// and the legend are all drawn by the extension process.
 struct ChartTabView: View {
     @EnvironmentObject private var authService: AuthorizationService
 
@@ -20,7 +20,7 @@ struct ChartTabView: View {
             if authService.isAuthorized {
                 DeviceActivityReport(
                     .chart,
-                    filter: .screenSpanDaily
+                    filter: .screenSpanProjectionAverage
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {

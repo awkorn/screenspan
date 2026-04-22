@@ -25,7 +25,7 @@ struct GoalSettingView: View {
 
                     DeviceActivityReport(
                         .onboardingGoal,
-                        filter: .screenSpanRecentDailyAverage
+                        filter: .screenSpanProjectionAverage
                     )
                     .frame(height: 300)
                 }

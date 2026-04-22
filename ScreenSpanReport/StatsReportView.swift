@@ -8,9 +8,9 @@ import DeviceActivity
 /// embeds this whole view via `DeviceActivityReport(.stats, filter:)`.
 ///
 /// Takes a single scalar (`dailyAverageHours`) that is produced by the
-/// extension's `DeviceActivityReportScene` from `DeviceActivityResults`,
-/// and derives projection math from it + user-entered age settings
-/// (currentAge / targetAge) read from the shared App Group.
+/// extension's `DeviceActivityReportScene` from the shared completed-days
+/// projection average, and derives projection math from it + user-entered
+/// age settings (currentAge / targetAge) read from the shared App Group.
 ///
 /// Visuals mirror the original `StatsTabView` from the host app:
 ///  • hero "X.X YEARS" + "projected on your phone" subtitle

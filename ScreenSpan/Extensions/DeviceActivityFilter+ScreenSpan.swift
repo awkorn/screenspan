@@ -14,8 +14,9 @@ import Foundation
 /// only delivered to `makeConfiguration(representing:)` inside the
 /// extension process.
 extension DeviceActivityFilter {
-    /// Filter covering the current calendar day. Used by the Stats and
-    /// Chart tabs, which render a daily snapshot via the extension.
+    /// Filter covering the current calendar day. Use only for surfaces
+    /// that intentionally show live/in-progress daily activity, not for
+    /// lifetime projections.
     static var screenSpanDaily: DeviceActivityFilter {
         let calendar = Calendar.current
         let now = Date()
@@ -47,17 +48,17 @@ extension DeviceActivityFilter {
         )
     }
 
-    /// Filter covering the last seven completed days. Used by onboarding
-    /// so goal-setting is based on a stable recent daily average rather than
-    /// today's still-in-progress usage.
-    static var screenSpanRecentDailyAverage: DeviceActivityFilter {
+    /// Filter covering the last 28 completed days. Used by all lifetime
+    /// projection surfaces so screen-time calculations are based on a
+    /// stable habit window rather than today's still-in-progress usage.
+    static var screenSpanProjectionAverage: DeviceActivityFilter {
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: Date())
-        let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: startOfToday) ?? startOfToday
+        let twentyEightDaysAgo = calendar.date(byAdding: .day, value: -28, to: startOfToday) ?? startOfToday
 
         return DeviceActivityFilter(
             segment: .daily(
-                during: DateInterval(start: sevenDaysAgo, end: startOfToday)
+                during: DateInterval(start: twentyEightDaysAgo, end: startOfToday)
             ),
             users: .all,
             devices: .init([.iPhone, .iPad])

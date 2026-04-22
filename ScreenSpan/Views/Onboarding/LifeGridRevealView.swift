@@ -47,7 +47,7 @@ struct LifeGridRevealView: View {
 
             DeviceActivityReport(
                 .onboardingLifeChart,
-                filter: .screenSpanRecentDailyAverage
+                filter: .screenSpanProjectionAverage
             )
             .frame(height: gridHeight)
                 .padding(.top, 14)

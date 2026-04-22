@@ -10,8 +10,8 @@ import DeviceActivity
 /// extension. This view therefore contains **no** rendering of usage
 /// values — it is a thin host that embeds the `ScreenSpanReport`
 /// extension via `DeviceActivityReport(.stats, filter:)`. Hero years,
-/// donut chart, and stat cards are all drawn by the extension process
-/// and delivered to the host as pixels.
+/// donut chart, and stat cards are based on the shared completed-days
+/// projection average and delivered to the host as pixels.
 struct StatsTabView: View {
     @EnvironmentObject private var authService: AuthorizationService
 
@@ -20,7 +20,7 @@ struct StatsTabView: View {
             if authService.isAuthorized {
                 DeviceActivityReport(
                     .stats,
-                    filter: .screenSpanDaily
+                    filter: .screenSpanProjectionAverage
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {

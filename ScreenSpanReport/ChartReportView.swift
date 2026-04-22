@@ -9,8 +9,9 @@ import DeviceActivity
 ///
 /// Inputs:
 ///  • `dailyAverageHours` — scalar produced by the extension's
-///    `DeviceActivityReportScene` from `DeviceActivityResults`. This is the
-///    user's actual measured average and becomes the slider's max.
+///    `DeviceActivityReportScene` from the shared completed-days projection
+///    average. This is the user's measured habit average and becomes the
+///    slider's max.
 ///  • `currentAge` / `targetAge` — user-entered, read from App Group.
 ///  • `screenTimeGoalMinutes` — user-entered goal, read from App Group.
 ///    The slider writes back to this key so dragging updates the user's
