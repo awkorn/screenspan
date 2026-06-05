@@ -48,16 +48,18 @@ extension DeviceActivityFilter {
         )
     }
 
-    /// Filter covering the last 28 completed days. Used by all lifetime
-    /// projection surfaces so screen-time calculations are based on a
-    /// stable habit window rather than today's still-in-progress usage.
+    /// Filter covering the last 28 completed days, grouped into weekly
+    /// buckets. Used by all lifetime projection surfaces so screen-time
+    /// calculations are based on a stable habit window rather than today's
+    /// still-in-progress usage, without making the report extension enumerate
+    /// 28 separate daily buckets.
     static var screenSpanProjectionAverage: DeviceActivityFilter {
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: Date())
         let twentyEightDaysAgo = calendar.date(byAdding: .day, value: -28, to: startOfToday) ?? startOfToday
 
         return DeviceActivityFilter(
-            segment: .daily(
+            segment: .weekly(
                 during: DateInterval(start: twentyEightDaysAgo, end: startOfToday)
             ),
             users: .all,

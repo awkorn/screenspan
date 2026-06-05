@@ -1,3 +1,4 @@
+import DeviceActivity
 import SwiftUI
 
 // MARK: - Paywall View (Step 8)
@@ -12,10 +13,6 @@ struct PaywallView: View {
     private let moneyColor = Color(hex: "#0063D6")
     private let cardTitleColor = Color(hex: "#051425")
     private let cardSubtitleColor = Color(hex: "#595959")
-
-    private var reclaimedYearsRounded: Int {
-        Int(viewModel.reclaimedYears.rounded())
-    }
 
     enum Plan {
         case monthly
@@ -98,9 +95,16 @@ struct PaywallView: View {
                 .font(.geist(size: 28, weight: .bold))
                 .foregroundColor(titleColor)
 
-            Text("Reclaim those \(reclaimedYearsRounded) years of your life")
-                .font(.geist(size: 18))
-                .foregroundColor(subtitleColor)
+            DeviceActivityReport(
+                .onboardingPaywallReclaim,
+                filter: .screenSpanProjectionAverage
+            )
+            .frame(maxWidth: .infinity, minHeight: 34, maxHeight: 34, alignment: .leading)
+            .background(alignment: .leading) {
+                Text("Reclaim years of your life")
+                    .font(.geist(size: 18))
+                    .foregroundColor(subtitleColor)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

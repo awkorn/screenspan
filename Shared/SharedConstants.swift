@@ -2,6 +2,7 @@ import Foundation
 
 enum SharedConstants {
     static let appGroupIdentifier = "group.com.screenspan.shared"
+    static let onboardingAnalysisCompletedNotification = "com.screenspan.onboardingAnalysisCompleted"
 
     enum UserDefaultsKey: String {
         // PRIVACY MODEL
@@ -23,6 +24,7 @@ enum SharedConstants {
         case selectedCategories
         case subscriptionStatus
         case onboardingCompleted
+        case onboardingAnalysisCompleted
     }
 
     enum DefaultValues {

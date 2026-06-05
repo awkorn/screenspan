@@ -27,6 +27,10 @@ struct LifeGridRevealView: View {
         (CGFloat(rowCount) * cellSize) + (CGFloat(max(rowCount - 1, 0)) * spacing)
     }
 
+    private var reportHeight: CGFloat {
+        gridHeight + 44
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 6) {
@@ -49,7 +53,7 @@ struct LifeGridRevealView: View {
                 .onboardingLifeChart,
                 filter: .screenSpanProjectionAverage
             )
-            .frame(height: gridHeight)
+            .frame(height: reportHeight)
                 .padding(.top, 14)
                 .padding(.horizontal, horizontalPadding)
                 .padding(.bottom, 18)

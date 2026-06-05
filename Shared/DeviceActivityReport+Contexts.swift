@@ -17,6 +17,11 @@ extension DeviceActivityReport.Context {
     /// Chart view: life grid visualization.
     static let chart = Self("chart")
 
+    /// Full Screen Time-backed onboarding analysis flow. The host app mounts
+    /// this once after permission; the report extension owns the projection,
+    /// life chart, goal setting, and completion action.
+    static let onboardingAnalysis = Self("onboardingAnalysis")
+
     /// Onboarding projection reveal rendered by the report extension so the
     /// host never has to read usage-derived values.
     static let onboardingProjection = Self("onboardingProjection")
@@ -30,4 +35,7 @@ extension DeviceActivityReport.Context {
 
     /// Onboarding goal-setting module rendered by the report extension.
     static let onboardingGoal = Self("onboardingGoal")
+
+    /// Onboarding paywall reclaim subtitle rendered by the report extension.
+    static let onboardingPaywallReclaim = Self("onboardingPaywallReclaim")
 }
