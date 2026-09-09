@@ -1,6 +1,7 @@
 import SwiftUI
 @main
 struct PreviewApp: App {
+    @State private var onboardingPage = 0
     init() {
         AppGroupManager.shared.currentAge = 25
         AppGroupManager.shared.targetAge = 80
@@ -11,7 +12,26 @@ struct PreviewApp: App {
             VStack(spacing: 0) {
                 Text("DESIGN PREVIEW · SAMPLE DATA").font(.caption2)
                     .foregroundStyle(ScreenSpanAppearance.text).padding(8)
-                DashboardReportView(payload: fixture)
+                if CommandLine.arguments.contains("--onboarding") {
+                    Text(onboardingPage == 0 ? "Your Screen Time projection" : "Your life chart")
+                        .font(.title2.bold()).foregroundStyle(ScreenSpanAppearance.text)
+                        .padding()
+                    if onboardingPage < 2 {
+                        OnboardingReportViewport(showsLifeChart: onboardingPage == 1) {
+                            OnboardingOverviewReportView(payload: fixture)
+                        }
+                        Button(onboardingPage == 0 ? "See your life chart" : "Reclaim your life") {
+                            onboardingPage += 1
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .padding()
+                    } else {
+                        Text("Goal setting reached").foregroundStyle(ScreenSpanAppearance.text)
+                        Spacer()
+                    }
+                } else {
+                    DashboardReportView(payload: fixture)
+                }
             }
             .background(Color.white)
             .preferredColorScheme(CommandLine.arguments.contains("--dark") ? .dark : .light)

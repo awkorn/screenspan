@@ -57,28 +57,64 @@ struct DashboardReportView: View {
     }
 }
 
-/// Projection and grid reveal share the same loaded configuration, too.
+/// Both onboarding panels are rendered from one configuration. The host moves
+/// its viewport in the required order; there is no optional in-report toggle.
 struct OnboardingOverviewReportView: View {
     let payload: ScreenTimeReportPayload
-    @State private var showGrid = false
+    @AppStorage(SharedConstants.UserDefaultsKey.currentAge.rawValue, store: .appGroup)
+    private var currentAge = 25
+    @AppStorage(SharedConstants.UserDefaultsKey.targetAge.rawValue, store: .appGroup)
+    private var targetAge = 80
 
     var body: some View {
-        VStack(spacing: 0) {
-            if showGrid {
-                ChartReportView(payload: payload)
-            } else {
-                OnboardingProjectionReportView(payload: payload)
-            }
-            if payload.isAvailable {
-                Button(showGrid ? "See your projection" : "See your life chart →") {
-                    showGrid.toggle()
+        GeometryReader { proxy in
+            VStack(spacing: 0) {
+                ScrollView {
+                    OnboardingProjectionReportView(payload: payload)
+                        .frame(minHeight: proxy.size.height / 2)
                 }
-                .font(.geist(size: 15, weight: .semibold))
-                .foregroundStyle(Color(hex: "#0063D6"))
-                .padding(16)
+                .frame(height: proxy.size.height / 2)
+                .clipped()
+
+                lifeChart
+                    .frame(height: proxy.size.height / 2)
+                    .clipped()
             }
         }
         .background(Color.white)
         .screenSpanLightSurface()
+    }
+
+    @ViewBuilder
+    private var lifeChart: some View {
+        if let average = payload.dailyAverageHours {
+            let projection = ProjectionCalculator.calculateProjectionFromDaily(
+                currentAge: currentAge, targetAge: targetAge, dailyHours: average)
+            ScrollView {
+                VStack(spacing: 18) {
+                    LifeGridView(goalGridData: ProjectionCalculator.calculateLifeGrid(
+                        currentAge: currentAge, targetAge: targetAge,
+                        monthsOnPhone: projection.monthsOnPhone))
+                    HStack(spacing: 16) {
+                        legend("Lived", color: Color(hex: "#0063D6"))
+                        legend("Screen time", color: Color(hex: "#F63232"))
+                        legend("Remaining", color: Color(hex: "#D9D9D9"))
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+            }
+        } else {
+            ScreenTimeUnavailableView(
+                title: "Your life chart needs recent activity",
+                message: "Screen Time has not returned activity yet. You can still choose a goal on the next screen.")
+        }
+    }
+
+    private func legend(_ title: String, color: Color) -> some View {
+        HStack(spacing: 5) {
+            Circle().fill(color).frame(width: 8, height: 8)
+            Text(title).font(.geist(size: 12))
+        }
     }
 }

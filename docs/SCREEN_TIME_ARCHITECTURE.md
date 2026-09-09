@@ -25,7 +25,7 @@ The existing Family Controls entitlement requires permission for App Store distr
 
 The host remains responsible for authorization, Settings, help, and explicit refresh. Opening Settings keeps the report mounted. Dismissing Settings only replaces it if age, planning age, or goal changed. Returning to the foreground refreshes the date window if the calendar day changed. Revoking permission removes the report.
 
-Onboarding's projection and life chart similarly share one `.onboardingOverview` report. The user can continue to goal selection while it loads. After choosing a goal, onboarding completes; there is no second report just to populate a paywall subtitle.
+Onboarding requires projection → life chart → goal setting. Projection and life chart share one `.onboardingOverview` report with two vertically stacked panels; the host clips and offsets the same report to show each panel in order. No activity-derived navigation state returns to the host, and the filter and report identity stay stable. Loading or unavailable activity is not treated as a ready signal; the chart step remains part of the flow even when its data is unavailable. After choosing a goal, onboarding completes; there is no second report just to populate a paywall subtitle.
 
 The query covers seven **completed calendar days**, grouped daily, and includes iPhones. It excludes iPads and the partial current day. Multiple reporting iPhones may contribute to the same day. The average uses days actually returned; absent days are not invented zeros. Explicit zero-duration days are retained. The UI shows the reported-day count.
 
@@ -53,6 +53,7 @@ Completed locally:
 - `Scripts/test-calculations.sh`: 135 checks covering consistent units, invalid/zero inputs, out-of-range ages, grid counts, missing versus explicit-zero days, per-day grouping, and DST.
 - Native Simulator inspection of the actual welcome, birth-date, and authorization screens.
 - Separate, visibly labeled synthetic-data preview of the actual dashboard SwiftUI views: grid, donut, daily chart, and all tab buttons. This validates layout and view interactions, not the report service or real activity access.
+- Verified the required analysis → life chart → goal progression in the isolated sample-data preview (`--onboarding`), using the same two-panel report viewport as the host app.
 - Both entitlement definitions and the existing signing team are now declared in `project.yml`, so regenerating the Xcode project does not remove them.
 
 On a physical iPhone with approved provisioning and real Screen Time history:

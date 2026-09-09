@@ -11,6 +11,7 @@
 		0F572863C112270027377EE5 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F4A4A71CB8C9A7C783A67D8 /* MainTabView.swift */; };
 		11A4ADD4C1559E92E22C91A2 /* ActivitySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6285B74674298E92260D6F0 /* ActivitySummary.swift */; };
 		167DBF2AC44011F5336F91DA /* GeistVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 27A0813948392BCAE1B3FCA3 /* GeistVF.ttf */; };
+		18B0D8B2D527966D29D10F27 /* OnboardingReportViewport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6C9EB6BF4959BE60DD1E0C /* OnboardingReportViewport.swift */; };
 		1C04A2C31387C6632D4B8737 /* Environment+ScreenSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98B2E6C7985B4098510525C /* Environment+ScreenSpan.swift */; };
 		1EF93A0969318E46DB80B9E8 /* UserGoal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8A84266D5C67D2A5DA73E8 /* UserGoal.swift */; };
 		1F2E15C436B13BB384055DC0 /* GeistMonoVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BE34D57A0A7DEE22E6C522B7 /* GeistMonoVF.ttf */; };
@@ -31,6 +32,7 @@
 		4B7F9D3C7FAC707351844A01 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4A56375C9303772106FD27DA /* LaunchScreen.storyboard */; };
 		4D42BF2AF42679266C007C6F /* GeistFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2210D930D532B57F4473C84 /* GeistFont.swift */; };
 		4DA70EE7E40E3A0E1C184C68 /* GeistFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2210D930D532B57F4473C84 /* GeistFont.swift */; };
+		5011B17960A3B59F362806CD /* OnboardingReportViewport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6C9EB6BF4959BE60DD1E0C /* OnboardingReportViewport.swift */; };
 		50F8A89C5A98944613AECC53 /* UserDefaults+AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C48EC6DDF3E57788CA87B /* UserDefaults+AppGroup.swift */; };
 		5899087DD153621F52A860BE /* ProjectionCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C243C4B38CF92C03D01F92AB /* ProjectionCalculator.swift */; };
 		592C7462F3ADB44C070A8E3A /* GeistMonoItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D541E0CE886AB9530162F9E3 /* GeistMonoItalicVF.ttf */; };
@@ -134,6 +136,7 @@
 		7644C84804CDFEA305490E75 /* StatsReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsReportView.swift; sourceTree = "<group>"; };
 		768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GeistItalicVF.ttf; sourceTree = "<group>"; };
 		7B8A84266D5C67D2A5DA73E8 /* UserGoal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserGoal.swift; sourceTree = "<group>"; };
+		7F6C9EB6BF4959BE60DD1E0C /* OnboardingReportViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingReportViewport.swift; sourceTree = "<group>"; };
 		9454C7ED8B41B24B9FC8F2ED /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
 		9801013D24B5FFBF50A18946 /* ChartViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartViewModel.swift; sourceTree = "<group>"; };
 		9A4D8FAD2211C2AAFF1DED04 /* ScreenSpanApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSpanApp.swift; sourceTree = "<group>"; };
@@ -218,6 +221,7 @@
 				A93D9C33850C3C05045FC653 /* DonutChartView.swift */,
 				A2210D930D532B57F4473C84 /* GeistFont.swift */,
 				C2AC75288B4E2F4E8469DC82 /* LifeGridView.swift */,
+				7F6C9EB6BF4959BE60DD1E0C /* OnboardingReportViewport.swift */,
 				C243C4B38CF92C03D01F92AB /* ProjectionCalculator.swift */,
 				0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */,
 				CCCFE517652396A0F9ACDA79 /* ScreenSpanAppearance.swift */,
@@ -504,6 +508,7 @@
 				4DA70EE7E40E3A0E1C184C68 /* GeistFont.swift in Sources */,
 				8F0240414A51F7444F3A2F90 /* HistoryReportView.swift in Sources */,
 				C73B4B869E90C5CD06E20BE2 /* LifeGridView.swift in Sources */,
+				18B0D8B2D527966D29D10F27 /* OnboardingReportViewport.swift in Sources */,
 				70508DE61057684BEC9A80B9 /* ProjectionCalculator.swift in Sources */,
 				8919445EF7490602BAA2D63E /* ProjectionModel.swift in Sources */,
 				A53070273FEF27861FD66E84 /* ScreenSpanAppearance.swift in Sources */,
@@ -542,6 +547,7 @@
 				0F572863C112270027377EE5 /* MainTabView.swift in Sources */,
 				3F41162A39F0FF7F6E097804 /* NotificationService.swift in Sources */,
 				4AE75ABCD7B0AC96A6737209 /* OnboardingContainerView.swift in Sources */,
+				5011B17960A3B59F362806CD /* OnboardingReportViewport.swift in Sources */,
 				9A0AF529672DD47AE388D675 /* OnboardingViewModel.swift in Sources */,
 				C56DA5C41E9F896D234A80A4 /* PaywallView.swift in Sources */,
 				D9B4D9BDD484D0CE6BFBC295 /* PermissionRequestView.swift in Sources */,
