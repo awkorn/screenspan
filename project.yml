@@ -33,7 +33,12 @@ targets:
     entitlements:
       path: ScreenSpan/ScreenSpan.entitlements
       uses: [.plist]
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups:
+          - group.com.screenspan.shared
     settings:
+      DEVELOPMENT_TEAM: 9XXTA2SG5L
       PRODUCT_BUNDLE_IDENTIFIER: com.screenspan
       TARGETED_DEVICE_FAMILY: 1
     dependencies:
@@ -68,7 +73,12 @@ targets:
     entitlements:
       path: ScreenSpanReport/ScreenSpanReport.entitlements
       uses: [.plist]
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups:
+          - group.com.screenspan.shared
     settings:
+      DEVELOPMENT_TEAM: 9XXTA2SG5L
       PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.deviceactivity
       TARGETED_DEVICE_FAMILY: 1
     frameworks:

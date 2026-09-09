@@ -1,87 +1,107 @@
+import DeviceActivity
 import SwiftUI
 
-/// Main tab view showing all app sections
+/// One stable report hosts the three dashboard pages. Settings stays in the
+/// app, and presenting it does not unmount the report. No usage crosses back.
 struct MainTabView: View {
-    @State private var selectedTab: MainTab = .lifeGrid
+    @EnvironmentObject private var authService: AuthorizationService
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var filter = DeviceActivityFilter.screenSpanProjectionAverage
+    @State private var reportID = UUID()
+    @State private var reportDay = Calendar.current.startOfDay(for: Date())
+    @State private var showSettings = false
+    @State private var showHelp = false
+    @State private var settingsBeforePresentation = ""
 
     var body: some View {
-        ZStack {
-            Color.white.ignoresSafeArea()
+        VStack(spacing: 0) {
+            HStack {
+                Text("ScreenSpan").font(.geist(size: 21, weight: .bold))
+                Spacer()
+                Button("Refresh", systemImage: "arrow.clockwise", action: refresh)
+                    .labelStyle(.iconOnly)
+                    .disabled(!authService.isAuthorized)
+                Button("Report help", systemImage: "questionmark.circle") { showHelp = true }
+                    .labelStyle(.iconOnly)
+                    .padding(.horizontal, 12)
+                Button("Settings", systemImage: "ellipsis") {
+                    settingsBeforePresentation = settingsSignature
+                    showSettings = true
+                }
+                .labelStyle(.iconOnly)
+            }
+            .foregroundStyle(Color(hex: "#0A1F38"))
+            .padding(.horizontal, 24)
+            .padding(.vertical, 12)
 
-            currentTabView
+            if authService.isAuthorized {
+                ZStack {
+                    ReportLoadingPlaceholder()
+                    DeviceActivityReport(.dashboard, filter: filter)
+                        .id(reportID)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                VStack(spacing: 18) {
+                    Image(systemName: "chart.bar.xaxis").font(.system(size: 38))
+                    Text("Your life, in perspective").font(.geist(size: 26, weight: .bold))
+                    Text("Allow Screen Time access to see your life chart and recent iPhone activity.")
+                        .multilineTextAlignment(.center)
+                    Button("Allow Screen Time Access") {
+                        Task { await authService.requestAuthorization() }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    if let message = authService.authorizationErrorMessage {
+                        Text(message).font(.footnote).foregroundStyle(ScreenSpanAppearance.secondaryText)
+                    }
+                }
+                .padding(24)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            tabBar
-        }
-    }
-
-    @ViewBuilder
-    private var currentTabView: some View {
-        switch selectedTab {
-        case .lifeGrid:
-            ChartTabView()
-        case .stats:
-            StatsTabView()
-        case .progress:
-            HistoryTabView()
-        case .settings:
+        .background(Color.white.ignoresSafeArea())
+        .sheet(isPresented: $showSettings, onDismiss: {
+            if settingsBeforePresentation != settingsSignature { refresh() }
+        }) {
             SettingsView()
         }
+        .alert("Waiting for Screen Time?", isPresented: $showHelp) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("iOS prepares your activity privately, and the first report can take a while. Once it appears, all three tabs use the same report. If it remains blank, try Refresh once or check Screen Time access in Settings. Settings remains available while you wait.")
+        }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            authService.refreshAuthorizationStatus()
+            if reportDay != Calendar.current.startOfDay(for: Date()) { refresh() }
+        }
     }
 
-    private var tabBar: some View {
-        HStack(alignment: .bottom, spacing: 18) {
-            HStack(spacing: 6) {
-                tabButton(for: .lifeGrid, title: "Life Grid", systemImage: "waveform.path.ecg.rectangle")
-                tabButton(for: .stats, title: "Stats", systemImage: "clock")
-                tabButton(for: .progress, title: "Progress", systemImage: "chart.line.uptrend.xyaxis")
-            }
-            .padding(8)
-            .background(Color(hex: "#F0F2F6"))
-            .clipShape(Capsule())
-
-            Button {
-                selectedTab = .settings
-            } label: {
-                Image(systemName: "ellipsis")
-                    .font(.geist(size: 28, weight: .semibold))
-                    .foregroundStyle(selectedTab == .settings ? .white : Color(hex: "#5E5E5E"))
-                    .frame(width: 62, height: 62)
-                    .background(selectedTab == .settings ? Color(hex: "#102847") : Color(hex: "#F0F2F6"))
-                    .clipShape(Circle())
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 10)
-        .padding(.bottom, 10)
-        .background(Color.white)
+    private var settingsSignature: String {
+        let settings = AppGroupManager.shared
+        return "\(settings.currentAge)|\(settings.targetAge)|\(settings.screenTimeGoalMinutes)"
     }
 
-    private func tabButton(for tab: MainTab, title: String, systemImage: String) -> some View {
-        Button {
-            selectedTab = tab
-        } label: {
-            VStack(spacing: 4) {
-                Image(systemName: systemImage)
-                    .font(.geist(size: 16, weight: .medium))
-
-                Text(title)
-                    .font(.geist(size: 12, weight: .semibold))
-            }
-            .foregroundStyle(selectedTab == tab ? .white : Color(hex: "#5E5E5E"))
-            .frame(maxWidth: .infinity)
-            .frame(height: 42)
-            .background(selectedTab == tab ? Color(hex: "#102847") : Color.clear)
-            .clipShape(Capsule())
-        }
-        .buttonStyle(.plain)
+    private func refresh() {
+        reportDay = Calendar.current.startOfDay(for: Date())
+        filter = .screenSpanProjectionAverage
+        reportID = UUID()
     }
 }
 
-private enum MainTab {
-    case lifeGrid
-    case stats
-    case progress
-    case settings
+struct ReportLoadingPlaceholder: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            ProgressView()
+            Text("Preparing your Screen Time report")
+                .font(.geist(size: 21, weight: .semibold))
+            Text("Your life chart, stats, and progress will appear here. The first report may take a moment.")
+                .font(.geist(size: 15))
+                .foregroundStyle(ScreenSpanAppearance.secondaryText)
+                .multilineTextAlignment(.center)
+        }
+        .padding(32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.white)
+    }
 }

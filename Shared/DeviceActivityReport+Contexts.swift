@@ -7,20 +7,17 @@ import _DeviceActivity_SwiftUI
 /// These must be declared in a file that is a member of *both* targets
 /// so the host can construct `DeviceActivityReport(.stats, filter:)`
 /// and the extension can register `DeviceActivityReportScene`s with
-/// matching context values. The identifier strings (`"stats"`,
-/// `"chart"`, `"history"`) are the contract that ties the two sides
-/// together — do not change them without updating both ends.
+/// matching context values. The identifier strings are the contract that
+/// ties the two sides together — do not change them without updating both
+/// ends.
 extension DeviceActivityReport.Context {
+    static let dashboard = Self("dashboard")
+    static let onboardingOverview = Self("onboardingOverview")
     /// Stats view: hero years number, donut chart, stat cards, reclaim preview.
     static let stats = Self("stats")
 
     /// Chart view: life grid visualization.
     static let chart = Self("chart")
-
-    /// Full Screen Time-backed onboarding analysis flow. The host app mounts
-    /// this once after permission; the report extension owns the projection,
-    /// life chart, goal setting, and completion action.
-    static let onboardingAnalysis = Self("onboardingAnalysis")
 
     /// Onboarding projection reveal rendered by the report extension so the
     /// host never has to read usage-derived values.
@@ -32,9 +29,6 @@ extension DeviceActivityReport.Context {
 
     /// History view: weekly trends (premium-gated).
     static let history = Self("history")
-
-    /// Onboarding goal-setting module rendered by the report extension.
-    static let onboardingGoal = Self("onboardingGoal")
 
     /// Onboarding paywall reclaim subtitle rendered by the report extension.
     static let onboardingPaywallReclaim = Self("onboardingPaywallReclaim")

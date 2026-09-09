@@ -1,5 +1,4 @@
 import SwiftUI
-import BackgroundTasks
 
 /// Main entry point for the ScreenSpan application
 /// Creates and injects services into the environment
@@ -13,6 +12,8 @@ struct ScreenSpanApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .preferredColorScheme(.light)
+                .screenSpanLightSurface()
                 .environment(\.appGroupIdentifier, SharedConstants.appGroupIdentifier)
                 .environmentObject(authService)
                 .environmentObject(storeKitService)
@@ -25,30 +26,8 @@ struct ScreenSpanApp: App {
     }
 
     private func setupServices() {
-        // Keep our in-memory authorization state in sync on launch. The
-        // onboarding permission step owns the actual system prompt.
         authService.refreshAuthorizationStatus()
-
-        // Initialize StoreKit
-        storeKitService.loadProducts()
-
-        // Request notification permissions
-        Task {
-            await notificationService.requestAuthorization()
-        }
-
-        // Register background tasks
-        registerBackgroundTasks()
-    }
-
-    private func registerBackgroundTasks() {
-        // Register background task for checking goals
-        BGTaskScheduler.shared.register(
-            forTaskWithIdentifier: AppConstants.backgroundTaskIdentifier,
-            using: nil
-        ) { task in
-            goalService.checkAndNotifyGoals()
-            task.setTaskCompleted(success: true)
-        }
+        // Request permissions only when their feature is available and chosen.
+        // Reports and goal planning need no notification or background task.
     }
 }

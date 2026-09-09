@@ -3,6 +3,10 @@ import Foundation
 /// Calculates screen time projections based on DeviceActivity data and age
 struct ProjectionCalculator {
 
+    private static func boundedHours(_ hours: Double) -> Double {
+        hours.isFinite ? min(max(hours, 0), 24) : 0
+    }
+
     // MARK: - Static Methods
 
     /// Calculate projection of phone usage through target age
@@ -17,18 +21,17 @@ struct ProjectionCalculator {
         weeklyAvgMinutes: Double
     ) -> ProjectionResult {
         // Constants
-        let hoursAsleep = SharedConstants.DefaultValues.hoursAsleep
         let wakeHoursPerDay = SharedConstants.DefaultValues.wakeHoursPerDay
         let hoursPerYear = SharedConstants.DefaultValues.hoursPerYear
 
         // Derived calculations
-        let weeksRemaining = Double((targetAge - currentAge)) * 52
-        let dailyPhoneHours = weeklyAvgMinutes / 7 / 60
-        let phoneHoursRemaining = weeksRemaining * 7 * dailyPhoneHours
+        let yearsRemaining = Double(max(targetAge - currentAge, 0))
+        let dailyPhoneHours = boundedHours(weeklyAvgMinutes / 7 / 60)
+        let phoneHoursRemaining = yearsRemaining * 365 * dailyPhoneHours
         let yearsOnPhone = phoneHoursRemaining / hoursPerYear
 
         // Display values
-        let percentOfWakingLife = (dailyPhoneHours / wakeHoursPerDay) * 100
+        let percentOfWakingLife = min(dailyPhoneHours / wakeHoursPerDay, 1) * 100
         let monthsOnPhone = yearsOnPhone * 12
         let daysOnPhone = yearsOnPhone * 365
         let hoursOnPhone = phoneHoursRemaining
@@ -78,11 +81,11 @@ struct ProjectionCalculator {
         let hoursPerYear = SharedConstants.DefaultValues.hoursPerYear
 
         // Goal calculations
-        let goalDailyHours = goalDailyMinutes / 60
-        let weeksRemaining = Double((targetAge - currentAge)) * 52
-        let goalPhoneHoursRemaining = weeksRemaining * 7 * goalDailyHours
+        let goalDailyHours = boundedHours(goalDailyMinutes / 60)
+        let yearsRemaining = Double(max(targetAge - currentAge, 0))
+        let goalPhoneHoursRemaining = yearsRemaining * 365 * goalDailyHours
         let goalYearsOnPhone = goalPhoneHoursRemaining / hoursPerYear
-        let yearsReclaimed = currentProjection.yearsOnPhone - goalYearsOnPhone
+        let yearsReclaimed = max(currentProjection.yearsOnPhone - goalYearsOnPhone, 0)
         let monthsReclaimed = yearsReclaimed * 12
 
         return ReclaimResult(
@@ -103,9 +106,10 @@ struct ProjectionCalculator {
         targetAge: Int,
         monthsOnPhone: Double
     ) -> LifeGridData {
-        let totalMonths = targetAge * 12
-        let monthsLived = currentAge * 12
-        let phoneMonthsRounded = Int(monthsOnPhone.rounded())
+        let totalMonths = min(max(targetAge, 0), 150) * 12
+        let monthsLived = min(max(currentAge, 0), totalMonths / 12) * 12
+        let safePhoneMonths = monthsOnPhone.isFinite ? monthsOnPhone : 0
+        let phoneMonthsRounded = Int(min(max(safePhoneMonths.rounded(), 0), Double(totalMonths - monthsLived)))
         let freeMonths = totalMonths - monthsLived - phoneMonthsRounded
 
         return LifeGridData(

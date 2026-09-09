@@ -1,18 +1,18 @@
 import DeviceActivity
 import SwiftUI
 import _DeviceActivity_SwiftUI
+import OSLog
 
 @main
 struct ScreenSpanReportExtension: DeviceActivityReportExtension {
     var body: some DeviceActivityReportScene {
+        DashboardReportScene { DashboardReportView(payload: $0) }
+        OnboardingOverviewReportScene { OnboardingOverviewReportView(payload: $0) }
         StatsReportScene { payload in
             StatsReportView(payload: payload)
         }
         ChartReportScene { payload in
             ChartReportView(payload: payload)
-        }
-        OnboardingAnalysisReportScene { payload in
-            OnboardingAnalysisReportView(payload: payload)
         }
         OnboardingProjectionReportScene { payload in
             OnboardingProjectionReportView(payload: payload)
@@ -22,9 +22,6 @@ struct ScreenSpanReportExtension: DeviceActivityReportExtension {
         }
         HistoryReportScene { payload in
             HistoryReportView(payload: payload)
-        }
-        OnboardingGoalReportScene { payload in
-            OnboardingGoalReportView(payload: payload)
         }
         OnboardingPaywallReclaimReportScene { payload in
             OnboardingPaywallReclaimReportView(payload: payload)
@@ -39,7 +36,7 @@ struct StatsReportScene: DeviceActivityReportScene {
     func makeConfiguration(
         representing data: DeviceActivityResults<DeviceActivityData>
     ) async -> ScreenTimeReportPayload {
-        await cachedDailyAverage(from: data, cacheKey: .projectionAverage)
+        await extractDailyAverage(from: data)
     }
 }
 
@@ -50,18 +47,7 @@ struct ChartReportScene: DeviceActivityReportScene {
     func makeConfiguration(
         representing data: DeviceActivityResults<DeviceActivityData>
     ) async -> ScreenTimeReportPayload {
-        await cachedDailyAverage(from: data, cacheKey: .projectionAverage)
-    }
-}
-
-struct OnboardingAnalysisReportScene: DeviceActivityReportScene {
-    let context: DeviceActivityReport.Context = .onboardingAnalysis
-    let content: (ScreenTimeReportPayload) -> OnboardingAnalysisReportView
-
-    func makeConfiguration(
-        representing data: DeviceActivityResults<DeviceActivityData>
-    ) async -> ScreenTimeReportPayload {
-        await cachedDailyAverage(from: data, cacheKey: .projectionAverage)
+        await extractDailyAverage(from: data)
     }
 }
 
@@ -72,7 +58,7 @@ struct OnboardingProjectionReportScene: DeviceActivityReportScene {
     func makeConfiguration(
         representing data: DeviceActivityResults<DeviceActivityData>
     ) async -> ScreenTimeReportPayload {
-        await cachedDailyAverage(from: data, cacheKey: .projectionAverage)
+        await extractDailyAverage(from: data)
     }
 }
 
@@ -83,7 +69,7 @@ struct OnboardingLifeChartReportScene: DeviceActivityReportScene {
     func makeConfiguration(
         representing data: DeviceActivityResults<DeviceActivityData>
     ) async -> ScreenTimeReportPayload {
-        await cachedDailyAverage(from: data, cacheKey: .projectionAverage)
+        await extractDailyAverage(from: data)
     }
 }
 
@@ -94,18 +80,7 @@ struct HistoryReportScene: DeviceActivityReportScene {
     func makeConfiguration(
         representing data: DeviceActivityResults<DeviceActivityData>
     ) async -> ScreenTimeReportPayload {
-        await cachedDailyAverage(from: data, cacheKey: .history)
-    }
-}
-
-struct OnboardingGoalReportScene: DeviceActivityReportScene {
-    let context: DeviceActivityReport.Context = .onboardingGoal
-    let content: (ScreenTimeReportPayload) -> OnboardingGoalReportView
-
-    func makeConfiguration(
-        representing data: DeviceActivityResults<DeviceActivityData>
-    ) async -> ScreenTimeReportPayload {
-        await cachedDailyAverage(from: data, cacheKey: .projectionAverage)
+        await extractDailyAverage(from: data)
     }
 }
 
@@ -116,328 +91,45 @@ struct OnboardingPaywallReclaimReportScene: DeviceActivityReportScene {
     func makeConfiguration(
         representing data: DeviceActivityResults<DeviceActivityData>
     ) async -> ScreenTimeReportPayload {
-        await cachedDailyAverage(from: data, cacheKey: .projectionAverage)
+        await extractDailyAverage(from: data)
     }
 }
 
-private enum ScreenTimePayloadCacheKey: Hashable {
-    case projectionAverage
-    case history
-}
-
-private actor ScreenTimePayloadCache {
-    static let shared = ScreenTimePayloadCache()
-
-    private struct Entry {
-        let payload: ScreenTimeReportPayload
-        let expiration: Date
-    }
-
-    private var entries: [ScreenTimePayloadCacheKey: Entry] = [:]
-
-    func payload(for key: ScreenTimePayloadCacheKey, now: Date = Date()) -> ScreenTimeReportPayload? {
-        guard let entry = entries[key] else { return nil }
-        guard entry.expiration > now else {
-            entries[key] = nil
-            return nil
-        }
-
-        return entry.payload
-    }
-
-    func store(_ payload: ScreenTimeReportPayload, for key: ScreenTimePayloadCacheKey, now: Date = Date()) {
-        entries[key] = Entry(
-            payload: payload,
-            expiration: expirationDate(for: key, now: now)
-        )
-    }
-
-    private func expirationDate(for key: ScreenTimePayloadCacheKey, now: Date) -> Date {
-        switch key {
-        case .projectionAverage:
-            let calendar = Calendar.current
-            let startOfToday = calendar.startOfDay(for: now)
-            return calendar.date(byAdding: .day, value: 1, to: startOfToday) ?? now.addingTimeInterval(600)
-        case .history:
-            return now.addingTimeInterval(300)
-        }
-    }
-}
-
-private func cachedDailyAverage(
-    from data: DeviceActivityResults<DeviceActivityData>,
-    cacheKey: ScreenTimePayloadCacheKey
-) async -> ScreenTimeReportPayload {
-    let cache = ScreenTimePayloadCache.shared
-
-    if let payload = await cache.payload(for: cacheKey) {
-        return payload
-    }
-
-    let payload = await extractDailyAverage(from: data)
-    if payload.isAvailable {
-        await cache.store(payload, for: cacheKey)
-    }
-    return payload
-}
-
-/// Extract the average daily Screen Time, in hours, from the
-/// `DeviceActivityResults` handed to the extension.
-///
-/// Segments are bucketed by their date interval before averaging so multiple
-/// devices contribute to the same period total. The final average is normalized
-/// by the number of covered days, which lets projection screens use weekly
-/// report buckets without inflating the daily average.
-///
-/// PRIVACY MODEL — DO NOT VIOLATE
-/// ------------------------------
-/// The `Double` returned here is a per-user Screen Time-derived value.
-/// It is legal *only* because it stays inside the extension process:
-/// it flows directly into `makeConfiguration(representing:)`, which
-/// hands it to the SwiftUI view hierarchy hosted by the extension and
-/// rendered to the host app as opaque pixels via
-/// `DeviceActivityReport(filter:)`.
-///
-/// This value MUST NEVER cross the extension/host boundary.
-/// Specifically, it must not be:
-///   • written to the App Group `UserDefaults` (or any shared file
-///     in the App Group container),
-///   • posted via Darwin notifications, URL schemes, custom paste-
-///     boards, keychain items, or pushed to a server,
-///   • encoded into any string the host app could read back.
-///
-/// Doing any of the above turns this scalar into a Screen Time data
-/// leak and is a hard App Review rejection. If you need the host to
-/// display a usage figure, route it through another extension scene
-/// — never through cross-process state.
+// No global cache: a context-only cache could return another filter's data or
+// survive an authorization change. One mounted dashboard reuses its payload.
+// Activity-derived values stay in the report process; never persist or export.
 private func extractDailyAverage(
     from results: DeviceActivityResults<DeviceActivityData>
 ) async -> ScreenTimeReportPayload {
-    let calendar = Calendar.current
-    var buckets: [Date: ActivityDurationBucket] = [:]
-
+    let logger = Logger(subsystem: "com.screenspan.deviceactivity", category: "ReportLoading")
+    let started = ContinuousClock.now
+    logger.info("Report aggregation started")
+    var summary = ActivitySummary()
     for await activityData in results {
         for await segment in activityData.activitySegments {
-            let bucketStart = calendar.startOfDay(for: segment.dateInterval.start)
-            buckets[bucketStart, default: ActivityDurationBucket(dateInterval: segment.dateInterval)]
-                .add(segment)
+            guard !Task.isCancelled else { return .unavailable }
+            summary.add(date: segment.dateInterval.start, duration: segment.totalActivityDuration)
         }
     }
-
-    guard !buckets.isEmpty else {
-        return .unavailable
-    }
-
-    let totalDuration = buckets.values.reduce(0) { $0 + $1.duration }
-    let coveredDays = buckets.values.reduce(0) { $0 + $1.coveredDayCount(calendar: calendar) }
-
-    guard coveredDays > 0 else {
-        return .unavailable
-    }
-
-    return .available((totalDuration / Double(coveredDays)) / 3600)
+    // Timing only; do not log usage, sample counts, or application identities.
+    let elapsed = started.duration(to: .now)
+    logger.info("Report aggregation finished in \(String(describing: elapsed), privacy: .public)")
+    return ScreenTimeReportPayload(dailyAverageHours: summary.dailyAverageHours, days: summary.days)
 }
 
-private struct ActivityDurationBucket {
-    private(set) var duration: TimeInterval = 0
-    private(set) var dateInterval: DateInterval
-
-    mutating func add(_ segment: DeviceActivityResults<DeviceActivityData>.Element.ActivitySegment) {
-        duration += segment.totalActivityDuration
-        dateInterval = DateInterval(
-            start: min(dateInterval.start, segment.dateInterval.start),
-            end: max(dateInterval.end, segment.dateInterval.end)
-        )
-    }
-
-    func coveredDayCount(calendar: Calendar) -> Int {
-        let start = calendar.startOfDay(for: dateInterval.start)
-        let end = calendar.startOfDay(for: dateInterval.end)
-        let wholeDays = calendar.dateComponents([.day], from: start, to: end).day ?? 0
-        return max(wholeDays, 1)
+struct DashboardReportScene: DeviceActivityReportScene {
+    let context: DeviceActivityReport.Context = .dashboard
+    let content: (ScreenTimeReportPayload) -> DashboardReportView
+    func makeConfiguration(representing data: DeviceActivityResults<DeviceActivityData>) async -> ScreenTimeReportPayload {
+        await extractDailyAverage(from: data)
     }
 }
 
-private enum OnboardingAnalysisStep: Int, CaseIterable {
-    case projection
-    case lifeChart
-    case goal
-}
-
-struct OnboardingAnalysisReportView: View {
-    let payload: ScreenTimeReportPayload
-
-    @AppStorage(SharedConstants.UserDefaultsKey.onboardingAnalysisCompleted.rawValue, store: .appGroup)
-    private var onboardingAnalysisCompleted = false
-
-    @State private var step: OnboardingAnalysisStep = .projection
-
-    private let titleColor = Color(hex: "#051425")
-    private let subtitleColor = Color(hex: "#595959")
-    private let buttonColor = Color(hex: "#051425")
-    private let inactiveDotColor = Color(hex: "#D8DCE3")
-
-    var body: some View {
-        Group {
-            if payload.isAvailable {
-                GeometryReader { proxy in
-                    VStack(spacing: 0) {
-                        progressHeader
-                            .padding(.top, 14)
-                            .padding(.horizontal, 24)
-
-                        ZStack {
-                            stepContent(height: max(proxy.size.height - 120, 320))
-                                .id(step)
-                                .transition(.opacity.combined(with: .move(edge: .trailing)))
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                        Button {
-                            advance()
-                        } label: {
-                            HStack(spacing: 8) {
-                                Text(buttonTitle)
-                                    .font(.geist(size: 15, weight: .semibold))
-
-                                Image(systemName: "arrow.right")
-                                    .font(.geist(size: 15, weight: .semibold))
-                            }
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 17)
-                            .background(buttonColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 34)
-                    }
-                    .animation(.easeInOut(duration: 0.25), value: step)
-                }
-            } else {
-                ScreenTimeUnavailableView(
-                    title: "We couldn't analyze your Screen Time",
-                    message: "Grant access and make sure this device has recent activity, then try again."
-                )
-            }
-        }
-        .background(Color.white.ignoresSafeArea())
-        .onAppear {
-            onboardingAnalysisCompleted = false
-        }
-    }
-
-    private var progressHeader: some View {
-        HStack(spacing: 8) {
-            ForEach(OnboardingAnalysisStep.allCases, id: \.self) { candidate in
-                Capsule()
-                    .fill(candidate.rawValue <= step.rawValue ? buttonColor : inactiveDotColor)
-                    .frame(width: candidate == step ? 28 : 8, height: 8)
-            }
-
-            Spacer()
-
-            Text("\(step.rawValue + 1)/\(OnboardingAnalysisStep.allCases.count)")
-                .font(.geist(size: 13, weight: .semibold))
-                .foregroundStyle(subtitleColor)
-                .monospacedDigit()
-        }
-    }
-
-    @ViewBuilder
-    private func stepContent(height: CGFloat) -> some View {
-        switch step {
-        case .projection:
-            OnboardingProjectionReportView(payload: payload)
-                .frame(maxWidth: .infinity, maxHeight: height)
-        case .lifeChart:
-            lifeChartStep
-        case .goal:
-            goalStep
-        }
-    }
-
-    private var lifeChartStep: some View {
-        VStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Your projected life chart")
-                    .font(.geist(size: 28, weight: .bold))
-                    .foregroundStyle(titleColor)
-
-                Text("1 square = 1 month")
-                    .font(.geist(size: 11, weight: .medium))
-                    .foregroundStyle(titleColor.opacity(0.6))
-                    .padding(.top, 6)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 24)
-            .padding(.top, 24)
-
-            OnboardingLifeChartReportView(payload: payload)
-                .padding(.top, 20)
-                .padding(.horizontal, 24)
-
-            Spacer(minLength: 0)
-        }
-    }
-
-    private var goalStep: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 28) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Set your goal")
-                        .font(.geist(size: 28, weight: .bold))
-                        .foregroundColor(.screenSpanNavy)
-
-                    Text("How much time would you like\nto spend on your phone?")
-                        .font(.geist(size: 18))
-                        .foregroundColor(subtitleColor)
-                        .multilineTextAlignment(.leading)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 24)
-                .padding(.top, 32)
-
-                OnboardingGoalReportView(payload: payload)
-                    .frame(minHeight: 300)
-            }
-            .padding(.bottom, 24)
-        }
-    }
-
-    private var buttonTitle: String {
-        switch step {
-        case .projection:
-            return "See your life, visualized"
-        case .lifeChart:
-            return "Set your goal"
-        case .goal:
-            return "Continue"
-        }
-    }
-
-    private func advance() {
-        switch step {
-        case .projection:
-            step = .lifeChart
-        case .lifeChart:
-            step = .goal
-        case .goal:
-            onboardingAnalysisCompleted = true
-            UserDefaults.appGroup.set(
-                true,
-                forKey: SharedConstants.UserDefaultsKey.onboardingAnalysisCompleted.rawValue
-            )
-            UserDefaults.appGroup.synchronize()
-            CFNotificationCenterPostNotification(
-                CFNotificationCenterGetDarwinNotifyCenter(),
-                CFNotificationName(SharedConstants.onboardingAnalysisCompletedNotification as CFString),
-                nil,
-                nil,
-                true
-            )
-        }
+struct OnboardingOverviewReportScene: DeviceActivityReportScene {
+    let context: DeviceActivityReport.Context = .onboardingOverview
+    let content: (ScreenTimeReportPayload) -> OnboardingOverviewReportView
+    func makeConfiguration(representing data: DeviceActivityResults<DeviceActivityData>) async -> ScreenTimeReportPayload {
+        await extractDailyAverage(from: data)
     }
 }
 
@@ -761,197 +453,6 @@ private enum OnboardingLifeChartMonthState {
     case remaining
 }
 
-struct OnboardingGoalReportView: View {
-    let payload: ScreenTimeReportPayload
-
-    @AppStorage(SharedConstants.UserDefaultsKey.currentAge.rawValue, store: .appGroup)
-    private var currentAge: Int = 30
-
-    @AppStorage(SharedConstants.UserDefaultsKey.targetAge.rawValue, store: .appGroup)
-    private var targetAge: Int = SharedConstants.DefaultValues.targetAge
-
-    @AppStorage(SharedConstants.UserDefaultsKey.screenTimeGoalMinutes.rawValue, store: .appGroup)
-    private var screenTimeGoalMinutes: Int = 0
-
-    @State private var draftGoalHours: Double = 0
-
-    private let goalSliderColor = Color(hex: "#C82020")
-    private let currentUsageColor = Color(hex: "#C82020")
-    private let goalUsageColor = Color(hex: "#0063D6")
-    private let labelColor = Color(hex: "#3F4854")
-    private let bodyColor = Color(hex: "#102847")
-    private let reclaimBackgroundColor = Color(hex: "#D7EAFF")
-
-    private var resolvedCurrentAge: Int { max(currentAge, 1) }
-    private var resolvedTargetAge: Int { max(targetAge, resolvedCurrentAge) }
-    private var dailyAverageHours: Double { payload.dailyAverageHours ?? 0 }
-
-    private var maxSliderHours: Double {
-        max(dailyAverageHours, 0.1)
-    }
-
-    private var storedGoalHours: Double {
-        Double(screenTimeGoalMinutes) / 60.0
-    }
-
-    private var currentUsageFormatted: String {
-        String(format: "%.1f", dailyAverageHours)
-    }
-
-    private var goalUsageFormatted: String {
-        String(format: "%.1f", draftGoalHours)
-    }
-
-    private var currentProjection: ProjectionResult {
-        ProjectionCalculator.calculateProjectionFromDaily(
-            currentAge: resolvedCurrentAge,
-            targetAge: resolvedTargetAge,
-            dailyHours: dailyAverageHours
-        )
-    }
-
-    private var reclaimResult: ReclaimResult {
-        ProjectionCalculator.calculateReclaim(
-            currentProjection: currentProjection,
-            goalDailyMinutes: draftGoalHours * 60,
-            currentAge: resolvedCurrentAge,
-            targetAge: resolvedTargetAge
-        )
-    }
-
-    private var reclaimedYearsRounded: Int {
-        Int(reclaimResult.yearsReclaimed.rounded())
-    }
-
-    var body: some View {
-        Group {
-            if payload.isAvailable {
-                VStack(spacing: 20) {
-                    VStack(spacing: 12) {
-                        HStack {
-                            Text("0h")
-                                .font(.geist(size: 14, weight: .medium))
-                                .foregroundColor(labelColor)
-
-                            Spacer()
-
-                            Text(formattedHours(maxSliderHours))
-                                .font(.geist(size: 14, weight: .medium))
-                                .foregroundColor(labelColor)
-                        }
-
-                        Slider(
-                            value: Binding(
-                                get: { draftGoalHours },
-                                set: { newValue in
-                                    let clamped = min(max(newValue, 0), maxSliderHours)
-                                    draftGoalHours = clamped
-                                    screenTimeGoalMinutes = Int((clamped * 60).rounded())
-                                }
-                            ),
-                            in: 0...maxSliderHours,
-                            step: 0.1
-                        )
-                        .tint(goalSliderColor)
-                    }
-
-                    HStack(spacing: 12) {
-                        usageSummaryColumn(
-                            title: "Your current usage",
-                            value: currentUsageFormatted,
-                            accentColor: currentUsageColor,
-                            textAlignment: .leading,
-                            frameAlignment: .leading
-                        )
-
-                        Spacer()
-
-                        Image(systemName: "arrow.right")
-                            .font(.geist(size: 20, weight: .semibold))
-                            .foregroundColor(labelColor)
-
-                        Spacer()
-
-                        usageSummaryColumn(
-                            title: "Your goal",
-                            value: goalUsageFormatted,
-                            accentColor: goalUsageColor,
-                            textAlignment: .trailing,
-                            frameAlignment: .trailing
-                        )
-                    }
-                    .padding(16)
-                    .background(Color.screenSpanCardBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-
-                    HStack(spacing: 12) {
-                        Image(systemName: "figure.walk")
-                            .font(.geist(size: 22, weight: .semibold))
-                            .foregroundColor(goalUsageColor)
-
-                        Text("You'd reclaim \(reclaimedYearsRounded) years of your life!")
-                            .font(.geist(size: 16, weight: .semibold))
-                            .foregroundColor(bodyColor)
-
-                        Spacer()
-                    }
-                    .padding(16)
-                    .background(reclaimBackgroundColor)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 8)
-                .background(Color.white)
-                .onAppear {
-                    let initialGoal = storedGoalHours > 0 ? min(storedGoalHours, maxSliderHours) : maxSliderHours
-                    draftGoalHours = min(max(initialGoal, 0), maxSliderHours)
-                    screenTimeGoalMinutes = Int((draftGoalHours * 60).rounded())
-                }
-            } else {
-                OnboardingGoalUnavailableView()
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 8)
-            }
-        }
-        .background(Color.white)
-    }
-
-    private func usageSummaryColumn(
-        title: String,
-        value: String,
-        accentColor: Color,
-        textAlignment: HorizontalAlignment,
-        frameAlignment: Alignment
-    ) -> some View {
-        VStack(alignment: textAlignment, spacing: 6) {
-            Text(title)
-                .font(.geist(size: 13, weight: .medium))
-                .foregroundColor(labelColor)
-
-            HStack(spacing: 4) {
-                Text(value)
-                    .font(.geist(size: 17, weight: .semibold))
-                    .foregroundColor(accentColor)
-                    .monospacedDigit()
-
-                Text("hours/day")
-                    .font(.geist(size: 15, weight: .medium))
-                    .foregroundColor(bodyColor)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: frameAlignment)
-    }
-
-    private func formattedHours(_ hours: Double) -> String {
-        let roundedHours = (hours * 10).rounded() / 10
-        if roundedHours == roundedHours.rounded() {
-            return "\(Int(roundedHours))h"
-        }
-
-        return String(format: "%.1fh", roundedHours)
-    }
-}
-
 struct OnboardingPaywallReclaimReportView: View {
     let payload: ScreenTimeReportPayload
 
@@ -1000,8 +501,9 @@ struct OnboardingPaywallReclaimReportView: View {
     }
 }
 
-struct ScreenTimeReportPayload: Codable, Sendable {
+struct ScreenTimeReportPayload: Sendable {
     let dailyAverageHours: Double?
+    var days: [ActivityDay] = []
 
     static func available(_ dailyAverageHours: Double) -> ScreenTimeReportPayload {
         ScreenTimeReportPayload(dailyAverageHours: dailyAverageHours)
@@ -1184,56 +686,6 @@ private struct OnboardingLifeChartUnavailableView: View {
             Text(label)
                 .font(.geist(size: 12))
                 .foregroundStyle(titleColor)
-        }
-    }
-}
-
-private struct OnboardingGoalUnavailableView: View {
-    var body: some View {
-        VStack(spacing: 18) {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.screenSpanCardBackground)
-                .frame(height: 84)
-                .overlay {
-                    VStack(spacing: 10) {
-                        HStack {
-                            Text("0h")
-                            Spacer()
-                            Text("--")
-                        }
-                        .font(.geist(size: 14, weight: .medium))
-                        .foregroundStyle(Color(hex: "#7F8893"))
-
-                        Capsule()
-                            .fill(Color(hex: "#E3E6EB"))
-                            .frame(height: 7)
-                    }
-                    .padding(.horizontal, 16)
-                }
-
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 10) {
-                    Image(systemName: "target")
-                        .font(.geist(size: 16, weight: .semibold))
-                        .foregroundStyle(Color(hex: "#C82020"))
-
-                    Text("We need real Screen Time data to suggest a goal.")
-                        .font(.geist(size: 16, weight: .semibold))
-                        .foregroundStyle(Color(hex: "#102847"))
-                }
-
-                Text("Once iOS reports recent activity, we can show your current usage and how many years you could reclaim.")
-                    .font(.geist(size: 14, weight: .medium))
-                    .foregroundStyle(Color(hex: "#595959"))
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(16)
-            .background(Color(hex: "#FFF1F1"))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color(hex: "#F2B7B7"), lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
     }
 }

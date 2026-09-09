@@ -35,8 +35,7 @@ struct ChartReportView: View {
 
     private var dailyAverageHours: Double { payload.dailyAverageHours ?? 0 }
 
-    /// Transient slider position in hours — starts at the stored goal,
-    /// commits back when the drag settles.
+    /// Transient what-if preview. Saving goals belongs to the host app.
     @State private var draftGoalHours: Double = 0
 
     private var resolvedCurrentAge: Int { max(currentAge, 1) }
@@ -73,9 +72,15 @@ struct ChartReportView: View {
         Group {
             if payload.isAvailable {
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 28) {
+                    VStack(spacing: 18) {
+                        Text("Your life chart")
+                            .font(.geist(size: 26, weight: .bold))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Text("Slide to explore a different daily average. Save your goal in Settings.")
+                            .font(.geist(size: 13))
+                            .foregroundStyle(ScreenSpanAppearance.secondaryText)
                         sliderSection
-                            .padding(.top, 28)
+                            .padding(.top, 12)
 
                         LifeGridView(goalGridData: goalGridData)
 
@@ -86,7 +91,7 @@ struct ChartReportView: View {
                     .padding(.bottom, 24)
                 }
                 .onAppear {
-                    draftGoalHours = min(max(storedGoalHours, 0), maxSliderHours)
+                    draftGoalHours = dailyAverageHours
                 }
             } else {
                 ScreenTimeUnavailableView(
@@ -96,6 +101,7 @@ struct ChartReportView: View {
             }
         }
         .background(Color.white.ignoresSafeArea())
+        .screenSpanLightSurface()
     }
 
     private var sliderSection: some View {
@@ -106,7 +112,7 @@ struct ChartReportView: View {
                     set: { newValue in
                         let clamped = min(max(newValue, 0), maxSliderHours)
                         draftGoalHours = clamped
-                        screenTimeGoalMinutes = Int((clamped * 60).rounded())
+                        // Keep usage-dependent slider output inside this report.
                     }
                 ),
                 maxValue: maxSliderHours,
@@ -220,6 +226,16 @@ private struct GoalComparisonSlider: View {
             }
         }
         .frame(height: 70)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Preview daily phone time")
+        .accessibilityValue(formattedHours(value))
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: value = min(value + 0.25, maxValue)
+            case .decrement: value = max(value - 0.25, 0)
+            @unknown default: break
+            }
+        }
     }
 
     private func formattedHours(_ hours: Double) -> String {

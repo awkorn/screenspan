@@ -95,16 +95,9 @@ struct PaywallView: View {
                 .font(.geist(size: 28, weight: .bold))
                 .foregroundColor(titleColor)
 
-            DeviceActivityReport(
-                .onboardingPaywallReclaim,
-                filter: .screenSpanProjectionAverage
-            )
-            .frame(maxWidth: .infinity, minHeight: 34, maxHeight: 34, alignment: .leading)
-            .background(alignment: .leading) {
-                Text("Reclaim years of your life")
-                    .font(.geist(size: 18))
-                    .foregroundColor(subtitleColor)
-            }
+            Text("Make more room for life beyond your phone")
+                .font(.geist(size: 18))
+                .foregroundColor(subtitleColor)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

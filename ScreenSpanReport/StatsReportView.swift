@@ -43,10 +43,13 @@ struct StatsReportView: View {
                         heroYearsSection
                         donutChartSection
                         statCardsSection
+                        Text("If this average continues to age \(targetAge). A year means 365 days of 24 hours; the waking-life percentage assumes 8 hours of sleep per day.")
+                            .font(.geist(size: 12))
+                            .foregroundStyle(ScreenSpanAppearance.secondaryText)
                     }
                     .padding(.horizontal, 24)
                     .padding(.top, 28)
-                    .padding(.bottom, 120)
+                    .padding(.bottom, 24)
                 }
             } else {
                 ScreenTimeUnavailableView(
@@ -56,6 +59,7 @@ struct StatsReportView: View {
             }
         }
         .background(Color.white.ignoresSafeArea())
+        .screenSpanLightSurface()
     }
 
     private var heroYearsSection: some View {
