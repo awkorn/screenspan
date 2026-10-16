@@ -6,7 +6,7 @@ import SwiftUI
 struct MainTabView: View {
     @EnvironmentObject private var authService: AuthorizationService
     @Environment(\.scenePhase) private var scenePhase
-    @State private var filter = DeviceActivityFilter.screenSpanProjectionAverage
+    @State private var filter = DeviceActivityFilter.screenSpanDashboard
     @State private var reportID = UUID()
     @State private var reportDay = Calendar.current.startOfDay(for: Date())
     @State private var showSettings = false
@@ -70,6 +70,10 @@ struct MainTabView: View {
         } message: {
             Text("iOS prepares your activity privately, and the first report can take a while. Once it appears, all three tabs use the same report. If it remains blank, try Refresh once or check Screen Time access in Settings. Settings remains available while you wait.")
         }
+        .onAppear {
+            // Backfilling today matches the filter already built without a start date.
+            AppGroupManager.shared.ensureTrackingStartDate()
+        }
         .onChange(of: scenePhase) { _, phase in
             guard phase == .active else { return }
             authService.refreshAuthorizationStatus()
@@ -79,12 +83,13 @@ struct MainTabView: View {
 
     private var settingsSignature: String {
         let settings = AppGroupManager.shared
-        return "\(settings.currentAge)|\(settings.targetAge)|\(settings.screenTimeGoalMinutes)"
+        let start = settings.trackingStartDate.map { Calendar.current.startOfDay(for: $0).timeIntervalSince1970 } ?? 0
+        return "\(settings.currentAge)|\(settings.targetAge)|\(settings.screenTimeGoalMinutes)|\(start)|\(settings.startingDailyMinutes)"
     }
 
     private func refresh() {
         reportDay = Calendar.current.startOfDay(for: Date())
-        filter = .screenSpanProjectionAverage
+        filter = .screenSpanDashboard
         reportID = UUID()
     }
 }

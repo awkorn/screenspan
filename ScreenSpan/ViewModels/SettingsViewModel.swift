@@ -126,6 +126,8 @@ final class SettingsViewModel {
             AppGroupManager.shared.targetAge = SharedConstants.DefaultValues.targetAge
             AppGroupManager.shared.screenTimeGoalMinutes = 0
             AppGroupManager.shared.selectedCategories = []
+            AppGroupManager.shared.trackingStartDate = nil
+            AppGroupManager.shared.startingDailyMinutes = 0
             AppGroupManager.shared.onboardingCompleted = false
         }
     }

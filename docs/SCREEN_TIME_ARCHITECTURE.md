@@ -27,9 +27,20 @@ The host remains responsible for authorization, Settings, help, and explicit ref
 
 Onboarding requires projection → life chart → goal setting. Projection and life chart share one `.onboardingOverview` report with two vertically stacked panels; the host clips and offsets the same report to show each panel in order. No activity-derived navigation state returns to the host, and the filter and report identity stay stable. Loading or unavailable activity is not treated as a ready signal; the chart step remains part of the flow even when its data is unavailable. After choosing a goal, onboarding completes; there is no second report just to populate a paywall subtitle.
 
-The query covers seven **completed calendar days**, grouped daily, and includes iPhones. It excludes iPads and the partial current day. Multiple reporting iPhones may contribute to the same day. The average uses days actually returned; absent days are not invented zeros. Explicit zero-duration days are retained. The UI shows the reported-day count.
+The dashboard query (`ActivitySummary.dashboardInterval`) covers **completed calendar days** from the week before the user's start date through yesterday, grouped daily, iPhones only, and capped at 35 days. It excludes iPads and the partial current day. Life Grid and Stats use only the last seven of those days, so their numbers are unchanged; Progress uses the full range. Multiple reporting iPhones may contribute to the same day. Averages use days actually returned; absent days are not invented zeros. Explicit zero-duration days are retained. The UI shows the reported-day count.
 
-The report retains actual daily values for Progress. Bars show the observed values, including gaps, with the user-entered goal as a reference. No synthetic history, prior-period comparison, or achieved-savings claim is shown. A separate "At your goal, you could reclaim" section calculates potential time savings and labels the assumption explicitly.
+### Progress: life regained since starting
+
+The host records `trackingStartDate` when onboarding completes (existing users are backfilled to their first launch of this version). It is a date the host already knows, not usage. The report reads it and computes `LifeRegainedProgress` in-process:
+
+- **Starting pace:** average of the reported days in the seven days before the start date (at least three days). This is the same window the onboarding projection measured.
+- **Current pace:** average of reported completed days since the start date.
+- **On track to regain:** projected phone time to the planning age at the starting pace minus the same projection at the current pace (`ProjectionCalculator.calculateRegained`), never negative. "Back already" sums starting pace minus each tracked day.
+- **Chart:** daily totals across the query range, with the pre-start week shaded, the starting pace and goal as reference lines, and a gap (not an interpolated line) for missing days.
+
+The report extension can read the App Group but its writes are silently dropped, and Screen Time appears to keep about a month of history (not documented by Apple; based on developer reports). So the measured starting week eventually falls out of range, and the report cannot save it. Settings therefore offers an optional, user-entered starting point. Progress uses the measured week whenever at least three of its days are returned and the user's entry only after that. With neither, Progress asks for an entry instead of inventing one. The user's entry is user input, like the goal, and is the only "starting" value stored.
+
+Considered and rejected: a second report for Progress (another extension request and load), a global extension cache (rejected earlier for filter/authorization reasons, and it would not survive the extension being discarded), and DeviceActivityMonitor threshold events written to the App Group. The last could keep months of daily history, but it needs a FamilyActivityPicker selection, a new extension target and provisioning, coarse thresholds, and it would put usage-derived values in the App Group, contrary to this document's privacy model.
 
 The life chart initially represents the measured average. Its slider is an in-report what-if control; it does not persist activity-dependent values to the host. Goals are saved by the host's onboarding or Settings views. A Canvas draws exactly one square per month with an accessible summary.
 
@@ -58,11 +69,12 @@ Completed locally:
 
 On a physical iPhone with approved provisioning and real Screen Time history:
 
-1. Measure from opening the dashboard to its first visible grid for at least five cold starts. Record iOS version, device, and whether this was immediately after first authorization. Compare against the previous build on the same device.
+1. Measure from opening the dashboard to its first visible grid for at least five cold starts, both soon after onboarding (about a 7–14 day query) and with a start date 30+ days ago (the 35-day cap). Record iOS version, device, and whether this was immediately after first authorization. Compare against the previous build on the same device.
 2. Switch Life Grid → Stats → Progress → Life Grid repeatedly. Confirm no blank reload and no new `Report aggregation started` log for ordinary tab changes.
 3. Open and close Settings without edits, then change the goal and close again. Expect no reload for the first case and one intentional refresh for the second. Verify the goal reference line changes.
 4. Compare the displayed completed days against Apple's Screen Time using the same device scope. Test no data, explicit zero activity, partial history, and multiple iPhones.
 5. Revoke and regrant permission; foreground after midnight; force quit; test explicit Refresh and offline use. Confirm unavailable activity never becomes a fabricated number.
 6. Check larger Dynamic Type, VoiceOver slider adjustment, and a smaller iPhone.
+7. In Settings, move "Started ScreenSpan" back 10 days, then 40 days. Confirm Progress shows a measured starting pace for the first, and asks for a starting point for the second until one is entered. Confirm Life Grid and Stats numbers do not change.
 
 The report logs aggregation start/end and elapsed time only. That measures work after iOS invokes the extension, not total cold-start delay. Observe the UI to measure end-to-end latency. Do not add usage values or app identities to diagnostics.

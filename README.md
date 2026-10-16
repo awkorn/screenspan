@@ -1,6 +1,6 @@
 # ScreenSpan
 
-An iOS life chart based on automatic Screen Time activity. Life Grid, Stats, and Progress share one privacy-preserving report to avoid requesting activity again on every tab change.
+An iOS life chart based on automatic Screen Time activity. Life Grid, Stats, and Progress share one privacy-preserving report; Progress compares days since you started with the week before to avoid requesting activity again on every tab change.
 
 Open `ScreenSpan.xcodeproj`, select the ScreenSpan scheme, and run on a physical iPhone with Family Controls provisioning. The Simulator can validate layout and host navigation but cannot establish real Screen Time loading performance.
 

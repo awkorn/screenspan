@@ -6,6 +6,7 @@ struct PreviewApp: App {
         AppGroupManager.shared.currentAge = 25
         AppGroupManager.shared.targetAge = 80
         AppGroupManager.shared.screenTimeGoalMinutes = 120
+        AppGroupManager.shared.trackingStartDate = Calendar.current.date(byAdding: .day, value: -21, to: Date())
     }
     var body: some Scene {
         WindowGroup {
@@ -37,11 +38,16 @@ struct PreviewApp: App {
             .preferredColorScheme(CommandLine.arguments.contains("--dark") ? .dark : .light)
         }
     }
+    /// Seven sample days before a start 21 days ago, then a gradual decline.
     var fixture: ScreenTimeReportPayload {
-        let start = ActivitySummary.projectionInterval().start
-        let days = [4.2, 3.1, 5.0, 2.8, 3.5, 4.0, 2.5].enumerated().map {
-            ActivityDay(date: Calendar.current.date(byAdding: .day, value: $0.offset, to: start)!, hours: $0.element)
+        let today = Calendar.current.startOfDay(for: Date())
+        let hours = [5.4, 4.8, 5.9, 5.1, 4.6, 5.3, 4.9,
+                     4.7, 4.1, 4.9, 3.8, 4.2, 3.5, 4.0, 3.6, 3.1, 3.9, 3.3, 2.9, 3.4,
+                     3.0, 2.6, 3.2, 2.4, 2.8, 3.1, 2.5, 2.7]
+        let history = hours.enumerated().map {
+            ActivityDay(date: Calendar.current.date(byAdding: .day, value: $0.offset - hours.count, to: today)!, hours: $0.element)
         }
-        return ScreenTimeReportPayload(dailyAverageHours: days.map(\.hours).reduce(0,+) / 7, days: days)
+        let days = history.within(ActivitySummary.projectionInterval())
+        return ScreenTimeReportPayload(dailyAverageHours: ActivityDay.averageHours(of: days), days: days, history: history)
     }
 }

@@ -95,6 +95,27 @@ struct ProjectionCalculator {
         )
     }
 
+    /// Lifetime phone time avoided if the current pace continues instead of
+    /// the starting pace, from now until the target age.
+    static func calculateRegained(
+        startingDailyHours: Double,
+        currentDailyHours: Double,
+        currentAge: Int,
+        targetAge: Int
+    ) -> ReclaimResult {
+        let startingProjection = calculateProjectionFromDaily(
+            currentAge: currentAge,
+            targetAge: targetAge,
+            dailyHours: startingDailyHours
+        )
+        return calculateReclaim(
+            currentProjection: startingProjection,
+            goalDailyMinutes: currentDailyHours * 60,
+            currentAge: currentAge,
+            targetAge: targetAge
+        )
+    }
+
     /// Calculate life grid data for visualization
     /// - Parameters:
     ///   - currentAge: User's current age in years

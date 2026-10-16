@@ -15,6 +15,19 @@ extension DeviceActivityFilter {
         )
     }
 
+    /// The dashboard's one query: the week before the user started through
+    /// yesterday, capped at 35 days. Life Grid and Stats still use only the
+    /// last seven days; Progress uses the rest. Only the start date, a
+    /// non-usage setting, shapes it.
+    static var screenSpanDashboard: DeviceActivityFilter {
+        let interval = ActivitySummary.dashboardInterval(trackingStart: AppGroupManager.shared.trackingStartDate)
+        return DeviceActivityFilter(
+            segment: .daily(during: interval),
+            users: .all,
+            devices: .init([.iPhone])
+        )
+    }
+
     static var screenSpanHistory: DeviceActivityFilter { screenSpanProjectionAverage }
 
     static var screenSpanDaily: DeviceActivityFilter {

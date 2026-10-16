@@ -22,13 +22,44 @@ struct ActivitySummary {
     }
 
     var dailyAverageHours: Double? {
-        guard !secondsByDay.isEmpty else { return nil }
-        return secondsByDay.values.reduce(0, +) / Double(secondsByDay.count) / 3600
+        ActivityDay.averageHours(of: days)
     }
 
     static func projectionInterval(now: Date = Date(), calendar: Calendar = .current) -> DateInterval {
         let end = calendar.startOfDay(for: now)
         let start = calendar.date(byAdding: .day, value: -7, to: end)!
         return DateInterval(start: start, end: end)
+    }
+
+    /// The dashboard's single query: the week before the user started (their
+    /// measured starting pace) through yesterday. Capped so a long-time user
+    /// never asks iOS for more than baseline + progress days of daily totals;
+    /// it always includes the seven-day projection window.
+    static func dashboardInterval(
+        trackingStart: Date?,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> DateInterval {
+        let recent = projectionInterval(now: now, calendar: calendar)
+        guard let trackingStart else { return recent }
+        let maxDays = SharedConstants.DefaultValues.baselineDays + SharedConstants.DefaultValues.progressHistoryDays
+        let earliest = calendar.date(byAdding: .day, value: -maxDays, to: recent.end)!
+        let startDay = calendar.startOfDay(for: min(trackingStart, now))
+        let baselineStart = calendar.date(
+            byAdding: .day, value: -SharedConstants.DefaultValues.baselineDays, to: startDay)!
+        return DateInterval(start: max(min(baselineStart, recent.start), earliest), end: recent.end)
+    }
+}
+
+extension ActivityDay {
+    static func averageHours(of days: [ActivityDay]) -> Double? {
+        guard !days.isEmpty else { return nil }
+        return days.map(\.hours).reduce(0, +) / Double(days.count)
+    }
+}
+
+extension Array where Element == ActivityDay {
+    func within(_ interval: DateInterval) -> [ActivityDay] {
+        filter { $0.date >= interval.start && $0.date < interval.end }
     }
 }

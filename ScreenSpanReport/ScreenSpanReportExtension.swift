@@ -114,7 +114,15 @@ private func extractDailyAverage(
     // Timing only; do not log usage, sample counts, or application identities.
     let elapsed = started.duration(to: .now)
     logger.info("Report aggregation finished in \(String(describing: elapsed), privacy: .public)")
-    return ScreenTimeReportPayload(dailyAverageHours: summary.dailyAverageHours, days: summary.days)
+    // Life Grid and Stats always describe the last seven completed days, even
+    // when the dashboard query reaches further back for Progress.
+    let history = summary.days
+    let recent = history.within(ActivitySummary.projectionInterval())
+    return ScreenTimeReportPayload(
+        dailyAverageHours: ActivityDay.averageHours(of: recent),
+        days: recent,
+        history: history
+    )
 }
 
 struct DashboardReportScene: DeviceActivityReportScene {
@@ -502,8 +510,12 @@ struct OnboardingPaywallReclaimReportView: View {
 }
 
 struct ScreenTimeReportPayload: Sendable {
+    /// Average of `days`, the last seven completed days.
     let dailyAverageHours: Double?
     var days: [ActivityDay] = []
+    /// Every completed day the query returned, including the week before the
+    /// user started. Used only by Progress.
+    var history: [ActivityDay] = []
 
     static func available(_ dailyAverageHours: Double) -> ScreenTimeReportPayload {
         ScreenTimeReportPayload(dailyAverageHours: dailyAverageHours)

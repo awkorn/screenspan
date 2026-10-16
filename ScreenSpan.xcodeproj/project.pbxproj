@@ -59,6 +59,7 @@
 		A65A927040C251DE6BF21BC5 /* ActivitySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6285B74674298E92260D6F0 /* ActivitySummary.swift */; };
 		A7BA55370667EBB5975595DA /* StoreKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7D5F6A44622236803D7EED /* StoreKitService.swift */; };
 		AFAE3FD26CE8D5923D988FCF /* ScreenSpanApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A4D8FAD2211C2AAFF1DED04 /* ScreenSpanApp.swift */; };
+		B4ACF05184003E71EE7D5385 /* LifeRegainedProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */; };
 		B833F397A362DF5E65D771ED /* StatsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF9074527819B4C453EF03BE /* StatsTabView.swift */; };
 		C56DA5C41E9F896D234A80A4 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6335E4D884CF036670B084F /* PaywallView.swift */; };
 		C73B4B869E90C5CD06E20BE2 /* LifeGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2AC75288B4E2F4E8469DC82 /* LifeGridView.swift */; };
@@ -74,6 +75,7 @@
 		DF5E2C6764FF1FD529274BC6 /* ChartViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9801013D24B5FFBF50A18946 /* ChartViewModel.swift */; };
 		E476A69F830E59062F2B1980 /* AuthorizationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1386C8E8351CD19946B3E8 /* AuthorizationService.swift */; };
 		E497BD738F5227E4D7D4335D /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
+		E4BF3488E576DA5544AD71A7 /* LifeRegainedProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */; };
 		E909B357CB330BF565FBA9B9 /* ProjectionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */; };
 		EEFC74152742F33836C9D61D /* Color+ScreenSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B64696CA1F5AF4236B8F96 /* Color+ScreenSpan.swift */; };
 		F420A4DEF7335FF818D107A2 /* GeistItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */; };
@@ -161,6 +163,7 @@
 		CCCFE517652396A0F9ACDA79 /* ScreenSpanAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSpanAppearance.swift; sourceTree = "<group>"; };
 		D541E0CE886AB9530162F9E3 /* GeistMonoItalicVF.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GeistMonoItalicVF.ttf; sourceTree = "<group>"; };
 		D6335E4D884CF036670B084F /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeRegainedProgress.swift; sourceTree = "<group>"; };
 		D98B2E6C7985B4098510525C /* Environment+ScreenSpan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Environment+ScreenSpan.swift"; sourceTree = "<group>"; };
 		E51E27A769C43E1E9DEC012F /* ScreenSpan.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ScreenSpan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA7EFCABE6CC65E07FE10C6C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -221,6 +224,7 @@
 				A93D9C33850C3C05045FC653 /* DonutChartView.swift */,
 				A2210D930D532B57F4473C84 /* GeistFont.swift */,
 				C2AC75288B4E2F4E8469DC82 /* LifeGridView.swift */,
+				D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */,
 				7F6C9EB6BF4959BE60DD1E0C /* OnboardingReportViewport.swift */,
 				C243C4B38CF92C03D01F92AB /* ProjectionCalculator.swift */,
 				0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */,
@@ -508,6 +512,7 @@
 				4DA70EE7E40E3A0E1C184C68 /* GeistFont.swift in Sources */,
 				8F0240414A51F7444F3A2F90 /* HistoryReportView.swift in Sources */,
 				C73B4B869E90C5CD06E20BE2 /* LifeGridView.swift in Sources */,
+				E4BF3488E576DA5544AD71A7 /* LifeRegainedProgress.swift in Sources */,
 				18B0D8B2D527966D29D10F27 /* OnboardingReportViewport.swift in Sources */,
 				70508DE61057684BEC9A80B9 /* ProjectionCalculator.swift in Sources */,
 				8919445EF7490602BAA2D63E /* ProjectionModel.swift in Sources */,
@@ -544,6 +549,7 @@
 				46A751C021C1635BB9A738F2 /* HistoryViewModel.swift in Sources */,
 				9434CDFDB5BFDD3D31E7EC09 /* LifeGridRevealView.swift in Sources */,
 				D0A5297F6EEA299543506846 /* LifeGridView.swift in Sources */,
+				B4ACF05184003E71EE7D5385 /* LifeRegainedProgress.swift in Sources */,
 				0F572863C112270027377EE5 /* MainTabView.swift in Sources */,
 				3F41162A39F0FF7F6E097804 /* NotificationService.swift in Sources */,
 				4AE75ABCD7B0AC96A6737209 /* OnboardingContainerView.swift in Sources */,

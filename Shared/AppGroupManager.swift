@@ -55,6 +55,32 @@ final class AppGroupManager {
     // projection in-memory only; nothing usage-derived crosses the
     // extension/host boundary via this manager.
 
+    /// The day the user started ScreenSpan. `nil` until onboarding completes.
+    var trackingStartDate: Date? {
+        get {
+            let stored = userDefaults.double(forKey: SharedConstants.UserDefaultsKey.trackingStartDate.rawValue)
+            return stored > 0 ? Date(timeIntervalSince1970: stored) : nil
+        }
+        set {
+            userDefaults.set(newValue?.timeIntervalSince1970 ?? 0, forKey: SharedConstants.UserDefaultsKey.trackingStartDate.rawValue)
+        }
+    }
+
+    /// Users who finished onboarding before progress tracking existed start today.
+    func ensureTrackingStartDate(now: Date = Date()) {
+        if trackingStartDate == nil { trackingStartDate = now }
+    }
+
+    /// User-entered starting daily average in minutes; 0 means not set.
+    var startingDailyMinutes: Double {
+        get {
+            max(userDefaults.double(forKey: SharedConstants.UserDefaultsKey.startingDailyMinutes.rawValue), 0)
+        }
+        set {
+            userDefaults.set(newValue, forKey: SharedConstants.UserDefaultsKey.startingDailyMinutes.rawValue)
+        }
+    }
+
     /// Selected DeviceActivity categories
     var selectedCategories: [String] {
         get {

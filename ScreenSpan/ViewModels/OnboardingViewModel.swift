@@ -209,6 +209,8 @@ final class OnboardingViewModel {
         AppGroupManager.shared.currentAge = selectedAge
         AppGroupManager.shared.targetAge = SharedConstants.DefaultValues.targetAge
         AppGroupManager.shared.screenTimeGoalMinutes = resolvedGoalMinutes
+        // Progress compares everything after today with the week before it.
+        AppGroupManager.shared.trackingStartDate = Date()
 
         // Save selected categories as strings
         let categoryStrings = selectedCategories.map { $0.rawValue }
