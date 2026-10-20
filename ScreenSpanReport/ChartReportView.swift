@@ -73,22 +73,15 @@ struct ChartReportView: View {
             if payload.isAvailable {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 18) {
-                        Text("Your life chart")
-                            .font(.geist(size: 26, weight: .bold))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Text("Slide to explore a different daily average. Save your goal in Settings.")
-                            .font(.geist(size: 13))
-                            .foregroundStyle(ScreenSpanAppearance.secondaryText)
                         sliderSection
-                            .padding(.top, 12)
 
                         LifeGridView(goalGridData: goalGridData)
 
                         legendSection
-                            .padding(.bottom, 12)
                     }
                     .padding(.horizontal, 24)
-                    .padding(.bottom, 24)
+                    .padding(.top, 8)
+                    .padding(.bottom, 16)
                 }
                 .onAppear {
                     draftGoalHours = dailyAverageHours
