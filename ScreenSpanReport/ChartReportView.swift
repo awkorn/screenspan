@@ -78,6 +78,8 @@ struct ChartReportView: View {
                         LifeGridView(goalGridData: goalGridData)
 
                         legendSection
+
+                        ReportSourceNote(payload: payload)
                     }
                     .padding(.horizontal, 24)
                     .padding(.top, 8)

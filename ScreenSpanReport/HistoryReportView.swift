@@ -38,9 +38,12 @@ struct HistoryReportView: View {
                 chartSection(progress)
                 regainSection(progress)
                 currentSection(progress)
-                Text("Projections compare your daily average since starting with your starting pace, from now until age \(targetAge). Days Screen Time did not report are left out, not counted as zero.")
-                    .font(.geist(size: 12))
-                    .foregroundStyle(ScreenSpanAppearance.secondaryText)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Projections compare your daily average since starting with your starting pace, from now until age \(targetAge). Days Screen Time did not report are left out, not counted as zero.")
+                        .font(.geist(size: 12))
+                        .foregroundStyle(ScreenSpanAppearance.secondaryText)
+                    ReportSourceNote(payload: payload)
+                }
             }
             .padding(24)
         }
