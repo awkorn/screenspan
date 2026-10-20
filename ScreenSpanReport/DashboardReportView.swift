@@ -53,7 +53,8 @@ struct DashboardReportView: View {
     }
 }
 
-/// Data-source footnote shown at the bottom of each dashboard page.
+/// Data-source footnote for the pages built from the last seven days
+/// (Life Grid and Stats). Progress uses a longer window, so it omits this.
 struct ReportSourceNote: View {
     let payload: ScreenTimeReportPayload
 
