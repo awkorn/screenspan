@@ -9,10 +9,6 @@ struct DashboardReportView: View {
     var body: some View {
         VStack(spacing: 0) {
             if payload.isAvailable {
-                Text("iPhone activity · \(payload.days.count) reported days · excludes today")
-                    .font(.geist(size: 11))
-                    .foregroundStyle(ScreenSpanAppearance.secondaryText)
-                    .padding(.top, 8)
                 Group {
                     switch page {
                     case 1: StatsReportView(payload: payload)
@@ -54,6 +50,18 @@ struct DashboardReportView: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(page == value ? .isSelected : [])
+    }
+}
+
+/// Data-source footnote for the pages built from the last seven days
+/// (Life Grid and Stats). Progress uses a longer window, so it omits this.
+struct ReportSourceNote: View {
+    let payload: ScreenTimeReportPayload
+
+    var body: some View {
+        Text("iPhone activity · \(payload.days.count) reported days · excludes today")
+            .font(.geist(size: 11))
+            .foregroundStyle(ScreenSpanAppearance.secondaryText)
     }
 }
 

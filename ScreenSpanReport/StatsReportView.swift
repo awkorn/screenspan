@@ -43,9 +43,13 @@ struct StatsReportView: View {
                         heroYearsSection
                         donutChartSection
                         statCardsSection
-                        Text("If this average continues to age \(targetAge). A year means 365 days of 24 hours; the waking-life percentage assumes 8 hours of sleep per day.")
-                            .font(.geist(size: 12))
-                            .foregroundStyle(ScreenSpanAppearance.secondaryText)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("If this average continues to age \(targetAge). A year means 365 days of 24 hours; the waking-life percentage assumes 8 hours of sleep per day.")
+                                .font(.geist(size: 12))
+                                .foregroundStyle(ScreenSpanAppearance.secondaryText)
+                            ReportSourceNote(payload: payload)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.horizontal, 24)
                     .padding(.top, 28)
