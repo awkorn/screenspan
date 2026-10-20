@@ -36,7 +36,15 @@ The host records `trackingStartDate` when onboarding completes (existing users a
 - **Starting pace:** average of the reported days in the seven days before the start date (at least three days). This is the same window the onboarding projection measured.
 - **Current pace:** average of reported completed days since the start date.
 - **On track to regain:** projected phone time to the planning age at the starting pace minus the same projection at the current pace (`ProjectionCalculator.calculateRegained`), never negative. "Back already" sums starting pace minus each tracked day.
-- **Chart:** daily totals across the query range, with the pre-start week shaded, the starting pace and goal as reference lines, and a gap (not an interpolated line) for missing days.
+- **Lifetime comparison:** two bars on one scale, phone years at the starting pace and at the current pace, with the difference drawn as time won back.
+- **Chart:** faint daily bars plus a trailing seven-day average line (shown once three days of that window are reported, broken at gaps rather than interpolated), with the pre-start week shaded and the starting pace and goal as reference lines.
+- **Daily goal:** one square per calendar day since starting (up to 14), green at or under the goal, red over, dashed when not reported, plus the current streak. A missing day ends a streak because it cannot be confirmed.
+
+### Stats and Life Grid
+
+Stats describes the last seven completed days: the lifetime projection, the waking-life donut, daily average, pickups and notifications per day, and the top five apps by daily average with each app's lifetime projection. Per-app detail is read only for those seven daily segments; older segments contribute just their totals, so the 35-day query does not pay for app-level detail it never shows. App names and icons render from `Application` tokens with FamilyControls' `Label`, inside the extension. They are never logged, stored, or sent to the host. Pickups are app pickups plus pickups without app activity.
+
+Life Grid draws one square per month, three years per row, with age labels every 15 years. The slider is an in-report what-if: it starts at the seven-day average ("Now") and has tappable Goal and Start markers. Grid squares show lived months, projected phone months at the slider's pace, and, when a starting pace is known, months won back compared with it (green).
 
 The report extension can read the App Group but its writes are silently dropped, and Screen Time appears to keep about a month of history (not documented by Apple; based on developer reports). So the measured starting week eventually falls out of range, and the report cannot save it. Settings therefore offers an optional, user-entered starting point. Progress uses the measured week whenever at least three of its days are returned and the user's entry only after that. With neither, Progress asks for an entry instead of inventing one. The user's entry is user input, like the goal, and is the only "starting" value stored.
 
@@ -75,6 +83,7 @@ On a physical iPhone with approved provisioning and real Screen Time history:
 4. Compare the displayed completed days against Apple's Screen Time using the same device scope. Test no data, explicit zero activity, partial history, and multiple iPhones.
 5. Revoke and regrant permission; foreground after midnight; force quit; test explicit Refresh and offline use. Confirm unavailable activity never becomes a fabricated number.
 6. Check larger Dynamic Type, VoiceOver slider adjustment, and a smaller iPhone.
-7. In Settings, move "Started ScreenSpan" back 10 days, then 40 days. Confirm Progress shows a measured starting pace for the first, and asks for a starting point for the second until one is entered. Confirm Life Grid and Stats numbers do not change.
+7. In Settings, move "Started ScreenSpan" back 10 days, then 40 days. Confirm Progress shows a measured starting pace for the first, and asks for a starting point for the second until one is entered. Confirm Stats numbers do not change and Life Grid shows won-back months only with a starting pace.
+8. Compare Stats' top apps, pickups, and notifications with Apple's Screen Time for the same seven days. Note whether app names or icons fail to render.
 
 The report logs aggregation start/end and elapsed time only. That measures work after iOS invokes the extension, not total cold-start delay. Observe the UI to measure end-to-end latency. Do not add usage values or app identities to diagnostics.

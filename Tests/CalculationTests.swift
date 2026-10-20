@@ -27,6 +27,9 @@ struct CalculationTests {
                 let grid = ProjectionCalculator.calculateLifeGrid(currentAge: age, targetAge: 80, monthsOnPhone: p.monthsOnPhone)
                 expect(grid.monthsLived + grid.phoneMonths + grid.freeMonths == 960, "Exactly 960 months")
                 expect(grid.freeMonths >= 0 && grid.phoneMonths >= 0, "No grid overflow")
+                let won = ProjectionCalculator.calculateLifeGrid(currentAge: age, targetAge: 80, monthsOnPhone: p.monthsOnPhone, regainedMonths: 200)
+                expect(won.monthsLived + won.phoneMonths + won.regainedMonths + won.freeMonths == 960, "Won-back months fit the grid")
+                expect(won.regainedMonths >= 0 && won.freeMonths >= 0, "No won-back overflow")
             }
         }
         let invalidGrid = ProjectionCalculator.calculateLifeGrid(currentAge: -10, targetAge: -1, monthsOnPhone: .nan)
@@ -96,6 +99,21 @@ struct CalculationTests {
         expect(thin.startingPaceHours == nil, "Two reported days are too few for a starting pace")
         let firstDay = LifeRegainedProgress(days: history, trackingStart: now, savedStartingMinutes: 0, now: now, calendar: calendar)
         expect(firstDay.startingPaceHours == 3 && firstDay.currentPaceHours == nil && firstDay.regained(currentAge: 25, targetAge: 80) == nil, "No progress before first full day")
+        let wonBack = ProjectionCalculator.calculateLifeGrid(currentAge: 25, targetAge: 80, monthsOnPhone: 100, regainedMonths: .nan)
+        expect(wonBack.regainedMonths == 0 && wonBack.freeMonths == 960 - 300 - 100, "Invalid won-back months ignored")
+
+        // Trend line and goal streak
+        let trend = ActivityDay.trailingAverages(of: history.filter { $0.date < interval.end }, calendar: calendar)
+        expect(trend.first?.date == day(-15), "Trend waits for three reported days")
+        expect(trend.last.map { close($0.hours, 3) } == true, "Trend averages the trailing week")
+        let goalHistory = [ActivityDay(date: day(-4), hours: 3), ActivityDay(date: day(-3), hours: 1.5),
+                           ActivityDay(date: day(-2), hours: 2), ActivityDay(date: day(-1), hours: 1)]
+        let adherence = GoalAdherence(days: goalHistory, goalHours: 2, startDay: day(-5), now: now, calendar: calendar)
+        expect(adherence.recent.count == 5 && adherence.recent.first?.hours == nil, "Goal days from start, missing kept")
+        expect(adherence.daysReported == 4 && adherence.daysMet == 3 && adherence.currentStreak == 3, "Goal met count and streak")
+        let broken = GoalAdherence(days: goalHistory.filter { $0.date != day(-1) }, goalHours: 2, startDay: day(-30), now: now, calendar: calendar)
+        expect(broken.recent.count == 14 && broken.currentStreak == 0, "Missing yesterday ends streak; 14-day cap")
+
         let worse = ProjectionCalculator.calculateRegained(startingDailyHours: 2, currentDailyHours: 4, currentAge: 25, targetAge: 80)
         expect(worse.yearsReclaimed == 0, "No negative regained time")
         print("Passed \(checks) calculation and aggregation checks")

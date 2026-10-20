@@ -121,23 +121,29 @@ struct ProjectionCalculator {
     ///   - currentAge: User's current age in years
     ///   - targetAge: Target age (default 80)
     ///   - monthsOnPhone: Projected months on phone
+    ///   - regainedMonths: Months won back versus the starting pace
     /// - Returns: LifeGridData for visual representation
     static func calculateLifeGrid(
         currentAge: Int,
         targetAge: Int,
-        monthsOnPhone: Double
+        monthsOnPhone: Double,
+        regainedMonths: Double = 0
     ) -> LifeGridData {
         let totalMonths = min(max(targetAge, 0), 150) * 12
         let monthsLived = min(max(currentAge, 0), totalMonths / 12) * 12
-        let safePhoneMonths = monthsOnPhone.isFinite ? monthsOnPhone : 0
-        let phoneMonthsRounded = Int(min(max(safePhoneMonths.rounded(), 0), Double(totalMonths - monthsLived)))
-        let freeMonths = totalMonths - monthsLived - phoneMonthsRounded
+        func clampedMonths(_ months: Double, available: Int) -> Int {
+            let safe = months.isFinite ? months : 0
+            return Int(min(max(safe.rounded(), 0), Double(available)))
+        }
+        let phoneMonths = clampedMonths(monthsOnPhone, available: totalMonths - monthsLived)
+        let regained = clampedMonths(regainedMonths, available: totalMonths - monthsLived - phoneMonths)
 
         return LifeGridData(
             totalMonths: totalMonths,
             monthsLived: monthsLived,
-            phoneMonths: phoneMonthsRounded,
-            freeMonths: freeMonths
+            phoneMonths: phoneMonths,
+            regainedMonths: regained,
+            freeMonths: totalMonths - monthsLived - phoneMonths - regained
         )
     }
 }

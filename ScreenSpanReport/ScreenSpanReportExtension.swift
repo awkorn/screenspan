@@ -1,4 +1,5 @@
 import DeviceActivity
+import ManagedSettings
 import SwiftUI
 import _DeviceActivity_SwiftUI
 import OSLog
@@ -105,10 +106,25 @@ private func extractDailyAverage(
     let started = ContinuousClock.now
     logger.info("Report aggregation started")
     var summary = ActivitySummary()
+    let recentInterval = ActivitySummary.projectionInterval()
+    var apps: [Application: AppTotals] = [:]
+    var pickups = 0
+    var notifications = 0
     for await activityData in results {
         for await segment in activityData.activitySegments {
             guard !Task.isCancelled else { return .unavailable }
             summary.add(date: segment.dateInterval.start, duration: segment.totalActivityDuration)
+            // Per-app detail only for the seven days Stats describes; older
+            // days need just their totals, which keeps the long query cheap.
+            guard recentInterval.contains(segment.dateInterval.start) else { continue }
+            pickups += segment.totalPickupsWithoutApplicationActivity
+            for await category in segment.categories {
+                for await app in category.applications {
+                    apps[app.application, default: AppTotals()].add(app)
+                    pickups += app.numberOfPickups
+                    notifications += app.numberOfNotifications
+                }
+            }
         }
     }
     // Timing only; do not log usage, sample counts, or application identities.
@@ -117,12 +133,41 @@ private func extractDailyAverage(
     // Life Grid and Stats always describe the last seven completed days, even
     // when the dashboard query reaches further back for Progress.
     let history = summary.days
-    let recent = history.within(ActivitySummary.projectionInterval())
+    let recent = history.within(recentInterval)
+    let dayCount = Double(max(recent.count, 1))
+    let topApps = apps
+        .map { AppUsage(application: $0.key, dailyHours: $0.value.seconds / 3600 / dayCount,
+                        pickupsPerDay: Double($0.value.pickups) / dayCount) }
+        .filter { $0.dailyHours >= 1.0 / 60 }
+        .sorted { $0.dailyHours > $1.dailyHours }
     return ScreenTimeReportPayload(
         dailyAverageHours: ActivityDay.averageHours(of: recent),
         days: recent,
-        history: history
+        history: history,
+        topApps: Array(topApps.prefix(5)),
+        pickupsPerDay: recent.isEmpty ? nil : Double(pickups) / dayCount,
+        notificationsPerDay: recent.isEmpty ? nil : Double(notifications) / dayCount
     )
+}
+
+private struct AppTotals {
+    var seconds: TimeInterval = 0
+    var pickups = 0
+
+    mutating func add(_ app: DeviceActivityData.ApplicationActivity) {
+        if app.totalActivityDuration.isFinite, app.totalActivityDuration > 0 { seconds += app.totalActivityDuration }
+        pickups += app.numberOfPickups
+    }
+}
+
+/// Seven-day per-app average. Rendered only inside this extension; app
+/// identities are never logged, stored, or returned to the host.
+struct AppUsage: Identifiable {
+    let id = UUID()
+    let application: Application?
+    var fallbackName: String = "App"
+    let dailyHours: Double
+    var pickupsPerDay: Double = 0
 }
 
 struct DashboardReportScene: DeviceActivityReportScene {
@@ -509,13 +554,17 @@ struct OnboardingPaywallReclaimReportView: View {
     }
 }
 
-struct ScreenTimeReportPayload: Sendable {
+struct ScreenTimeReportPayload {
     /// Average of `days`, the last seven completed days.
     let dailyAverageHours: Double?
     var days: [ActivityDay] = []
     /// Every completed day the query returned, including the week before the
     /// user started. Used only by Progress.
     var history: [ActivityDay] = []
+    /// Up to five apps by daily average over `days`.
+    var topApps: [AppUsage] = []
+    var pickupsPerDay: Double?
+    var notificationsPerDay: Double?
 
     static func available(_ dailyAverageHours: Double) -> ScreenTimeReportPayload {
         ScreenTimeReportPayload(dailyAverageHours: dailyAverageHours)

@@ -60,12 +60,15 @@ struct LifeGridData: Codable, Sendable, Equatable {
     let totalMonths: Int
     let monthsLived: Int
     let phoneMonths: Int
+    /// Months no longer projected on the phone compared with the starting pace.
+    let regainedMonths: Int
     let freeMonths: Int
 
     enum CodingKeys: String, CodingKey {
         case totalMonths
         case monthsLived
         case phoneMonths
+        case regainedMonths
         case freeMonths
     }
 
@@ -73,11 +76,13 @@ struct LifeGridData: Codable, Sendable, Equatable {
         totalMonths: Int,
         monthsLived: Int,
         phoneMonths: Int,
+        regainedMonths: Int = 0,
         freeMonths: Int
     ) {
         self.totalMonths = totalMonths
         self.monthsLived = monthsLived
         self.phoneMonths = phoneMonths
+        self.regainedMonths = regainedMonths
         self.freeMonths = freeMonths
     }
 }

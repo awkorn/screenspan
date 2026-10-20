@@ -51,6 +51,7 @@
 		8A28E4ADC1A4B179C11E717E /* ScreenSpanAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCFE517652396A0F9ACDA79 /* ScreenSpanAppearance.swift */; };
 		8F0240414A51F7444F3A2F90 /* HistoryReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B745744BA2354B4E399F1C41 /* HistoryReportView.swift */; };
 		9434CDFDB5BFDD3D31E7EC09 /* LifeGridRevealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5661E444673C60B141FDD277 /* LifeGridRevealView.swift */; };
+		98C0F9012844E9892B9D4BE1 /* ProgressInsights.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9386737EA0349AC8891EC0 /* ProgressInsights.swift */; };
 		9A0AF529672DD47AE388D675 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21AA338A8BC8C3E45D8D551 /* OnboardingViewModel.swift */; };
 		9C509A7A0EB6D0422634921C /* GeistItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */; };
 		9DB102EEFD27E1CF5149435F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA623384754EB8634D457F80 /* ContentView.swift */; };
@@ -76,6 +77,7 @@
 		E476A69F830E59062F2B1980 /* AuthorizationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1386C8E8351CD19946B3E8 /* AuthorizationService.swift */; };
 		E497BD738F5227E4D7D4335D /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
 		E4BF3488E576DA5544AD71A7 /* LifeRegainedProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */; };
+		E6222E286ED8B85D046E0362 /* ProgressInsights.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9386737EA0349AC8891EC0 /* ProgressInsights.swift */; };
 		E909B357CB330BF565FBA9B9 /* ProjectionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */; };
 		EEFC74152742F33836C9D61D /* Color+ScreenSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B64696CA1F5AF4236B8F96 /* Color+ScreenSpan.swift */; };
 		F420A4DEF7335FF818D107A2 /* GeistItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */; };
@@ -168,6 +170,7 @@
 		E51E27A769C43E1E9DEC012F /* ScreenSpan.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ScreenSpan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA7EFCABE6CC65E07FE10C6C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		EB73D5B3524E52E89AB47303 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		EB9386737EA0349AC8891EC0 /* ProgressInsights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressInsights.swift; sourceTree = "<group>"; };
 		F5DF1B1B7123E0DD82F222F4 /* HistoryTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryTabView.swift; sourceTree = "<group>"; };
 		FEFB5FF71316F7E1E7057F1A /* SubscriptionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStatus.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -226,6 +229,7 @@
 				C2AC75288B4E2F4E8469DC82 /* LifeGridView.swift */,
 				D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */,
 				7F6C9EB6BF4959BE60DD1E0C /* OnboardingReportViewport.swift */,
+				EB9386737EA0349AC8891EC0 /* ProgressInsights.swift */,
 				C243C4B38CF92C03D01F92AB /* ProjectionCalculator.swift */,
 				0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */,
 				CCCFE517652396A0F9ACDA79 /* ScreenSpanAppearance.swift */,
@@ -514,6 +518,7 @@
 				C73B4B869E90C5CD06E20BE2 /* LifeGridView.swift in Sources */,
 				E4BF3488E576DA5544AD71A7 /* LifeRegainedProgress.swift in Sources */,
 				18B0D8B2D527966D29D10F27 /* OnboardingReportViewport.swift in Sources */,
+				98C0F9012844E9892B9D4BE1 /* ProgressInsights.swift in Sources */,
 				70508DE61057684BEC9A80B9 /* ProjectionCalculator.swift in Sources */,
 				8919445EF7490602BAA2D63E /* ProjectionModel.swift in Sources */,
 				A53070273FEF27861FD66E84 /* ScreenSpanAppearance.swift in Sources */,
@@ -557,6 +562,7 @@
 				9A0AF529672DD47AE388D675 /* OnboardingViewModel.swift in Sources */,
 				C56DA5C41E9F896D234A80A4 /* PaywallView.swift in Sources */,
 				D9B4D9BDD484D0CE6BFBC295 /* PermissionRequestView.swift in Sources */,
+				E6222E286ED8B85D046E0362 /* ProgressInsights.swift in Sources */,
 				5899087DD153621F52A860BE /* ProjectionCalculator.swift in Sources */,
 				E909B357CB330BF565FBA9B9 /* ProjectionModel.swift in Sources */,
 				FE7DE6A2DD2B620D93E404D3 /* ProjectionRevealView.swift in Sources */,
