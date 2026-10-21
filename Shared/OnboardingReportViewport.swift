@@ -1,21 +1,25 @@
 import SwiftUI
 
-/// Show one of several equal-height panels stacked in the same opaque report
-/// view. Navigation belongs to the host; activity and every rendered panel
-/// stay inside the extension. Changing the visible panel does not change the
-/// report's identity or filter.
-struct OnboardingReportViewport<Content: View>: View {
-    let panel: Int
-    let panelCount: Int
+/// A window onto part of one tall report. Navigation belongs to the host; it
+/// only chooses which region shows. Activity and every rendered region stay
+/// inside the extension, and moving the window does not change the report's
+/// identity or filter.
+///
+/// The content sits in a scroll view, not just a clipped frame, because a
+/// clipped frame still receives touches outside its bounds; a scroll view
+/// does not, so the report can't swallow taps on the controls around it.
+struct OnboardingReportWindow<Content: View>: View {
+    let contentHeight: CGFloat
+    let offset: CGFloat
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        GeometryReader { proxy in
+        ScrollView(.vertical, showsIndicators: false) {
             content()
-                .frame(width: proxy.size.width, height: proxy.size.height * CGFloat(panelCount))
-                .offset(y: -proxy.size.height * CGFloat(min(max(panel, 0), panelCount - 1)))
-                .animation(.easeInOut(duration: 0.35), value: panel)
+                .frame(height: contentHeight)
+                .offset(y: -offset)
+                .animation(.easeInOut(duration: 0.35), value: offset)
         }
-        .clipped()
+        .scrollDisabled(true)
     }
 }

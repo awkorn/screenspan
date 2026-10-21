@@ -1,36 +1,69 @@
 import DeviceActivity
 import SwiftUI
 
-/// Five reveal panels. With Screen Time access they are one report rendered by
-/// the extension (the host only moves the viewport); in estimate mode the host
-/// renders the same panels from the user's own guess.
+/// The reveal panels and the goal step share one report so it loads once.
+/// With Screen Time access the report is rendered by the extension and the
+/// host only moves a window over it: a full-height panel during the reveal,
+/// then the goal-impact row matching the selected goal. In estimate mode the
+/// host renders the same layout from the user's own guess.
 struct RevealView: View {
-    var viewModel: OnboardingViewModel
+    @Bindable var viewModel: OnboardingViewModel
     @State private var filter = DeviceActivityFilter.screenSpanProjectionAverage
     @State private var showsEstimateFallback = false
+    private let goalPresets: [Double] = [1, 1.5, 2, 3]
 
-    private var isLastPanel: Bool { viewModel.revealPanel == OnboardingRevealPanels.panelCount - 1 }
+    private var isGoal: Bool { viewModel.currentStep == .goal }
+    private var isLastPanel: Bool { viewModel.revealPanel == OnboardingRevealLayout.panelCount - 1 }
 
     var body: some View {
         OnboardingScaffold(viewModel: viewModel) {
-            ZStack {
-                if !viewModel.usesEstimate {
-                    AnalyzingPlaceholder()
-                }
-                OnboardingReportViewport(panel: viewModel.revealPanel, panelCount: OnboardingRevealPanels.panelCount) {
-                    if viewModel.usesEstimate {
-                        OnboardingRevealPanels(data: viewModel.estimateRevealData)
-                    } else {
-                        DeviceActivityReport(.onboardingOverview, filter: filter)
+            GeometryReader { proxy in
+                let panelHeight = proxy.size.height
+                VStack(alignment: .leading, spacing: 0) {
+                    if isGoal {
+                        goalHeader
                     }
+                    ZStack {
+                        if !viewModel.usesEstimate {
+                            if isGoal {
+                                ProgressView().tint(OnboardingStyle.red)
+                            } else {
+                                AnalyzingPlaceholder()
+                            }
+                        }
+                        OnboardingReportWindow(
+                            contentHeight: OnboardingRevealLayout.totalHeight(panelHeight: panelHeight),
+                            offset: isGoal
+                                ? OnboardingRevealLayout.goalOffset(viewModel.goalHours, panelHeight: panelHeight)
+                                : OnboardingRevealLayout.panelOffset(viewModel.revealPanel, panelHeight: panelHeight)
+                        ) {
+                            if viewModel.usesEstimate {
+                                OnboardingRevealPanels(data: viewModel.estimateRevealData)
+                            } else {
+                                DeviceActivityReport(.onboardingOverview, filter: filter)
+                            }
+                        }
+                    }
+                    .frame(height: isGoal ? OnboardingRevealLayout.goalRowHeight : panelHeight)
+                    if isGoal {
+                        goalControls
+                    }
+                    Spacer(minLength: 0)
                 }
             }
             .padding(.top, 12)
         } footer: {
-            OnboardingPrimaryButton(title: isLastPanel ? "Choose my goal" : "Continue") { viewModel.advance() }
-            if showsEstimateFallback && !viewModel.usesEstimate && viewModel.revealPanel == 0 {
-                OnboardingSecondaryButton(title: "Report not showing? Use my estimate") {
-                    withAnimation { viewModel.usesEstimate = true }
+            if isGoal {
+                OnboardingPrimaryButton(title: "Set my goal") {
+                    viewModel.saveGoal()
+                    viewModel.advance()
+                }
+            } else {
+                OnboardingPrimaryButton(title: isLastPanel ? "Choose my goal" : "Continue") { viewModel.advance() }
+                if showsEstimateFallback && !viewModel.usesEstimate && viewModel.revealPanel == 0 {
+                    OnboardingSecondaryButton(title: "Report not showing? Use my estimate") {
+                        withAnimation { viewModel.usesEstimate = true }
+                    }
                 }
             }
         }
@@ -40,6 +73,67 @@ struct RevealView: View {
             try? await Task.sleep(for: .seconds(20))
             withAnimation { showsEstimateFallback = true }
         }
+    }
+
+    private var goalHeader: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Set your daily goal")
+                .font(.geist(size: 28, weight: .bold))
+                .foregroundStyle(OnboardingStyle.navy)
+            Text("Pick a limit that feels challenging but doable. You can change it anytime.")
+                .font(.geist(size: 16))
+                .foregroundStyle(OnboardingStyle.muted)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 8)
+        .padding(.bottom, 20)
+    }
+
+    private var goalControls: some View {
+        VStack(spacing: 20) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Your goal")
+                    .font(.geist(size: 15, weight: .medium))
+                    .foregroundStyle(OnboardingStyle.muted)
+                Spacer()
+                Text("\(formatted(viewModel.goalHours)) a day")
+                    .font(.geist(size: 22, weight: .bold))
+                    .foregroundStyle(OnboardingStyle.navy)
+                    .monospacedDigit()
+                    .contentTransition(.numericText(value: viewModel.goalHours))
+            }
+            Slider(value: $viewModel.goalHours,
+                   in: OnboardingRevealLayout.goalValues.first!...OnboardingRevealLayout.goalValues.last!,
+                   step: 0.25)
+                .tint(Color(hex: "#2BB673"))
+                .accessibilityLabel("Daily goal")
+                .accessibilityValue("\(formatted(viewModel.goalHours)) a day")
+            HStack(spacing: 8) {
+                ForEach(goalPresets, id: \.self) { hours in
+                    Button {
+                        withAnimation(.snappy) { viewModel.goalHours = hours }
+                    } label: {
+                        Text(formatted(hours))
+                            .font(.geist(size: 14, weight: .semibold))
+                            .foregroundStyle(viewModel.goalHours == hours ? .white : OnboardingStyle.navy)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 40)
+                            .background(viewModel.goalHours == hours ? OnboardingStyle.navy : OnboardingStyle.card,
+                                        in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 24)
+    }
+
+    private func formatted(_ hours: Double) -> String {
+        let minutes = Int((hours * 60).rounded())
+        if minutes < 60 { return "\(minutes)m" }
+        return minutes % 60 == 0 ? "\(minutes / 60)h" : "\(minutes / 60)h \(minutes % 60)m"
     }
 }
 

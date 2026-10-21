@@ -14,8 +14,8 @@ struct OnboardingContainerView: View {
                 case .estimate: EstimateView(viewModel: viewModel)
                 case .intentions: IntentionsView(viewModel: viewModel)
                 case .permission: PermissionRequestView(viewModel: viewModel)
-                case .reveal: RevealView(viewModel: viewModel)
-                case .goal: GoalSettingView(viewModel: viewModel)
+                // One branch keeps the same report mounted across both steps.
+                case .reveal, .goal: RevealView(viewModel: viewModel)
                 case .plan: PlanView(viewModel: viewModel)
                 }
             }

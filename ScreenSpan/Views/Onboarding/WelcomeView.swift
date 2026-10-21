@@ -6,9 +6,9 @@ struct WelcomeView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("ScreenSpan")
-                .font(.geist(size: 17, weight: .bold))
+                .font(.geist(size: 40, weight: .heavy))
                 .foregroundStyle(OnboardingStyle.navy)
-                .padding(.top, 16)
+                .padding(.top, 24)
 
             Spacer(minLength: 20)
 

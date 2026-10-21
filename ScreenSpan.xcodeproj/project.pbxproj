@@ -27,7 +27,6 @@
 		42B3B290BB44180F07427ACE /* AgeInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB7C2C906DF72C56290CB002 /* AgeInputView.swift */; };
 		42E3A31B847CE4692A1E7718 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1281DF0923E1F2BF29939CD2 /* WelcomeView.swift */; };
 		43C8D153FC53E264AD147C97 /* Date+ScreenSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66C5EF5160BAE399C0FF89A1 /* Date+ScreenSpan.swift */; };
-		4563E169F175B2DA1D5A7836 /* GoalSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D39E827280278510CD8E4A1 /* GoalSettingView.swift */; };
 		46A751C021C1635BB9A738F2 /* HistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3EF9894059FC751764278F8 /* HistoryViewModel.swift */; };
 		47945619559FA72B60A31069 /* TimeIntention.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF82A268487C5AC03C8A995D /* TimeIntention.swift */; };
 		47CD9456C5A021217B34D7CE /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
@@ -143,7 +142,6 @@
 		68EB2E6FD7CF107932E803D2 /* ScreenSpanReportExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSpanReportExtension.swift; sourceTree = "<group>"; };
 		6C0C48EC6DDF3E57788CA87B /* UserDefaults+AppGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+AppGroup.swift"; sourceTree = "<group>"; };
 		6C81C7FF094260103C3D6646 /* ChartTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartTabView.swift; sourceTree = "<group>"; };
-		6D39E827280278510CD8E4A1 /* GoalSettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalSettingView.swift; sourceTree = "<group>"; };
 		6DED79828C7D51C84E41CF2B /* EstimateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EstimateView.swift; sourceTree = "<group>"; };
 		70334E36F1FD04BF4207E98B /* OnboardingScaffold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingScaffold.swift; sourceTree = "<group>"; };
 		756444A3B2BC26E2CCD3993F /* AppGroupManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupManager.swift; sourceTree = "<group>"; };
@@ -209,7 +207,6 @@
 			children = (
 				BB7C2C906DF72C56290CB002 /* AgeInputView.swift */,
 				6DED79828C7D51C84E41CF2B /* EstimateView.swift */,
-				6D39E827280278510CD8E4A1 /* GoalSettingView.swift */,
 				3B577B6D6F23BCC19AD8C743 /* IntentionsView.swift */,
 				5AC2AE376C93D5CA9A49DACE /* OnboardingContainerView.swift */,
 				70334E36F1FD04BF4207E98B /* OnboardingScaffold.swift */,
@@ -569,7 +566,6 @@
 				3AB766590720920C591E37DC /* EstimateView.swift in Sources */,
 				4D42BF2AF42679266C007C6F /* GeistFont.swift in Sources */,
 				CA2D5C7D0E6A414F6F1BDC64 /* GoalService.swift in Sources */,
-				4563E169F175B2DA1D5A7836 /* GoalSettingView.swift in Sources */,
 				6437C9D2833542C4BB5FD4B8 /* HistoryTabView.swift in Sources */,
 				46A751C021C1635BB9A738F2 /* HistoryViewModel.swift in Sources */,
 				5F6F01F65A14D660320092E5 /* IntentionsView.swift in Sources */,

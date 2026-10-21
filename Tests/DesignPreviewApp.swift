@@ -17,8 +17,13 @@ struct PreviewApp: App {
                     .foregroundStyle(ScreenSpanAppearance.text).padding(8)
                 if CommandLine.arguments.contains("--onboarding") {
                     if onboardingPage < OnboardingRevealPanels.panelCount {
-                        OnboardingReportViewport(panel: onboardingPage, panelCount: OnboardingRevealPanels.panelCount) {
-                            OnboardingOverviewReportView(payload: fixture)
+                        GeometryReader { proxy in
+                            OnboardingReportWindow(
+                                contentHeight: OnboardingRevealLayout.totalHeight(panelHeight: proxy.size.height),
+                                offset: OnboardingRevealLayout.panelOffset(onboardingPage, panelHeight: proxy.size.height)
+                            ) {
+                                OnboardingOverviewReportView(payload: fixture)
+                            }
                         }
                         Button("Continue") {
                             onboardingPage += 1

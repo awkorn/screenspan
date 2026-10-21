@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 
 /// Something the user said they'd rather do with their time. User-entered;
@@ -107,5 +108,31 @@ enum RevealMath {
     /// meaningfully below the current pace.
     static func potentialTargets(currentDailyHours: Double, candidates: [Double] = [1, 2, 3]) -> [Double] {
         candidates.filter { $0 <= currentDailyHours - 0.25 }
+    }
+}
+
+/// The layout contract between the host and the report. The report is one
+/// tall view: five panels of equal height, then one short row per goal value.
+/// The host sizes the report and moves a window over it; it never reads it.
+enum OnboardingRevealLayout {
+    static let panelCount = 5
+    static let goalRowHeight: CGFloat = 132
+    static let goalValues: [Double] = Array(stride(from: 0.5, through: 8, by: 0.25))
+
+    static func totalHeight(panelHeight: CGFloat) -> CGFloat {
+        panelHeight * CGFloat(panelCount) + goalRowHeight * CGFloat(goalValues.count)
+    }
+
+    static func panelOffset(_ panel: Int, panelHeight: CGFloat) -> CGFloat {
+        CGFloat(min(max(panel, 0), panelCount - 1)) * panelHeight
+    }
+
+    static func goalOffset(_ goalHours: Double, panelHeight: CGFloat) -> CGFloat {
+        panelHeight * CGFloat(panelCount) + CGFloat(goalIndex(goalHours)) * goalRowHeight
+    }
+
+    static func goalIndex(_ goalHours: Double) -> Int {
+        let index = Int(((goalHours - goalValues[0]) / 0.25).rounded())
+        return min(max(index, 0), goalValues.count - 1)
     }
 }

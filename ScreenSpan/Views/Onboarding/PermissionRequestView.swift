@@ -17,7 +17,6 @@ struct PermissionRequestView: View {
             subtitle: "Connect Screen Time to compare your guess with how you actually use your iPhone."
         ) {
             VStack(spacing: 12) {
-                Spacer(minLength: 16)
                 point(icon: "lock.shield", title: "Private by design",
                       text: "Apple keeps your activity inside a secure Screen Time report on this iPhone. ScreenSpan never sees, stores, or uploads it.")
                 point(icon: "chart.bar.xaxis", title: "Built from your last 7 days",
@@ -34,6 +33,7 @@ struct PermissionRequestView: View {
                 Spacer()
             }
             .padding(.horizontal, 24)
+            .padding(.top, 28)
         } footer: {
             OnboardingPrimaryButton(title: isRequesting ? "Waiting for Screen Time…" : (wasDeclined ? "Try again" : "Continue"),
                                     isEnabled: !isRequesting, action: request)

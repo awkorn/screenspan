@@ -10,8 +10,8 @@ struct RevealData {
     let currentAge: Int
     let targetAge: Int
     var pickupsPerDay: Double?
-    var topAppHours: Double?
-    var topAppLabel: AnyView?
+    /// Up to three apps by daily average, with labels rendered by the caller.
+    var topApps: [RevealApp] = []
     var intentions: [TimeIntention] = TimeIntention.defaults
 
     var projection: ProjectionResult {
@@ -25,23 +25,36 @@ struct RevealData {
     }
 }
 
-/// The five reveal panels stacked vertically at equal heights. The host owns
-/// navigation and shows one panel at a time through `OnboardingReportViewport`.
+struct RevealApp: Identifiable {
+    let id = UUID()
+    let dailyHours: Double
+    let label: AnyView
+}
+
+/// Every reveal panel plus the goal strip. See `OnboardingRevealLayout`.
 struct OnboardingRevealPanels: View {
-    static let panelCount = 5
+    static let panelCount = OnboardingRevealLayout.panelCount
     let data: RevealData
 
     var body: some View {
         GeometryReader { proxy in
-            let height = proxy.size.height / CGFloat(Self.panelCount)
+            let strip = OnboardingRevealLayout.goalRowHeight * CGFloat(OnboardingRevealLayout.goalValues.count)
+            let height = max((proxy.size.height - strip) / CGFloat(Self.panelCount), 0)
             VStack(spacing: 0) {
                 RealityCheckPanel(data: data).panelFrame(height: height)
                 LifetimePanel(data: data).panelFrame(height: height)
                 LifeGridPanel(data: data).panelFrame(height: height)
                 YearlyCostPanel(data: data).panelFrame(height: height)
                 PotentialPanel(data: data).panelFrame(height: height)
+                ForEach(OnboardingRevealLayout.goalValues, id: \.self) { goal in
+                    GoalImpactRow(data: data, goalHours: goal)
+                        .frame(height: OnboardingRevealLayout.goalRowHeight)
+                }
             }
         }
+        // The report is far taller than the screen; bottom insets would
+        // shrink every panel and drift the host's window out of alignment.
+        .ignoresSafeArea()
         .background(Color.white)
         .screenSpanLightSurface()
     }
@@ -213,49 +226,179 @@ private struct RealityCheckPanel: View {
 
 // MARK: - 2. Lifetime
 
+/// The eye-opener. One tap counts up the years; the two supporting stats then
+/// unseal one at a time, and a closing line makes the total concrete.
 private struct LifetimePanel: View {
     let data: RevealData
+    /// 0 sealed, 1 years, 2 waking share, 3 months, 4 closing line.
+    @State private var stage = 0
 
     var body: some View {
         let projection = data.projection
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 16) {
             eyebrow("YOUR FUTURE")
             Text("At \(formatDuration(data.dailyHours)) a day, by age \(data.targetAge) you’ll spend")
                 .font(.geist(size: 26, weight: .bold))
                 .foregroundStyle(RevealStyle.navy)
                 .fixedSize(horizontal: false, vertical: true)
-            TapToReveal(prompt: "Tap to reveal your number") {
-                VStack(alignment: .leading, spacing: 4) {
-                    CountUpText(target: projection.yearsOnPhone) { String(format: "%.1f", $0) }
-                        .font(.geist(size: 84, weight: .heavy))
-                        .foregroundStyle(RevealStyle.red)
-                        .monospacedDigit()
-                    Text("YEARS ON YOUR PHONE")
-                        .font(.geist(size: 18, weight: .bold))
-                        .foregroundStyle(RevealStyle.navy)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
+
+            yearsCard(projection)
+
             HStack(spacing: 10) {
-                fact(value: "\(formatCount(projection.percentOfWakingLife))%", label: "of your waking hours")
-                fact(value: formatCount(projection.monthsOnPhone), label: "months of your life")
+                SealedStat(isRevealed: stage >= 2, placeholder: "00%") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        CountUpText(target: projection.percentOfWakingLife) { "\(formatCount($0))%" }
+                            .font(.geist(size: 24, weight: .bold))
+                            .foregroundStyle(RevealStyle.navy)
+                            .monospacedDigit()
+                        WakingShareBar(share: projection.percentOfWakingLife / 100)
+                    }
+                } label: {
+                    "of every waking hour"
+                }
+                SealedStat(isRevealed: stage >= 3, placeholder: "000") {
+                    CountUpText(target: projection.monthsOnPhone) { formatCount($0) }
+                        .font(.geist(size: 24, weight: .bold))
+                        .foregroundStyle(RevealStyle.navy)
+                        .monospacedDigit()
+                } label: {
+                    "months of your life"
+                }
             }
+
+            if stage >= 4 {
+                Text(closingLine(projection))
+                    .font(.geist(size: 17, weight: .semibold))
+                    .foregroundStyle(RevealStyle.red)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+
             Text(data.isMeasured
                  ? "Projection if your last 7 days continue. 24-hour years; 16 waking hours a day."
                  : "Projection from your estimate. 24-hour years; 16 waking hours a day.")
                 .font(.geist(size: 12))
                 .foregroundStyle(RevealStyle.muted)
         }
+        .sensoryFeedback(.impact(weight: .medium), trigger: stage)
     }
 
-    private func fact(value: String, label: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(value).font(.geist(size: 22, weight: .bold)).foregroundStyle(RevealStyle.navy).monospacedDigit()
-            Text(label).font(.geist(size: 13)).foregroundStyle(RevealStyle.muted)
+    @ViewBuilder
+    private func yearsCard(_ projection: ProjectionResult) -> some View {
+        if stage == 0 {
+            Button(action: startReveal) {
+                VStack(spacing: 10) {
+                    Image(systemName: "hand.tap.fill")
+                        .font(.system(size: 26, weight: .semibold))
+                        .symbolEffect(.pulse, options: .repeating)
+                    Text("Tap to reveal your future")
+                        .font(.geist(size: 16, weight: .semibold))
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 150)
+                .background(
+                    LinearGradient(colors: [Color(hex: "#E5322D"), Color(hex: "#B3161B")],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                    in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Reveals your projected years on your phone and two related numbers.")
+        } else {
+            VStack(alignment: .leading, spacing: 2) {
+                CountUpText(target: projection.yearsOnPhone) { String(format: "%.1f", $0) }
+                    .font(.geist(size: 80, weight: .heavy))
+                    .foregroundStyle(.white)
+                    .monospacedDigit()
+                Text("YEARS ON YOUR PHONE")
+                    .font(.geist(size: 16, weight: .bold))
+                    .tracking(1)
+                    .foregroundStyle(.white.opacity(0.9))
+            }
+            .frame(maxWidth: .infinity, minHeight: 150, alignment: .leading)
+            .padding(.horizontal, 22)
+            .background(
+                LinearGradient(colors: [Color(hex: "#E5322D"), Color(hex: "#8E1014")],
+                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .transition(.scale(scale: 0.92).combined(with: .opacity))
+        }
+    }
+
+    private func startReveal() {
+        Task { @MainActor in
+            for (next, delay) in [(1, 0.0), (2, 1.7), (3, 1.1), (4, 1.1)] {
+                try? await Task.sleep(for: .seconds(delay))
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) { stage = next }
+            }
+        }
+    }
+
+    /// The total as one unbroken stretch at the end of the planning horizon.
+    private func closingLine(_ projection: ProjectionResult) -> String {
+        let startAge = Double(data.targetAge) - projection.yearsOnPhone
+        guard projection.yearsOnPhone >= 0.5, startAge > Double(data.currentAge) else {
+            return "That’s time you can start taking back today."
+        }
+        return "Back to back, that’s every moment from age \(Int(startAge.rounded())) to \(data.targetAge), on your phone."
+    }
+}
+
+/// A stat that stays blurred behind a seal until its turn.
+private struct SealedStat<Value: View>: View {
+    let isRevealed: Bool
+    let placeholder: String
+    @ViewBuilder let value: () -> Value
+    let label: () -> String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ZStack(alignment: .leading) {
+                if isRevealed {
+                    value().transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .leading)))
+                } else {
+                    Text(placeholder)
+                        .font(.geist(size: 24, weight: .bold))
+                        .foregroundStyle(RevealStyle.navy)
+                        .blur(radius: 7)
+                        .overlay(alignment: .leading) {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(RevealStyle.muted)
+                                .padding(.leading, 18)
+                        }
+                        .accessibilityLabel("Hidden until revealed")
+                }
+            }
+            .frame(minHeight: 30, alignment: .leading)
+            Text(label())
+                .font(.geist(size: 13))
+                .foregroundStyle(RevealStyle.muted)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(RevealStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Fills to the waking-hours share once revealed.
+private struct WakingShareBar: View {
+    let share: Double
+    @State private var shown = 0.0
+
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Color(hex: "#E3E7EE"))
+                Capsule().fill(RevealStyle.red).frame(width: proxy.size.width * shown)
+            }
+        }
+        .frame(height: 6)
+        .onAppear {
+            withAnimation(.easeOut(duration: 1.2)) { shown = min(max(share, 0), 1) }
+        }
+        .accessibilityHidden(true)
     }
 }
 
@@ -309,24 +452,31 @@ private struct YearlyCostPanel: View {
                     .foregroundStyle(RevealStyle.navy)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            if data.pickupsPerDay != nil || data.topAppHours != nil {
+            if data.pickupsPerDay != nil || !data.topApps.isEmpty {
                 VStack(spacing: 0) {
                     if let pickups = data.pickupsPerDay, pickups >= 1 {
                         detailRow(icon: "hand.tap", title: "\(formatCount(pickups * 365)) pickups a year",
                                   detail: "\(formatCount(pickups)) a day")
                     }
-                    if let hours = data.topAppHours, let label = data.topAppLabel {
+                    ForEach(Array(data.topApps.prefix(3).enumerated()), id: \.element.id) { index, app in
+                        if index > 0 || data.pickupsPerDay != nil { Divider().padding(.leading, 16) }
                         HStack(spacing: 12) {
-                            label.font(.geist(size: 15, weight: .semibold)).lineLimit(1)
+                            app.label
+                                .font(.geist(size: 15, weight: .medium))
+                                .lineLimit(1)
+                                .frame(maxHeight: 26)
                             Spacer(minLength: 8)
-                            Text(String(format: "%.1f years by %d", data.years(atDailyHours: hours), data.targetAge))
+                            Text(String(format: "%.1f yrs by %d", data.years(atDailyHours: app.dailyHours), data.targetAge))
                                 .font(.geist(size: 14, weight: .semibold))
                                 .foregroundStyle(RevealStyle.red)
                                 .monospacedDigit()
+                                .fixedSize()
                         }
-                        .padding(16)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                     }
                 }
+                .fixedSize(horizontal: false, vertical: true)
                 .background(RevealStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             Text("That’s enough time to:")
@@ -362,7 +512,8 @@ private struct YearlyCostPanel: View {
             Spacer()
             Text(detail).font(.geist(size: 13)).foregroundStyle(RevealStyle.muted)
         }
-        .padding(16)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
     }
 }
 
@@ -423,5 +574,45 @@ private struct PotentialPanel: View {
                 .font(.geist(size: 16, weight: .semibold))
                 .foregroundStyle(RevealStyle.navy)
         }
+    }
+}
+
+// MARK: - Goal strip
+
+/// Years back at one goal value. The host shows the row for the goal the user
+/// has selected by moving its window; the report never learns the selection.
+private struct GoalImpactRow: View {
+    let data: RevealData
+    let goalHours: Double
+
+    var body: some View {
+        let back = max(data.projection.yearsOnPhone - data.years(atDailyHours: goalHours), 0)
+        VStack(alignment: .leading, spacing: 6) {
+            if back >= 0.05 {
+                Text(String(format: "+%.1f years", back))
+                    .font(.geist(size: 44, weight: .heavy))
+                    .foregroundStyle(RevealStyle.green)
+                    .monospacedDigit()
+                Text("of your life back by age \(data.targetAge) at \(formatDuration(goalHours)) a day, compared with \(formatDuration(data.dailyHours)) now.")
+                    .font(.geist(size: 14, weight: .medium))
+                    .foregroundStyle(RevealStyle.navy)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text("No time back yet")
+                    .font(.geist(size: 30, weight: .heavy))
+                    .foregroundStyle(RevealStyle.muted)
+                Text("\(formatDuration(goalHours)) is at or above your \(formatDuration(data.dailyHours)) a day now. Pick a lower goal to win time back.")
+                    .font(.geist(size: 14, weight: .medium))
+                    .foregroundStyle(RevealStyle.navy)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .background(Color(hex: back >= 0.05 ? "#EEF8F2" : "#F6F7FA"),
+                    in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .padding(.horizontal, 24)
+        .padding(.vertical, 6)
+        .accessibilityElement(children: .combine)
     }
 }

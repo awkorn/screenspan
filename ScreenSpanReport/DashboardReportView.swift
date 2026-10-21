@@ -93,13 +93,13 @@ struct OnboardingOverviewReportView: View {
         let intentions = TimeIntention.resolve(
             UserDefaults.appGroup.stringArray(forKey: SharedConstants.UserDefaultsKey.timeIntentions.rawValue))
         if let measured = payload.dailyAverageHours {
-            let topApp = payload.topApps.first
             return RevealData(
                 dailyHours: measured, isMeasured: true, guessHours: guess,
                 currentAge: currentAge, targetAge: targetAge,
                 pickupsPerDay: payload.pickupsPerDay,
-                topAppHours: topApp?.dailyHours,
-                topAppLabel: topApp.map { AnyView(AppNameLabel(app: $0)) },
+                topApps: payload.topApps.prefix(3).map {
+                    RevealApp(dailyHours: $0.dailyHours, label: AnyView(AppNameLabel(app: $0)))
+                },
                 intentions: intentions)
         }
         guard let guess else { return nil }

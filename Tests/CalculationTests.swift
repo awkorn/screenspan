@@ -126,6 +126,15 @@ struct CalculationTests {
         expect(TimeIntention.resolve(["sleep", "read"]) == [.read, .sleep], "Intentions in display order")
         expect(TimeIntention.read.unitLabel(count: 1) == "book" && TimeIntention.read.unitLabel(count: 2) == "books", "Unit plurals")
 
+        // Reveal layout: the host's window must land on the right goal row.
+        expect(OnboardingRevealLayout.goalValues.count == 31, "Goal rows from 30m to 8h in 15-minute steps")
+        expect(OnboardingRevealLayout.goalIndex(0.5) == 0 && OnboardingRevealLayout.goalIndex(2) == 6, "Goal row index")
+        expect(OnboardingRevealLayout.goalIndex(0) == 0 && OnboardingRevealLayout.goalIndex(20) == 30, "Goal index clamped")
+        expect(OnboardingRevealLayout.goalValues[OnboardingRevealLayout.goalIndex(3.75)] == 3.75, "Row matches its goal")
+        expect(OnboardingRevealLayout.goalOffset(0.5, panelHeight: 600) == 3000, "Goal strip starts after five panels")
+        expect(OnboardingRevealLayout.totalHeight(panelHeight: 600) == 3000 + 31 * OnboardingRevealLayout.goalRowHeight, "Total report height")
+        expect(OnboardingRevealLayout.panelOffset(9, panelHeight: 600) == 2400, "Panel offset clamped")
+
         let worse = ProjectionCalculator.calculateRegained(startingDailyHours: 2, currentDailyHours: 4, currentAge: 25, targetAge: 80)
         expect(worse.yearsReclaimed == 0, "No negative regained time")
         print("Passed \(checks) calculation and aggregation checks")
