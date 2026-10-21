@@ -190,14 +190,8 @@ struct StatsReportView: View {
         .accessibilityHint("\(Int((share * 100).rounded())) percent of your daily average")
     }
 
-    @ViewBuilder
     private func appName(_ app: AppUsage) -> some View {
-        if let token = app.application?.token {
-            Label(token)
-                .labelStyle(.titleAndIcon)
-        } else {
-            Text(app.application?.localizedDisplayName ?? app.fallbackName)
-        }
+        AppNameLabel(app: app)
     }
 
     // MARK: - Formatting
@@ -217,5 +211,19 @@ struct StatsReportView: View {
 
     private func wholeNumber(_ value: Double) -> String {
         value.formatted(.number.precision(.fractionLength(0)))
+    }
+}
+
+/// App icon and name from its token, rendered only inside the report.
+struct AppNameLabel: View {
+    let app: AppUsage
+
+    var body: some View {
+        if let token = app.application?.token {
+            Label(token)
+                .labelStyle(.titleAndIcon)
+        } else {
+            Text(app.application?.localizedDisplayName ?? app.fallbackName)
+        }
     }
 }

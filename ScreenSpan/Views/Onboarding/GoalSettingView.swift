@@ -1,186 +1,79 @@
 import SwiftUI
 
-// MARK: - Goal Setting View
+/// The daily goal the user commits to. The reveal just showed what cutting
+/// back could give them; here they choose.
 struct GoalSettingView: View {
-    var viewModel: OnboardingViewModel
-
-    @State private var draftGoalHours = Double(AppConstants.Defaults.screenTimeGoal) / 60.0
-
-    private let minimumGoalHours = 0.5
-    private let maximumGoalHours = 12.0
-    private let titleColor = Color(hex: "#051425")
-    private let subtitleColor = Color(hex: "#595959")
-    private let accentColor = Color(hex: "#C82020")
-    private let selectedColor = Color(hex: "#0063D6")
-    private let presetGoals = [1.0, 2.0, 3.0, 4.0]
+    @Bindable var viewModel: OnboardingViewModel
+    private let presets: [Double] = [1, 1.5, 2, 3]
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
-                    header
-
-                    goalControl
-
-                    presetRow
-
-                    privacyNote
+        OnboardingScaffold(
+            viewModel: viewModel,
+            title: "Set your daily goal",
+            subtitle: "Pick a limit that feels challenging but doable. You can change it anytime."
+        ) {
+            VStack(spacing: 28) {
+                Spacer(minLength: 12)
+                VStack(spacing: 4) {
+                    Text(formatted(viewModel.goalHours))
+                        .font(.geist(size: 64, weight: .heavy))
+                        .foregroundStyle(Color(hex: "#1F7A4D"))
+                        .monospacedDigit()
+                        .contentTransition(.numericText(value: viewModel.goalHours))
+                    Text("or less a day")
+                        .font(.geist(size: 17, weight: .medium))
+                        .foregroundStyle(OnboardingStyle.muted)
+                }
+                Slider(value: $viewModel.goalHours, in: 0.5...8, step: 0.25)
+                    .tint(Color(hex: "#2BB673"))
+                    .padding(.horizontal, 24)
+                    .accessibilityLabel("Daily goal")
+                    .accessibilityValue(formatted(viewModel.goalHours))
+                HStack(spacing: 8) {
+                    ForEach(presets, id: \.self) { hours in
+                        Button {
+                            withAnimation(.snappy) { viewModel.goalHours = hours }
+                        } label: {
+                            Text(formatted(hours))
+                                .font(.geist(size: 14, weight: .semibold))
+                                .foregroundStyle(viewModel.goalHours == hours ? .white : OnboardingStyle.navy)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 40)
+                                .background(viewModel.goalHours == hours ? OnboardingStyle.navy : OnboardingStyle.card,
+                                            in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 32)
-                .padding(.bottom, 24)
-            }
-
-            Spacer(minLength: 0)
-
-            Button(action: commitGoalAndAdvance) {
-                Text("Set My Goal")
-                    .onboardingPrimaryButtonStyle()
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 32)
-        }
-        .background(Color.white.ignoresSafeArea())
-        .onAppear {
-            loadSavedGoal()
-        }
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Set your goal")
-                .font(.geist(size: 28, weight: .bold))
-                .foregroundColor(titleColor)
-
-            Text("Choose the daily screen time you want to aim for.")
-                .font(.geist(size: 18))
-                .foregroundColor(subtitleColor)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var goalControl: some View {
-        VStack(spacing: 18) {
-            VStack(spacing: 4) {
-                Text(formattedGoal)
-                    .font(.geist(size: 42, weight: .bold))
-                    .foregroundColor(selectedColor)
-                    .monospacedDigit()
-                    .minimumScaleFactor(0.8)
-                    .lineLimit(1)
-
-                Text("per day")
-                    .font(.geist(size: 16, weight: .medium))
-                    .foregroundColor(subtitleColor)
-            }
-            .frame(maxWidth: .infinity)
-
-            VStack(spacing: 10) {
-                Slider(
-                    value: Binding(
-                        get: { draftGoalHours },
-                        set: { newValue in
-                            let stepped = (newValue * 4).rounded() / 4
-                            draftGoalHours = min(max(stepped, minimumGoalHours), maximumGoalHours)
-                            viewModel.selectedDailyLimit = draftGoalHours
-                        }
-                    ),
-                    in: minimumGoalHours...maximumGoalHours,
-                    step: 0.25
-                )
-                .tint(accentColor)
-
-                HStack {
-                    Text("30m")
-                    Spacer()
-                    Text("12h")
+                if viewModel.usesEstimate, viewModel.goalHours < viewModel.estimatedHours {
+                    Text(String(format: "Compared with your %@ estimate, that’s about %.1f years back by age 80.",
+                                formatted(viewModel.estimatedHours), yearsBack))
+                        .font(.geist(size: 14, weight: .medium))
+                        .foregroundStyle(OnboardingStyle.navy)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
                 }
-                .font(.geist(size: 13, weight: .medium))
-                .foregroundColor(subtitleColor)
+                Spacer()
             }
-        }
-        .padding(18)
-        .background(Color.screenSpanCardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-    }
-
-    private var presetRow: some View {
-        HStack(spacing: 10) {
-            ForEach(presetGoals, id: \.self) { hours in
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        draftGoalHours = hours
-                        viewModel.selectedDailyLimit = hours
-                    }
-                } label: {
-                    Text(formatPreset(hours))
-                        .font(.geist(size: 14, weight: .semibold))
-                        .foregroundColor(isSelectedPreset(hours) ? .white : titleColor)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 40)
-                        .background(isSelectedPreset(hours) ? selectedColor : Color.screenSpanCardBackground)
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                }
-                .buttonStyle(.plain)
+        } footer: {
+            OnboardingPrimaryButton(title: "Set my goal") {
+                viewModel.saveGoal()
+                viewModel.advance()
             }
         }
     }
 
-    private var privacyNote: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "lock")
-                .font(.geist(size: 15, weight: .semibold))
-                .foregroundStyle(accentColor)
-                .frame(width: 22, height: 22)
-
-            Text("Your goal is a reference for your charts. It does not block apps.")
-                .font(.geist(size: 14, weight: .medium))
-                .foregroundColor(subtitleColor)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(16)
-        .background(Color(hex: "#FFF1F1"))
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+    private var yearsBack: Double {
+        ProjectionCalculator.calculateRegained(
+            startingDailyHours: viewModel.estimatedHours, currentDailyHours: viewModel.goalHours,
+            currentAge: viewModel.selectedAge, targetAge: SharedConstants.DefaultValues.targetAge
+        ).yearsReclaimed
     }
 
-    private var formattedGoal: String {
-        let totalMinutes = Int((draftGoalHours * 60).rounded())
-        let hours = totalMinutes / 60
-        let minutes = totalMinutes % 60
-
-        if minutes == 0 {
-            return "\(hours)h"
-        }
-
-        if hours == 0 {
-            return "\(minutes)m"
-        }
-
-        return "\(hours)h \(minutes)m"
-    }
-
-    private func formatPreset(_ hours: Double) -> String {
-        "\(Int(hours))h"
-    }
-
-    private func isSelectedPreset(_ hours: Double) -> Bool {
-        abs(draftGoalHours - hours) < 0.01
-    }
-
-    private func loadSavedGoal() {
-        let storedGoalMinutes = AppGroupManager.shared.screenTimeGoalMinutes
-        let fallbackGoalMinutes = Double(AppConstants.Defaults.screenTimeGoal)
-        let resolvedMinutes = storedGoalMinutes > 0 ? storedGoalMinutes : fallbackGoalMinutes
-        draftGoalHours = min(max(resolvedMinutes / 60.0, minimumGoalHours), maximumGoalHours)
-        viewModel.selectedDailyLimit = draftGoalHours
-    }
-
-    private func commitGoalAndAdvance() {
-        viewModel.selectedDailyLimit = draftGoalHours
-        AppGroupManager.shared.screenTimeGoalMinutes = draftGoalHours * 60
-        viewModel.calculateReclaim()
-
-        Task { await viewModel.completeOnboarding() }
+    private func formatted(_ hours: Double) -> String {
+        let minutes = Int((hours * 60).rounded())
+        if minutes < 60 { return "\(minutes)m" }
+        return minutes % 60 == 0 ? "\(minutes / 60)h" : "\(minutes / 60)h \(minutes % 60)m"
     }
 }

@@ -1,222 +1,96 @@
 import Foundation
 import Observation
+import SwiftUI
 
-/// Represents each step in the onboarding flow
-enum OnboardingStep: Int, Equatable {
-    case welcome = 0
-    case ageInput = 1
-    case permission = 2
-    case lifeGridReveal = 3
-    case comparisons = 4
-    case goalSetting = 5
-    case paywall = 6
+/// Each step in the onboarding flow, in order.
+enum OnboardingStep: Int, CaseIterable, Equatable {
+    case welcome
+    case age
+    case estimate
+    case intentions
+    case permission
+    case reveal
+    case goal
+    case plan
 }
 
-/// ViewModel managing the onboarding flow for new users
+/// Onboarding state. Everything stored here is user-entered (age, guess,
+/// intentions, goal) or navigation. Measured activity never reaches the host:
+/// the reveal is rendered by the report extension, or, in estimate mode, from
+/// the user's own guess.
 @Observable
 final class OnboardingViewModel {
-    // MARK: - Properties
-
     var currentStep: OnboardingStep = .welcome
     var selectedAge: Int = 25
-    var isPermissionGranted: Bool = false
-    var currentDailyAvgHours: Double = 0
-    var sliderTargetHours: Double = 0
-    var selectedCategories: Set<UsageCategory> = []
-    var projectionResult: ProjectionResult?
-    var reclaimResult: ReclaimResult?
+    var estimatedHours: Double = 3
+    var intentions: Set<TimeIntention> = []
+    var goalHours: Double = 2
+    /// The visible reveal panel, 0..<OnboardingRevealPanels.panelCount.
+    var revealPanel = 0
+    /// True when Screen Time access was declined or the report never appeared;
+    /// the reveal then uses the user's estimate and says so.
+    var usesEstimate = false
 
-    // MARK: - Compatibility Properties
-
-    /// Legacy optional API still used by the onboarding views.
-    var userAge: Int? {
-        get { selectedAge }
-        set {
-            guard let newValue else { return }
-            selectedAge = newValue
-        }
+    var progress: Double {
+        Double(currentStep.rawValue) / Double(OnboardingStep.allCases.count - 1)
     }
 
-    /// Legacy API for the user's current daily screen time estimate.
-    var estimatedDailyScreenTime: Double {
-        get { currentDailyAvgHours }
-        set {
-            currentDailyAvgHours = newValue
-            if sliderTargetHours == 0 || sliderTargetHours > newValue {
-                sliderTargetHours = newValue
-            }
-            calculateProjection()
-            calculateReclaim()
-        }
-    }
-
-    /// Legacy API for the selected daily goal.
-    var selectedDailyLimit: Double {
-        get { sliderTargetHours }
-        set {
-            sliderTargetHours = newValue
-            calculateReclaim()
-        }
-    }
-
-    /// Derived years projected to be spent on the phone at the current pace.
-    var projectedYearsOnPhone: Double {
-        get {
-            projectionResult?.yearsOnPhone ?? 0
-        }
-        set {
-            projectionResult = ProjectionResult(
-                yearsOnPhone: newValue,
-                monthsOnPhone: newValue * 12,
-                daysOnPhone: newValue * 365,
-                hoursOnPhone: newValue * SharedConstants.DefaultValues.hoursPerYear,
-                percentOfWakingLife: projectionResult?.percentOfWakingLife ?? 0,
-                dailyPhoneHours: projectionResult?.dailyPhoneHours ?? currentDailyAvgHours
-            )
-        }
-    }
-
-    /// Derived percentage of waking hours currently spent on the phone.
-    var percentageOfWakingHours: Double {
-        get {
-            projectionResult?.percentOfWakingLife ?? 0
-        }
-        set {
-            if let projectionResult {
-                self.projectionResult = ProjectionResult(
-                    yearsOnPhone: projectionResult.yearsOnPhone,
-                    monthsOnPhone: projectionResult.monthsOnPhone,
-                    daysOnPhone: projectionResult.daysOnPhone,
-                    hoursOnPhone: projectionResult.hoursOnPhone,
-                    percentOfWakingLife: newValue,
-                    dailyPhoneHours: projectionResult.dailyPhoneHours
-                )
-            }
-        }
-    }
-
-    /// Derived years reclaimed by reducing usage to the selected goal.
-    var reclaimedYears: Double {
-        get {
-            reclaimResult?.yearsReclaimed ?? 0
-        }
-        set {
-            reclaimResult = ReclaimResult(
-                yearsReclaimed: newValue,
-                monthsReclaimed: newValue * 12,
-                goalYearsOnPhone: max(projectedYearsOnPhone - newValue, 0)
-            )
-        }
-    }
-
-    /// Legacy API for remaining lifetime years used by the onboarding visuals.
-    var remainingYearsOfLife: Double {
-        get {
-            Double(SharedConstants.DefaultValues.targetAge - selectedAge)
-        }
-        set {
-            let targetAge = Int(Double(selectedAge) + newValue.rounded())
-            AppGroupManager.shared.targetAge = max(targetAge, selectedAge)
-        }
-    }
-
-    /// Legacy API for the Screen Time permission state used by onboarding views.
-    var screenTimePermissionGranted: Bool {
-        get { isPermissionGranted }
-        set { isPermissionGranted = newValue }
-    }
-
-    // MARK: - Initialization
-
-    init() {
-        self.sliderTargetHours = currentDailyAvgHours
-    }
-
-    // MARK: - Public Methods
-
-    /// Advance to the next onboarding step
     func advance() {
-        guard let nextStep = OnboardingStep(rawValue: currentStep.rawValue + 1) else {
-            return
+        withAnimation(.easeInOut(duration: 0.3)) {
+            if currentStep == .reveal, revealPanel < OnboardingRevealPanels.panelCount - 1 {
+                revealPanel += 1
+            } else if let next = OnboardingStep(rawValue: currentStep.rawValue + 1) {
+                currentStep = next
+            }
         }
-        currentStep = nextStep
     }
 
-    /// Return to the previous onboarding step
     func goBack() {
-        guard let previousStep = OnboardingStep(rawValue: currentStep.rawValue - 1) else {
-            return
+        withAnimation(.easeInOut(duration: 0.25)) {
+            if currentStep == .reveal, revealPanel > 0 {
+                revealPanel -= 1
+            } else if currentStep == .goal {
+                currentStep = .reveal
+                revealPanel = OnboardingRevealPanels.panelCount - 1
+            } else if let previous = OnboardingStep(rawValue: currentStep.rawValue - 1) {
+                currentStep = previous
+            }
         }
-        currentStep = previousStep
     }
 
-    /// Calculate the projection of waking life spent on phone.
-    ///
-    /// The result is kept in-memory (`projectionResult`) for the
-    /// duration of the onboarding flow only. It is deliberately NOT
-    /// persisted to the App Group: even though the input is a user
-    /// self-estimate (which is legal to store), the persisted value
-    /// previously became a back-channel the host used to reconstruct
-    /// daily hours. Keeping this ephemeral guarantees no usage-shaped
-    /// number ever crosses the extension/host boundary.
-    func calculateProjection() {
-        let targetAge = SharedConstants.DefaultValues.targetAge
-        projectionResult = ProjectionCalculator.calculateProjectionFromDaily(
-            currentAge: selectedAge,
-            targetAge: targetAge,
-            dailyHours: currentDailyAvgHours
-        )
-    }
-
-    /// Calculate the reclaim benefit of reducing screen time
-    func calculateReclaim() {
-        guard let projection = projectionResult else {
-            calculateProjection()
-            guard projectionResult != nil else { return }
-            calculateReclaim()
-            return
-        }
-
-        let targetAge = SharedConstants.DefaultValues.targetAge
-        let goalMinutes = sliderTargetHours * 60
-
-        reclaimResult = ProjectionCalculator.calculateReclaim(
-            currentProjection: projection,
-            goalDailyMinutes: goalMinutes,
-            currentAge: selectedAge,
-            targetAge: targetAge
-        )
-    }
-
-    /// Legacy API used by onboarding views when the slider changes.
-    func calculateReclaim(newDailyHours: Double) {
-        sliderTargetHours = newDailyHours
-        calculateReclaim()
-    }
-
-    /// Complete onboarding and save all data
-    func completeOnboarding() async {
-        // Ensure calculations are done
-        calculateProjection()
-        calculateReclaim()
-
-        let existingGoalMinutes = AppGroupManager.shared.screenTimeGoalMinutes
-        let resolvedGoalMinutes = existingGoalMinutes > 0
-            ? existingGoalMinutes
-            : sliderTargetHours * 60
-
-        // Save data to AppGroupManager
-        AppGroupManager.shared.currentAge = selectedAge
+    func saveAge(_ age: Int) {
+        selectedAge = age
+        AppGroupManager.shared.currentAge = age
         AppGroupManager.shared.targetAge = SharedConstants.DefaultValues.targetAge
-        AppGroupManager.shared.screenTimeGoalMinutes = resolvedGoalMinutes
-        // Progress compares everything after today with the week before it.
-        AppGroupManager.shared.trackingStartDate = Date()
+    }
 
-        // Save selected categories as strings
-        let categoryStrings = selectedCategories.map { $0.rawValue }
-        AppGroupManager.shared.selectedCategories = categoryStrings
+    func saveEstimate() {
+        AppGroupManager.shared.estimatedDailyMinutes = estimatedHours * 60
+    }
 
-        // Mark onboarding as complete
+    func saveIntentions() {
+        AppGroupManager.shared.timeIntentions = TimeIntention.allCases.filter(intentions.contains)
+    }
+
+    func saveGoal() {
+        AppGroupManager.shared.screenTimeGoalMinutes = goalHours * 60
+    }
+
+    /// The reveal built from the user's own estimate, for estimate mode.
+    var estimateRevealData: RevealData {
+        RevealData(dailyHours: estimatedHours, isMeasured: false, guessHours: estimatedHours,
+                   currentAge: selectedAge, targetAge: SharedConstants.DefaultValues.targetAge,
+                   intentions: TimeIntention.resolve(TimeIntention.allCases.filter(intentions.contains).map(\.rawValue)))
+    }
+
+    /// Save everything and finish. Progress compares days after today with
+    /// the week before it; repeating onboarding keeps the original start.
+    func completeOnboarding() async {
+        saveAge(selectedAge)
+        saveEstimate()
+        saveIntentions()
+        saveGoal()
+        AppGroupManager.shared.ensureTrackingStartDate()
         AppGroupManager.shared.onboardingCompleted = true
     }
 }

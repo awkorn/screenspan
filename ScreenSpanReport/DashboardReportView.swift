@@ -65,64 +65,45 @@ struct ReportSourceNote: View {
     }
 }
 
-/// Both onboarding panels are rendered from one configuration. The host moves
-/// its viewport in the required order; there is no optional in-report toggle.
+/// Every onboarding reveal panel is rendered from one configuration. The host
+/// moves its viewport in order; activity and app identities stay in here.
+/// Without recent activity, the panels fall back to the user's own guess and
+/// say so, rather than showing an invented number.
 struct OnboardingOverviewReportView: View {
     let payload: ScreenTimeReportPayload
     @AppStorage(SharedConstants.UserDefaultsKey.currentAge.rawValue, store: .appGroup)
     private var currentAge = 25
     @AppStorage(SharedConstants.UserDefaultsKey.targetAge.rawValue, store: .appGroup)
     private var targetAge = 80
+    @AppStorage(SharedConstants.UserDefaultsKey.estimatedDailyMinutes.rawValue, store: .appGroup)
+    private var estimatedMinutes = 0.0
 
     var body: some View {
-        GeometryReader { proxy in
-            VStack(spacing: 0) {
-                ScrollView {
-                    OnboardingProjectionReportView(payload: payload)
-                        .frame(minHeight: proxy.size.height / 2)
-                }
-                .frame(height: proxy.size.height / 2)
-                .clipped()
-
-                lifeChart
-                    .frame(height: proxy.size.height / 2)
-                    .clipped()
-            }
-        }
-        .background(Color.white)
-        .screenSpanLightSurface()
-    }
-
-    @ViewBuilder
-    private var lifeChart: some View {
-        if let average = payload.dailyAverageHours {
-            let projection = ProjectionCalculator.calculateProjectionFromDaily(
-                currentAge: currentAge, targetAge: targetAge, dailyHours: average)
-            ScrollView {
-                VStack(spacing: 18) {
-                    LifeGridView(goalGridData: ProjectionCalculator.calculateLifeGrid(
-                        currentAge: currentAge, targetAge: targetAge,
-                        monthsOnPhone: projection.monthsOnPhone))
-                    HStack(spacing: 16) {
-                        legend("Lived", color: Color(hex: "#0063D6"))
-                        legend("Screen time", color: Color(hex: "#F63232"))
-                        legend("Remaining", color: Color(hex: "#D9D9D9"))
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
-            }
+        if let data = revealData {
+            OnboardingRevealPanels(data: data)
         } else {
             ScreenTimeUnavailableView(
-                title: "Your life chart needs recent activity",
-                message: "Screen Time has not returned activity yet. You can still choose a goal on the next screen.")
+                title: "No recent activity yet",
+                message: "Screen Time hasn't reported activity on this iPhone. Go back and add your estimate to see your projection.")
         }
     }
 
-    private func legend(_ title: String, color: Color) -> some View {
-        HStack(spacing: 5) {
-            Circle().fill(color).frame(width: 8, height: 8)
-            Text(title).font(.geist(size: 12))
+    private var revealData: RevealData? {
+        let guess = estimatedMinutes > 0 ? estimatedMinutes / 60 : nil
+        let intentions = TimeIntention.resolve(
+            UserDefaults.appGroup.stringArray(forKey: SharedConstants.UserDefaultsKey.timeIntentions.rawValue))
+        if let measured = payload.dailyAverageHours {
+            let topApp = payload.topApps.first
+            return RevealData(
+                dailyHours: measured, isMeasured: true, guessHours: guess,
+                currentAge: currentAge, targetAge: targetAge,
+                pickupsPerDay: payload.pickupsPerDay,
+                topAppHours: topApp?.dailyHours,
+                topAppLabel: topApp.map { AnyView(AppNameLabel(app: $0)) },
+                intentions: intentions)
         }
+        guard let guess else { return nil }
+        return RevealData(dailyHours: guess, isMeasured: false, guessHours: guess,
+                          currentAge: currentAge, targetAge: targetAge, intentions: intentions)
     }
 }

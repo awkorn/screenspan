@@ -81,6 +81,18 @@ final class AppGroupManager {
         }
     }
 
+    /// The user's guess at their daily phone time in minutes; 0 means not asked.
+    var estimatedDailyMinutes: Double {
+        get { max(userDefaults.double(forKey: SharedConstants.UserDefaultsKey.estimatedDailyMinutes.rawValue), 0) }
+        set { userDefaults.set(newValue, forKey: SharedConstants.UserDefaultsKey.estimatedDailyMinutes.rawValue) }
+    }
+
+    /// What the user would rather do with their time.
+    var timeIntentions: [TimeIntention] {
+        get { TimeIntention.resolve(userDefaults.stringArray(forKey: SharedConstants.UserDefaultsKey.timeIntentions.rawValue)) }
+        set { userDefaults.set(newValue.map(\.rawValue), forKey: SharedConstants.UserDefaultsKey.timeIntentions.rawValue) }
+    }
+
     /// Selected DeviceActivity categories
     var selectedCategories: [String] {
         get {

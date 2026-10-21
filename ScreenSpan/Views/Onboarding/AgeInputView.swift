@@ -6,12 +6,6 @@ struct AgeInputView: View {
 
     @State private var selectedDateOfBirth: Date = Calendar.current.date(byAdding: .year, value: -25, to: .now) ?? .now
 
-    private let backgroundColor = Color.white
-    private let titleColor = Color(hex: "051425")
-    private let subtitleColor = Color(hex: "595959")
-    private let buttonColor = Color(hex: "051425")
-    private let secondaryColor = Color.screenSpanCardBackground
-
     private var minimumDate: Date {
         Calendar.current.date(byAdding: .year, value: -100, to: .now) ?? .distantPast
     }
@@ -21,102 +15,70 @@ struct AgeInputView: View {
     }
 
     private var calculatedAge: Int {
-        let age = Calendar.current.dateComponents([.year], from: selectedDateOfBirth, to: .now).year ?? viewModel.selectedAge
-        return max(age, 0)
+        max(Calendar.current.dateComponents([.year], from: selectedDateOfBirth, to: .now).year ?? viewModel.selectedAge, 0)
+    }
+
+    private var yearsLeft: Int {
+        max(SharedConstants.DefaultValues.targetAge - calculatedAge, 0)
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Button {
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        viewModel.goBack()
-                    }
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.geist(size: 18))
-                        .foregroundColor(titleColor)
-                        .frame(width: 28, height: 28)
-                }
-
-                Spacer()
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 12)
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Enter your date of birth")
-                    .font(.geist(size: 28, weight: .bold))
-                    .foregroundColor(titleColor)
-                    .minimumScaleFactor(0.75)
-                    .lineLimit(2)
-
-                Text("This will be used in your calculation")
-                    .font(.geist(size: 18))
-                    .foregroundColor(subtitleColor)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 24)
-            .padding(.vertical, 28)
-
-            Spacer().frame(height: 28)
-
-            VStack(spacing: 12) {
-                Text(selectedDateOfBirth.formatted(date: .complete, time: .omitted))
-                    .font(.geist(size: 18, weight: .medium))
-                    .foregroundColor(titleColor)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-
+        OnboardingScaffold(
+            viewModel: viewModel,
+            title: "When were you born?",
+            subtitle: "Your projection counts the years between now and age 80."
+        ) {
+            VStack(spacing: 18) {
+                Spacer(minLength: 8)
                 BirthDateWheelPicker(
                     selectedDate: $selectedDateOfBirth,
                     minimumDate: minimumDate,
                     maximumDate: maximumDate
                 )
                 .frame(height: 216)
-            }
-            .padding(.horizontal, 12)
 
-            Spacer()
-
-            VStack(spacing: 8) {
-                Text("Default life expectancy")
-                    .font(.geist(size: 16, weight: .medium))
-                    .foregroundColor(titleColor)
-
-                Text("80 years")
-                    .font(.geist(size: 16, weight: .semibold))
-                    .foregroundColor(titleColor)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 24)
-            .background(secondaryColor)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .padding(.horizontal, 24)
-
-            Spacer()
-
-            Button {
-                viewModel.selectedAge = calculatedAge
-                AppGroupManager.shared.currentAge = calculatedAge
-                viewModel.calculateProjection()
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    viewModel.advance()
+                HStack(spacing: 0) {
+                    ageFact(value: "\(calculatedAge)", label: "years old")
+                    Divider().frame(height: 36)
+                    ageFact(value: "\(yearsLeft)", label: "years until 80")
+                    Divider().frame(height: 36)
+                    ageFact(value: (yearsLeft * 12).formatted(), label: "months ahead")
                 }
-            } label: {
-                Text("Next")
-                    .onboardingPrimaryButtonStyle()
+                .padding(.vertical, 16)
+                .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .padding(.horizontal, 24)
+
+                Text("80 is a planning age, not a prediction. You can change it in Settings.")
+                    .font(.geist(size: 12))
+                    .foregroundStyle(OnboardingStyle.muted)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                Spacer(minLength: 8)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 34)
+        } footer: {
+            OnboardingPrimaryButton(title: "Continue") {
+                viewModel.saveAge(calculatedAge)
+                viewModel.advance()
+            }
         }
-        .background(backgroundColor.ignoresSafeArea())
         .onAppear {
-            if viewModel.selectedAge > 0,
-               let dateFromAge = Calendar.current.date(byAdding: .year, value: -viewModel.selectedAge, to: .now) {
+            if let dateFromAge = Calendar.current.date(byAdding: .year, value: -viewModel.selectedAge, to: .now) {
                 selectedDateOfBirth = dateFromAge
             }
         }
+    }
+
+    private func ageFact(value: String, label: String) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.geist(size: 20, weight: .bold))
+                .foregroundStyle(OnboardingStyle.navy)
+                .monospacedDigit()
+            Text(label)
+                .font(.geist(size: 12))
+                .foregroundStyle(OnboardingStyle.muted)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 

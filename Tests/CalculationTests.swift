@@ -114,6 +114,18 @@ struct CalculationTests {
         let broken = GoalAdherence(days: goalHistory.filter { $0.date != day(-1) }, goalHours: 2, startDay: day(-30), now: now, calendar: calendar)
         expect(broken.recent.count == 14 && broken.currentStreak == 0, "Missing yesterday ends streak; 14-day cap")
 
+        // Onboarding reveal
+        expect(close(RevealMath.daysPerYear(dailyHours: 4.8), 73), "Days per year at 4h 48m")
+        expect(RevealMath.daysPerYear(dailyHours: .nan) == 0 && RevealMath.daysPerYear(dailyHours: 30) == 365, "Days per year bounded")
+        expect(RevealMath.underestimateHours(guess: 3, actual: 4.5) == 1.5, "Underestimate is positive")
+        expect(RevealMath.potentialTargets(currentDailyHours: 2.1) == [1], "Only targets meaningfully below pace")
+        expect(RevealMath.potentialTargets(currentDailyHours: 0.9).isEmpty, "No targets when already low")
+        expect(close(TimeIntention.read.unitsPerYear(dailyHours: 6), 365), "Books per year")
+        expect(TimeIntention.language.unitsPerYear(dailyHours: -1) == 0, "No negative conversions")
+        expect(TimeIntention.resolve(nil) == TimeIntention.defaults && TimeIntention.resolve(["bogus"]) == TimeIntention.defaults, "Intention defaults")
+        expect(TimeIntention.resolve(["sleep", "read"]) == [.read, .sleep], "Intentions in display order")
+        expect(TimeIntention.read.unitLabel(count: 1) == "book" && TimeIntention.read.unitLabel(count: 2) == "books", "Unit plurals")
+
         let worse = ProjectionCalculator.calculateRegained(startingDailyHours: 2, currentDailyHours: 4, currentAge: 25, targetAge: 80)
         expect(worse.yearsReclaimed == 0, "No negative regained time")
         print("Passed \(checks) calculation and aggregation checks")

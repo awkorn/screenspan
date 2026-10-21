@@ -30,6 +30,10 @@ enum SharedConstants {
         /// Optional starting daily average the user typed in Settings. Used
         /// only after Screen Time no longer returns the week before they started.
         case startingDailyMinutes
+        /// The user's own guess at their daily phone time, asked in onboarding.
+        case estimatedDailyMinutes
+        /// `TimeIntention` raw values the user picked in onboarding.
+        case timeIntentions
     }
 
     enum DefaultValues {

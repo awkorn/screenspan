@@ -6,6 +6,8 @@ struct PreviewApp: App {
         AppGroupManager.shared.currentAge = 25
         AppGroupManager.shared.targetAge = 80
         AppGroupManager.shared.screenTimeGoalMinutes = 120
+        AppGroupManager.shared.estimatedDailyMinutes = 150
+        AppGroupManager.shared.timeIntentions = [.read, .language, .family]
         AppGroupManager.shared.trackingStartDate = Calendar.current.date(byAdding: .day, value: -21, to: Date())
     }
     var body: some Scene {
@@ -14,14 +16,11 @@ struct PreviewApp: App {
                 Text("DESIGN PREVIEW · SAMPLE DATA").font(.caption2)
                     .foregroundStyle(ScreenSpanAppearance.text).padding(8)
                 if CommandLine.arguments.contains("--onboarding") {
-                    Text(onboardingPage == 0 ? "Your Screen Time projection" : "Your life chart")
-                        .font(.title2.bold()).foregroundStyle(ScreenSpanAppearance.text)
-                        .padding()
-                    if onboardingPage < 2 {
-                        OnboardingReportViewport(showsLifeChart: onboardingPage == 1) {
+                    if onboardingPage < OnboardingRevealPanels.panelCount {
+                        OnboardingReportViewport(panel: onboardingPage, panelCount: OnboardingRevealPanels.panelCount) {
                             OnboardingOverviewReportView(payload: fixture)
                         }
-                        Button(onboardingPage == 0 ? "See your life chart" : "Reclaim your life") {
+                        Button("Continue") {
                             onboardingPage += 1
                         }
                         .buttonStyle(.borderedProminent)

@@ -1,184 +1,84 @@
 import SwiftUI
 
+/// Explains Screen Time access, then shows the system prompt. Per App Review
+/// guidance the pre-prompt offers no way to skip or delay the request, and
+/// its button says "Continue". Only after the system prompt is declined can
+/// the user carry on with their own estimate.
 struct PermissionRequestView: View {
     var viewModel: OnboardingViewModel
     @EnvironmentObject private var authService: AuthorizationService
-    @State private var isRequestingAuthorization = false
-    @State private var authorizationMessage: String?
-
-    private let backgroundColor = Color.white
-    private let titleColor = Color(hex: "051425")
-    private let subtitleColor = Color(hex: "595959")
-    private let cardBackgroundColor = Color.screenSpanCardBackground
-    private let iconBackgroundColor = Color(hex: "FDECEC")
-    private let iconColor = Color(hex: "E85A5A")
-    private let buttonColor = Color(hex: "051425")
+    @State private var isRequesting = false
+    @State private var wasDeclined = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Button {
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        viewModel.goBack()
-                    }
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.geist(size: 18))
-                        .foregroundColor(titleColor)
-                        .frame(width: 28, height: 28)
+        OnboardingScaffold(
+            viewModel: viewModel,
+            title: "See your real numbers",
+            subtitle: "Connect Screen Time to compare your guess with how you actually use your iPhone."
+        ) {
+            VStack(spacing: 12) {
+                Spacer(minLength: 16)
+                point(icon: "lock.shield", title: "Private by design",
+                      text: "Apple keeps your activity inside a secure Screen Time report on this iPhone. ScreenSpan never sees, stores, or uploads it.")
+                point(icon: "chart.bar.xaxis", title: "Built from your last 7 days",
+                      text: "Your projection, life chart, and top apps come from real activity, not averages.")
+                point(icon: "hand.raised", title: "You’re in control",
+                      text: "You can turn access off anytime in Settings → Screen Time.")
+                if wasDeclined {
+                    Text(authService.authorizationErrorMessage ?? "Screen Time access wasn’t allowed. You can try again, or continue with your estimate and connect later in Settings.")
+                        .font(.geist(size: 13))
+                        .foregroundStyle(OnboardingStyle.muted)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 8)
                 }
-
                 Spacer()
             }
             .padding(.horizontal, 24)
-            .padding(.top, 12)
-
-            VStack(spacing: 8) {
-                Text("Screen Time Access")
-                    .font(.geist(size: 28, weight: .bold))
-                    .foregroundColor(titleColor)
-                    .multilineTextAlignment(.center)
-
-                Text("We need your permission")
-                    .font(.geist(size: 18))
-                    .foregroundColor(subtitleColor)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 26)
-
-            VStack(spacing: 14) {
-                PermissionExplanationCard(
-                    icon: "lock",
-                    title: "Your privacy is protected",
-                    description: "No data leaves your device, we never send your screen time information to our servers.",
-                    iconColor: iconColor,
-                    iconBackgroundColor: iconBackgroundColor,
-                    titleColor: titleColor,
-                    descriptionColor: subtitleColor,
-                    cardBackgroundColor: cardBackgroundColor
-                )
-
-                PermissionExplanationCard(
-                    icon: "checkmark.seal",
-                    title: "Calculate your projection",
-                    description: "We analyze your usage patterns to show you how much time you'll spend on your phone.",
-                    iconColor: iconColor,
-                    iconBackgroundColor: iconBackgroundColor,
-                    titleColor: titleColor,
-                    descriptionColor: subtitleColor,
-                    cardBackgroundColor: cardBackgroundColor
-                )
-
-                PermissionExplanationCard(
-                    icon: "target",
-                    title: "Set realistic goals",
-                    description: "Based on your actual usage, we help you set achievable daily limits and gain your life back.",
-                    iconColor: iconColor,
-                    iconBackgroundColor: iconBackgroundColor,
-                    titleColor: titleColor,
-                    descriptionColor: subtitleColor,
-                    cardBackgroundColor: cardBackgroundColor
-                )
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 54)
-
-            Spacer()
-
-            VStack(spacing: 0) {
-                Button(action: requestScreenTimeAccess) {
-                    Text(isRequestingAuthorization ? "Requesting Access..." : "Allow Screen Time Access")
-                        .onboardingPrimaryButtonStyle()
-                }
-                .disabled(isRequestingAuthorization)
-                .padding(.horizontal, 24)
-
-                if let authorizationMessage {
-                    Text(authorizationMessage)
-                        .font(.geist(size: 13))
-                        .foregroundColor(subtitleColor)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
-                        .padding(.top, 12)
+        } footer: {
+            OnboardingPrimaryButton(title: isRequesting ? "Waiting for Screen Time…" : (wasDeclined ? "Try again" : "Continue"),
+                                    isEnabled: !isRequesting, action: request)
+            if wasDeclined {
+                OnboardingSecondaryButton(title: "Continue with my estimate") {
+                    viewModel.usesEstimate = true
+                    viewModel.revealPanel = 0
+                    viewModel.advance()
                 }
             }
-            .padding(.bottom, 34)
-        }
-        .background(backgroundColor.ignoresSafeArea())
-    }
-
-    private func requestScreenTimeAccess() {
-        Task { @MainActor in
-            isRequestingAuthorization = true
-            authorizationMessage = nil
-
-            await authService.requestAuthorization()
-            isRequestingAuthorization = false
-
-            guard authService.isAuthorized else {
-                authorizationMessage = authService.authorizationErrorMessage ?? fallbackAuthorizationMessage
-                return
-            }
-
-            viewModel.screenTimePermissionGranted = true
-            withAnimation(.easeInOut(duration: 0.3)) {
-                viewModel.advance()
-            }
         }
     }
 
-    private var fallbackAuthorizationMessage: String {
-        switch authService.authorizationStatus {
-        case .approved:
-            return ""
-        case .denied:
-            return "Screen Time access was denied. Try again, or enable it in Settings if you denied it earlier."
-        case .notDetermined:
-            return "Screen Time access is still unavailable. Try again once the permission sheet finishes."
-        @unknown default:
-            return "Screen Time access is still unavailable. Try again, or enable it in Settings if you denied it earlier."
-        }
-    }
-}
-
-// MARK: - Explanation Card
-struct PermissionExplanationCard: View {
-    let icon: String
-    let title: String
-    let description: String
-    let iconColor: Color
-    let iconBackgroundColor: Color
-    let titleColor: Color
-    let descriptionColor: Color
-    let cardBackgroundColor: Color
-
-    var body: some View {
-        HStack(spacing: 12) {
+    private func point(icon: String, title: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: 14) {
             Image(systemName: icon)
-                .font(.geist(size: 15, weight: .semibold))
-                .foregroundColor(iconColor)
-                .frame(width: 28, height: 28)
-                .background(iconBackgroundColor)
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(OnboardingStyle.red)
+                .frame(width: 36, height: 36)
+                .background(Color(hex: "#FDECEC"), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.geist(size: 16, weight: .semibold))
-                    .foregroundColor(titleColor)
-                    .lineLimit(2)
-
-                Text(description)
-                    .font(.geist(size: 12))
-                    .foregroundColor(descriptionColor)
-                    .lineSpacing(1.5)
+                Text(title).font(.geist(size: 16, weight: .semibold)).foregroundStyle(OnboardingStyle.navy)
+                Text(text).font(.geist(size: 13)).foregroundStyle(OnboardingStyle.muted)
                     .fixedSize(horizontal: false, vertical: true)
             }
-
-            Spacer()
+            Spacer(minLength: 0)
         }
-        .padding(14)
-        .background(cardBackgroundColor)
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .padding(16)
+        .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func request() {
+        Task { @MainActor in
+            if !authService.isAuthorized {
+                isRequesting = true
+                await authService.requestAuthorization()
+                isRequesting = false
+            }
+            guard authService.isAuthorized else {
+                wasDeclined = true
+                return
+            }
+            viewModel.usesEstimate = false
+            viewModel.revealPanel = 0
+            viewModel.advance()
+        }
     }
 }
