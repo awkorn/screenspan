@@ -1,14 +1,15 @@
 import SwiftUI
 
 /// One drawing surface instead of ~960 individual SwiftUI subviews.
-/// Draw exactly one cell per month, including a partial final row. Each row is
-/// three years, so the age labels on the left line up with real ages.
+/// Draw exactly one cell per month. Thirty per row divides an 80-year life
+/// (960 months) into 32 full rows, and every six rows is 15 years, so the age
+/// labels on the left land on round ages.
 struct LifeGridView: View {
     let goalGridData: LifeGridData
-    private let columns = 36
+    private let columns = 30
     private let gap: CGFloat = 2
     private let gutter: CGFloat = 22
-    private let labelEveryRows = 5
+    private let labelEveryRows = 6
     private var rows: Int { max((goalGridData.totalMonths + columns - 1) / columns, 1) }
 
     static let livedColor = Color(hex: "#0063D6")
@@ -18,7 +19,7 @@ struct LifeGridView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("1 square = 1 month · 1 row = 3 years")
+            Text("1 square = 1 month · ages on the left")
                 .font(.geist(size: 11))
                 .foregroundStyle(ScreenSpanAppearance.secondaryText)
             Canvas { context, size in
@@ -43,19 +44,16 @@ struct LifeGridView: View {
                     context.draw(label, at: CGPoint(x: 0, y: CGFloat(row) * (cell + gap) + cell / 2), anchor: .leading)
                 }
             }
-            .aspectRatio(gridAspectRatio, contentMode: .fit)
+            .layoutHeight { width in gridHeight(forWidth: width) }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(accessibilitySummary)
         }
     }
 
-    /// Width over height. The fixed gutter and gaps make the true ratio vary
-    /// with width; using the widest iPhone never clips the last row on
-    /// narrower ones, at the cost of a few points of bottom space.
-    private var gridAspectRatio: CGFloat {
-        let referenceWidth: CGFloat = 440
-        let cell = (referenceWidth - gutter - CGFloat(columns - 1) * gap) / CGFloat(columns)
-        return referenceWidth / (CGFloat(rows) * (cell + gap) - gap)
+    /// Exact height for a width, so the grid never clips or leaves a gap.
+    private func gridHeight(forWidth width: CGFloat) -> CGFloat {
+        let cell = max((width - gutter - CGFloat(columns - 1) * gap) / CGFloat(columns), 0)
+        return CGFloat(rows) * (cell + gap) - gap
     }
 
     private var accessibilitySummary: String {
@@ -72,5 +70,27 @@ extension LifeGridData {
         let lived = months * 3 / 5
         let phone = months / 4
         return LifeGridData(totalMonths: months, monthsLived: lived, phoneMonths: phone, freeMonths: months - lived - phone)
+    }
+}
+
+private extension View {
+    /// Take the offered width and a height computed from it.
+    func layoutHeight(_ height: @escaping (CGFloat) -> CGFloat) -> some View {
+        WidthDrivenHeightLayout(height: height) { self }
+    }
+}
+
+private struct WidthDrivenHeightLayout: Layout {
+    let height: (CGFloat) -> CGFloat
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? 345
+        return CGSize(width: width, height: height(width))
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        for subview in subviews {
+            subview.place(at: bounds.origin, proposal: ProposedViewSize(bounds.size))
+        }
     }
 }
