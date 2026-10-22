@@ -13,6 +13,7 @@ struct WelcomeView: View {
             Spacer(minLength: 20)
 
             SpreadingLifeGrid()
+                .layoutPriority(1)
                 .accessibilityLabel("A grid of 960 squares, one for each month of an 80-year life, with red squares spreading across it.")
 
             Spacer(minLength: 24)
@@ -46,11 +47,13 @@ struct WelcomeView: View {
     }
 }
 
-/// 960 months; red squares appear in a fixed scattered order over a few
-/// seconds until about a fifth of the life is red.
+/// 960 months in 32 even rows of 30, matching the dashboard's life grid. Red
+/// squares appear in a fixed scattered order over a few seconds until about a
+/// fifth of the life is red. On short screens it shrinks rather than pushing
+/// the button off-screen.
 private struct SpreadingLifeGrid: View {
     private static let months = 960
-    private static let columns = 36
+    private static let columns = 30
     private static let order: [Int] = {
         var generator = SeededGenerator(seed: 960)
         return Array(0..<months).shuffled(using: &generator)
@@ -79,7 +82,8 @@ private struct SpreadingLifeGrid: View {
                 }
             }
         }
-        .aspectRatio(CGFloat(Self.columns) / CGFloat((Self.months + Self.columns - 1) / Self.columns), contentMode: .fit)
+        .aspectRatio(CGFloat(Self.columns) / CGFloat(Self.months / Self.columns), contentMode: .fit)
+        .frame(maxWidth: .infinity)
         .task {
             start = Date()
             try? await Task.sleep(for: .seconds(duration + 0.6))
