@@ -56,7 +56,8 @@ final class StoreKitService: ObservableObject {
     deinit { updates?.cancel() }
 
     func loadProducts() async {
-        guard loadState != .loading, loadState != .loaded else { return }
+        // A partial list (a product still propagating) is retried next time.
+        guard loadState != .loading, products.count < AppConstants.ProductID.all.count else { return }
         loadState = .loading
         do {
             let loaded = try await Product.products(for: AppConstants.ProductID.all)

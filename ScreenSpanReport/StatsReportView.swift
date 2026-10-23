@@ -10,7 +10,7 @@ import FamilyControls
 ///
 /// Everything here describes the last seven completed days: the daily
 /// average and its lifetime projection to the user-entered planning age,
-/// pickups and notifications, and the apps that take the most time. App
+/// pickups and days a year on the phone, and the apps that take the most time. App
 /// names and icons are rendered from tokens here and never leave the report.
 struct StatsReportView: View {
     let payload: ScreenTimeReportPayload
@@ -47,7 +47,7 @@ struct StatsReportView: View {
                             topAppsSection
                         }
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("If this average continues to age \(targetAge). A year means 365 days of 24 hours; the waking-life percentage assumes 8 hours of sleep per day. Pickups count each time you unlock or wake your iPhone.")
+                            Text("If this average continues to age \(targetAge). A year means 365 days of 24 hours; the waking-life percentage assumes 8 hours of sleep per day. Full days a year are 24-hour days at this daily average. Pickups count each time you unlock or wake your iPhone.")
                                 .font(.geist(size: 12))
                                 .foregroundStyle(ScreenSpanAppearance.secondaryText)
                             ReportSourceNote(payload: payload)
@@ -101,9 +101,8 @@ struct StatsReportView: View {
             if let pickups = payload.pickupsPerDay {
                 statTile(icon: "hand.tap", value: wholeNumber(pickups), label: "pickups a day")
             }
-            if let notifications = payload.notificationsPerDay {
-                statTile(icon: "bell.badge", value: wholeNumber(notifications), label: "notifications a day")
-            }
+            statTile(icon: "calendar", value: wholeNumber(RevealMath.daysPerYear(dailyHours: dailyAverageHours)),
+                     label: "full days a year")
         }
     }
 

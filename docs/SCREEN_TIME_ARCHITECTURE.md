@@ -44,7 +44,7 @@ The host records `trackingStartDate` when onboarding completes (existing users a
 
 ### Stats and Life Grid
 
-Stats describes the last seven completed days: the lifetime projection, the waking-life donut, daily average, pickups and notifications per day, and the top five apps by daily average with each app's lifetime projection. Per-app detail is read only for those seven daily segments; older segments contribute just their totals, so the 35-day query does not pay for app-level detail it never shows. App names and icons render from `Application` tokens with FamilyControls' `Label`, inside the extension. They are never logged, stored, or sent to the host. Pickups are app pickups plus pickups without app activity.
+Stats describes the last seven completed days: the lifetime projection, the waking-life donut, daily average, pickups per day, full 24-hour days a year at that average, and the top five apps by daily average with each app's lifetime projection. Per-app detail is read only for those seven daily segments; older segments contribute just their totals, so the 35-day query does not pay for app-level detail it never shows. App names and icons render from `Application` tokens with FamilyControls' `Label`, inside the extension. They are never logged, stored, or sent to the host. Pickups are app pickups plus pickups without app activity.
 
 Life Grid draws one square per month, 30 per row (32 even rows for an 80-year life), with age labels every 15 years. The slider is an in-report what-if: it starts at the seven-day average ("Now") and has tappable Goal and Start markers. Grid squares show lived months, projected phone months at the slider's pace, and, when a starting pace is known, months won back compared with it (green).
 
@@ -132,6 +132,6 @@ On a physical iPhone with approved provisioning and real Screen Time history:
 5. Revoke and regrant permission; foreground after midnight; force quit; test explicit Refresh and offline use. Confirm unavailable activity never becomes a fabricated number.
 6. Check larger Dynamic Type, VoiceOver slider adjustment, and a smaller iPhone.
 7. In Settings, move "Started ScreenSpan" back 10 days, then 40 days. Confirm Progress shows a measured starting pace for the first, and asks for a starting point for the second until one is entered. Confirm Stats numbers do not change and Life Grid shows won-back months only with a starting pace.
-8. Compare Stats' top apps, pickups, and notifications with Apple's Screen Time for the same seven days. Note whether app names or icons fail to render.
+8. Compare Stats' top apps and pickups with Apple's Screen Time for the same seven days. Note whether app names or icons fail to render.
 
 The report logs aggregation start/end and elapsed time only. That measures work after iOS invokes the extension, not total cold-start delay. Observe the UI to measure end-to-end latency. Do not add usage values or app identities to diagnostics.

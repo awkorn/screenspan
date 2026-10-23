@@ -67,7 +67,6 @@ private func extractDailyAverage(
     let recentInterval = ActivitySummary.projectionInterval()
     var apps: [Application: AppTotals] = [:]
     var pickups = 0
-    var notifications = 0
     for await activityData in results {
         for await segment in activityData.activitySegments {
             guard !Task.isCancelled else { return .unavailable }
@@ -80,7 +79,6 @@ private func extractDailyAverage(
                 for await app in category.applications {
                     apps[app.application, default: AppTotals()].add(app)
                     pickups += app.numberOfPickups
-                    notifications += app.numberOfNotifications
                 }
             }
         }
@@ -103,8 +101,7 @@ private func extractDailyAverage(
         days: recent,
         history: history,
         topApps: Array(topApps.prefix(5)),
-        pickupsPerDay: recent.isEmpty ? nil : Double(pickups) / dayCount,
-        notificationsPerDay: recent.isEmpty ? nil : Double(notifications) / dayCount
+        pickupsPerDay: recent.isEmpty ? nil : Double(pickups) / dayCount
     )
 }
 
@@ -154,7 +151,6 @@ struct ScreenTimeReportPayload {
     /// Up to five apps by daily average over `days`.
     var topApps: [AppUsage] = []
     var pickupsPerDay: Double?
-    var notificationsPerDay: Double?
 
     static func available(_ dailyAverageHours: Double) -> ScreenTimeReportPayload {
         ScreenTimeReportPayload(dailyAverageHours: dailyAverageHours)

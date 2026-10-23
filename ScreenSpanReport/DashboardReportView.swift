@@ -17,15 +17,8 @@ struct DashboardReportView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                HStack(spacing: 6) {
-                    tab("Life Grid", icon: "square.grid.3x3", value: 0)
-                    tab("Stats", icon: "chart.pie", value: 1)
-                    tab("Progress", icon: "chart.line.uptrend.xyaxis", value: 2)
-                }
-                .padding(7)
-                .background(Color(hex: "#F6F7FA"), in: Capsule())
-                .padding(.horizontal, 24)
-                .padding(.vertical, 10)
+                // Floats over the page; scrolling content shows around it.
+                .safeAreaInset(edge: .bottom, spacing: 0) { tabBar }
             } else {
                 ScreenTimeUnavailableView(
                     title: "No recent activity available",
@@ -37,6 +30,20 @@ struct DashboardReportView: View {
         .screenSpanLightSurface()
     }
 
+    private var tabBar: some View {
+        HStack(spacing: 4) {
+            tab("Life Grid", icon: "square.grid.3x3", value: 0)
+            tab("Stats", icon: "chart.pie", value: 1)
+            tab("Progress", icon: "chart.line.uptrend.xyaxis", value: 2)
+        }
+        .padding(4)
+        .background(.regularMaterial, in: Capsule())
+        .overlay(Capsule().stroke(Color.black.opacity(0.06), lineWidth: 0.5))
+        .shadow(color: .black.opacity(0.12), radius: 14, y: 6)
+        .padding(.horizontal, 40)
+        .padding(.bottom, 6)
+    }
+
     private func tab(_ title: String, icon: String, value: Int) -> some View {
         Button { page = value } label: {
             VStack(spacing: 4) {
@@ -44,9 +51,10 @@ struct DashboardReportView: View {
                 Text(title).font(.geist(size: 12, weight: .semibold))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
+            .padding(.vertical, 7)
             .foregroundStyle(page == value ? Color.white : Color(hex: "#595959"))
             .background(page == value ? Color(hex: "#0A1F38") : .clear, in: Capsule())
+            .contentShape(Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(page == value ? .isSelected : [])

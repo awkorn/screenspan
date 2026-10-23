@@ -55,6 +55,6 @@ struct PreviewApp: App {
         let apps = [("Instagram", 0.9), ("Safari", 0.45), ("Messages", 0.35), ("YouTube", 0.3), ("Mail", 0.15)]
             .map { AppUsage(application: nil, fallbackName: $0.0, dailyHours: $0.1) }
         return ScreenTimeReportPayload(dailyAverageHours: ActivityDay.averageHours(of: days), days: days, history: history,
-                                       topApps: apps, pickupsPerDay: 84, notificationsPerDay: 131)
+                                       topApps: apps, pickupsPerDay: 84)
     }
 }

@@ -178,6 +178,7 @@ struct BlockingView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 46)
                         .overlay(Capsule().stroke(.white.opacity(0.35), lineWidth: 1))
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
             } else {
