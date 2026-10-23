@@ -88,7 +88,7 @@ Shown after the plan step at the end of onboarding (skipped for existing subscri
 
 ### Before App Review
 
-1. **Family Controls distribution entitlement for every target.** Request it for `com.screenspan.monitor`, `com.screenspan.shield`, and `com.screenspan.shieldaction` as well as the app and report extension. Create their App IDs with the App Group and Family Controls capabilities, then confirm each distribution profile includes `com.apple.developer.family-controls`.
+1. **Family Controls distribution entitlement for every target.** The app (`com.screenspan`) is approved. Each extension needs its own request, filed from the ⊕ next to Family Controls (Distribution) on its App ID's Capability Requests tab: `com.screenspan.deviceactivityreport` (report), `com.screenspan.deviceactivity` (monitor), `com.screenspan.shieldconfiguration` (shield), and `com.screenspan.shieldaction`. Approval shows as Assigned; with automatic signing, Xcode then uses it for distribution. Confirm each distribution profile includes `com.apple.developer.family-controls`.
 2. **App Store Connect:** create the subscription group and both products with the IDs above, the annual free-trial introductory offer, localized names, and review screenshots of the paywall. Submit them with the app version.
 3. **Privacy policy:** replace `AppConstants.Legal.privacyPolicy` with the URL entered in App Store Connect. If you publish your own terms, replace `termsOfUse` too and add it to the app description.
 4. **Review notes:** explain that blocking needs Screen Time authorization (a real device with a passcode) and a subscription, and that StoreKit sandbox purchases unlock it.

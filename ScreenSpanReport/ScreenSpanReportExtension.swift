@@ -60,7 +60,7 @@ struct HistoryReportScene: DeviceActivityReportScene {
 private func extractDailyAverage(
     from results: DeviceActivityResults<DeviceActivityData>
 ) async -> ScreenTimeReportPayload {
-    let logger = Logger(subsystem: "com.screenspan.deviceactivity", category: "ReportLoading")
+    let logger = Logger(subsystem: "com.screenspan.deviceactivityreport", category: "ReportLoading")
     let started = ContinuousClock.now
     logger.info("Report aggregation started")
     var summary = ActivitySummary()

@@ -85,7 +85,7 @@ targets:
           - group.com.screenspan.shared
     settings:
       DEVELOPMENT_TEAM: 9XXTA2SG5L
-      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.deviceactivity
+      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.deviceactivityreport
       TARGETED_DEVICE_FAMILY: 1
     frameworks:
       - DeviceActivity
@@ -118,7 +118,7 @@ targets:
           - group.com.screenspan.shared
     settings:
       DEVELOPMENT_TEAM: 9XXTA2SG5L
-      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.monitor
+      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.deviceactivity
       TARGETED_DEVICE_FAMILY: 1
     frameworks:
       - DeviceActivity
@@ -152,7 +152,7 @@ targets:
           - group.com.screenspan.shared
     settings:
       DEVELOPMENT_TEAM: 9XXTA2SG5L
-      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.shield
+      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.shieldconfiguration
       TARGETED_DEVICE_FAMILY: 1
     frameworks:
       - DeviceActivity
