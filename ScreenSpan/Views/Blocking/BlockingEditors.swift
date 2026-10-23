@@ -168,9 +168,32 @@ struct LimitEditor: View {
         _limit = State(initialValue: draft.limit)
     }
 
+    /// Strict mode holds back loosening an existing, active limit.
+    private var isHeldByStrictMode: Bool {
+        !draft.isNew && draft.limit.isEnabled && blocking.configuration.isStrict()
+    }
+
+    private var allowanceFooter: String {
+        let rule = "Time on all of these counts together. Once \(BlockingView.format(minutes: limit.dailyMinutes)) is used, they’re blocked until midnight."
+        guard isHeldByStrictMode else { return rule }
+        return rule + " Strict mode is on: more time or fewer apps takes effect tomorrow."
+    }
+
     var body: some View {
         NavigationStack {
             Form {
+                if let pending = draft.limit.pending {
+                    Section {
+                        Label(BlockingView.describe(pending), systemImage: "clock.arrow.circlepath")
+                            .font(.geist(size: 15, weight: .medium))
+                        Button("Keep the current limit") {
+                            blocking.cancelPendingChange(draft.limit)
+                            dismiss()
+                        }
+                    } footer: {
+                        Text("Strict mode held this change until midnight, when today’s allowance resets.")
+                    }
+                }
                 Section {
                     Button { showsPicker = true } label: {
                         HStack {
@@ -217,7 +240,7 @@ struct LimitEditor: View {
                 } header: {
                     Text("Each day")
                 } footer: {
-                    Text("Time on all of these counts together. Once \(BlockingView.format(minutes: limit.dailyMinutes)) is used, they’re blocked until midnight.")
+                    Text(allowanceFooter)
                 }
                 if !draft.isNew {
                     Section {
@@ -241,9 +264,13 @@ struct LimitEditor: View {
             .familyActivityPicker(headerText: "Choose the apps that share this daily limit.",
                                   isPresented: $showsPicker, selection: $limit.selection)
             .confirmationDialog("Delete this limit?", isPresented: $confirmsDelete, titleVisibility: .visible) {
-                Button("Delete", role: .destructive) {
+                Button(isHeldByStrictMode ? "Delete at midnight" : "Delete", role: .destructive) {
                     blocking.delete(draft.limit)
                     dismiss()
+                }
+            } message: {
+                if isHeldByStrictMode {
+                    Text("Strict mode is on, so this limit stays until midnight.")
                 }
             }
             .task {

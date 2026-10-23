@@ -10,8 +10,12 @@ struct BlockingConfiguration: Codable, Equatable {
     var session: FocusSession?
     var schedules: [BlockSchedule] = []
     var limits: [AppLimit] = []
-    /// Focus blocks can't end early and running schedules can't be turned off.
+    /// Focus blocks can't end early, running schedules can't be turned off,
+    /// and loosening a daily limit waits until the next midnight.
     var strictMode = false
+    /// When strict mode turns itself off. Set when the user turns it off while
+    /// daily limits run, so that can't be used to undo a limit early.
+    var strictModeEndsAt: Date?
 
     /// DeviceActivity monitors at most 20 activities per app; one is the focus block.
     static let maximumSchedules = 8
@@ -26,6 +30,17 @@ struct BlockingConfiguration: Codable, Equatable {
         schedules = try container.decodeIfPresent([BlockSchedule].self, forKey: .schedules) ?? []
         limits = try container.decodeIfPresent([AppLimit].self, forKey: .limits) ?? []
         strictMode = try container.decodeIfPresent(Bool.self, forKey: .strictMode) ?? false
+        strictModeEndsAt = try container.decodeIfPresent(Date.self, forKey: .strictModeEndsAt)
+    }
+
+    /// Strict mode as it applies at `date`, counting a scheduled switch-off.
+    func isStrict(at date: Date = Date()) -> Bool {
+        strictMode && (strictModeEndsAt.map { date < $0 } ?? true)
+    }
+
+    /// When changes held back by strict mode apply.
+    static func nextMidnight(after date: Date = Date(), calendar: Calendar = .current) -> Date {
+        calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: date)) ?? date.addingTimeInterval(24 * 60 * 60)
     }
 
     static func load(from defaults: UserDefaults = .appGroup) -> BlockingConfiguration {
@@ -65,11 +80,47 @@ struct AppLimit: Codable, Identifiable, Equatable {
     var selection = FamilyActivitySelection()
     var dailyMinutes = 30
     var isEnabled = true
+    /// A loosening change made under strict mode, held until `effective`.
+    var pending: PendingChange?
+
+    struct PendingChange: Codable, Equatable {
+        var selection: FamilyActivitySelection
+        var dailyMinutes: Int
+        var isEnabled: Bool
+        var removes = false
+        var effective: Date
+    }
+
+    /// The limit as it applies at `date`, or nil once a scheduled removal is due.
+    func applying(at date: Date = Date()) -> AppLimit? {
+        guard let pending, date >= pending.effective else { return self }
+        guard !pending.removes else { return nil }
+        var applied = self
+        applied.selection = pending.selection
+        applied.dailyMinutes = pending.dailyMinutes
+        applied.isEnabled = pending.isEnabled
+        applied.pending = nil
+        return applied
+    }
+
+    /// Whether `proposed` allows more than this limit: more time, fewer
+    /// apps, or switched off. A limit that's already off can't be loosened.
+    func isLoosened(by proposed: AppLimit) -> Bool {
+        guard isEnabled else { return false }
+        return !proposed.isEnabled || proposed.dailyMinutes > dailyMinutes || !proposed.selection.contains(selection)
+    }
 }
 
 extension FamilyActivitySelection {
     var isEmpty: Bool {
         applicationTokens.isEmpty && categoryTokens.isEmpty && webDomainTokens.isEmpty
+    }
+
+    /// Whether this selection includes everything in `other`.
+    func contains(_ other: FamilyActivitySelection) -> Bool {
+        applicationTokens.isSuperset(of: other.applicationTokens)
+            && categoryTokens.isSuperset(of: other.categoryTokens)
+            && webDomainTokens.isSuperset(of: other.webDomainTokens)
     }
 
     /// "3 apps, 1 category" — for rows and accessibility labels.

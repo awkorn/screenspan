@@ -77,6 +77,8 @@ struct BlockingView: View {
             Button("Keep going", role: .cancel) { }
         }
         .task {
+            // Apply anything strict mode held until a midnight that has passed.
+            blocking.reconcile()
             guard opensPickerOnAppear, authService.isAuthorized, configuration.blockList.isEmpty else { return }
             try? await Task.sleep(for: .milliseconds(450))
             openListPicker()
@@ -354,6 +356,11 @@ struct BlockingView: View {
                                 Text("\(Self.format(minutes: limit.dailyMinutes)) a day · \(limit.selection.summary)")
                                     .font(.geist(size: 13))
                                     .foregroundStyle(OnboardingStyle.muted)
+                                if let pending = limit.pending {
+                                    Label(Self.describe(pending), systemImage: "clock.arrow.circlepath")
+                                        .font(.geist(size: 12, weight: .medium))
+                                        .foregroundStyle(Color(hex: "#235187"))
+                                }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
@@ -378,25 +385,39 @@ struct BlockingView: View {
     private var strictModeSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Toggle(isOn: Binding(
-                get: { configuration.strictMode },
+                get: { configuration.isStrict() },
                 set: { blocking.setStrictMode($0) }
             )) {
                 VStack(alignment: .leading, spacing: 3) {
                     Label("Strict mode", systemImage: "lock.shield")
                         .font(.geist(size: 16, weight: .semibold))
                         .foregroundStyle(OnboardingStyle.navy)
-                    Text("Focus blocks can’t end early, and running schedules can’t be turned off.")
+                    Text("Focus blocks can’t end early, running schedules can’t be turned off, and loosening a daily limit waits until tomorrow.")
                         .font(.geist(size: 13))
                         .foregroundStyle(OnboardingStyle.muted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .tint(Color(hex: "#2BB673"))
-            .disabled(configuration.strictMode && !blocking.canDisableStrictMode)
+            .disabled(configuration.isStrict() && (!blocking.canDisableStrictMode || blocking.strictModeEndsAt != nil))
             .padding(16)
             .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            if configuration.strictMode && !blocking.canDisableStrictMode {
+            if blocking.strictModeEndsAt != nil {
+                HStack(spacing: 8) {
+                    Text("Strict mode turns off at midnight.")
+                        .font(.geist(size: 12))
+                        .foregroundStyle(OnboardingStyle.muted)
+                    Spacer(minLength: 0)
+                    Button("Keep it on") { blocking.setStrictMode(true) }
+                        .font(.geist(size: 13, weight: .semibold))
+                        .foregroundStyle(Color(hex: "#0063D6"))
+                }
+            } else if configuration.isStrict() && !blocking.canDisableStrictMode {
                 Text("You can turn strict mode off when nothing is blocking.")
+                    .font(.geist(size: 12))
+                    .foregroundStyle(OnboardingStyle.muted)
+            } else if configuration.isStrict() && configuration.limits.contains(where: \.isEnabled) {
+                Text("With daily limits on, turning strict mode off takes effect at midnight.")
                     .font(.geist(size: 12))
                     .foregroundStyle(OnboardingStyle.muted)
             }
@@ -413,6 +434,13 @@ struct BlockingView: View {
     static func time(_ minuteOfDay: Int) -> String {
         let date = Calendar.current.date(bySettingHour: minuteOfDay / 60, minute: minuteOfDay % 60, second: 0, of: Date()) ?? Date()
         return date.formatted(date: .omitted, time: .shortened)
+    }
+
+    /// "From tomorrow: 1h a day", "Turns off at midnight", "Removed at midnight".
+    static func describe(_ pending: AppLimit.PendingChange) -> String {
+        if pending.removes { return "Removed at midnight" }
+        if !pending.isEnabled { return "Turns off at midnight" }
+        return "From tomorrow: \(format(minutes: pending.dailyMinutes)) a day · \(pending.selection.summary)"
     }
 
     static func describe(_ schedule: BlockSchedule) -> String {

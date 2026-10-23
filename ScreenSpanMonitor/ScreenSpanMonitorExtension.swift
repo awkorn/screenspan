@@ -36,8 +36,12 @@ final class ScreenSpanMonitorExtension: DeviceActivityMonitor {
         super.eventDidReachThreshold(event, activity: activity)
         guard event == BlockingRule.limitEvent, case .limit(let id) = BlockingRule(activity: activity),
               BlockingEntitlement.isActive,
-              let limit = BlockingConfiguration.load().limits.first(where: { $0.id == id }), limit.isEnabled
+              let registered = BlockingConfiguration.load().limits.first(where: { $0.id == id }),
+              let limit = registered.applying(at: Date()), limit.isEnabled
         else { return }
+        // A change strict mode held until midnight may now allow more time than
+        // the threshold iOS is watching; the app re-registers it when opened.
+        guard limit.dailyMinutes <= registered.dailyMinutes else { return }
         BlockingRule.limit(id).shield(limit.selection)
     }
 }

@@ -65,7 +65,7 @@ Reports, Life Grid, Stats, and Progress are free. ScreenSpan Pro, an auto-renewi
 - **Focus blocks:** block the distraction list for 15 minutes to 4 hours, with a live countdown.
 - **Schedules:** repeating windows (Bedtime, Work hours, Slow mornings, or custom) on chosen weekdays, including overnight windows.
 - **Daily limits:** a shared allowance for chosen apps; once used, they're blocked until midnight.
-- **Strict mode:** focus blocks can't end early, and a running schedule can't be turned off, edited, or deleted. Strict mode itself can only be turned off when nothing is blocking.
+- **Strict mode:** focus blocks can't end early, and a running schedule can't be turned off, edited, or deleted. Daily limits can tighten immediately, but loosening one (more time, fewer apps, off, or deleted) is held as a pending change until the next midnight, when today's allowance resets anyway. The app never learns whether a limit was reached, so the rule doesn't depend on it. Strict mode itself can only be turned off when nothing is blocking, and with limits on it switches off at midnight. The app applies due changes on launch, foreground, and opening Blocking. Until then the monitor applies a due change that removes or disables a limit, and doesn't shield a limit whose new allowance exceeds the threshold iOS is still watching.
 - **Shield screen:** names the app, why it's blocked and until when, and nudges toward one of the user's own onboarding intentions. Its only button closes the app.
 
 ### How it works
@@ -101,7 +101,7 @@ The Simulator can show the screens, but it can't grant Screen Time access withou
 2. Start a 15-minute focus block; open a blocked app and check the shield's name, reason, end time, and nudge. Confirm it lifts at the end with ScreenSpan force-quit.
 3. Add a schedule that starts in two minutes and one that crosses midnight on selected weekdays only. Confirm each turns on and off with the app closed, and that unselected days stay unblocked.
 4. Add a 15-minute daily limit, use the app past it, and confirm the shield; confirm it clears after midnight.
-5. With strict mode on, confirm End early, schedule toggles, editing, and deleting are unavailable while blocking, and strict mode can't be turned off until it ends.
+5. With strict mode on, confirm End early, schedule toggles, editing, and deleting are unavailable while blocking, and strict mode can't be turned off until it ends. Raise and delete a daily limit; both should show as taking effect at midnight, and apply after it. With limits on, turning strict mode off should wait until midnight.
 6. Expire or refund the subscription in the StoreKit transaction manager; confirm shields lift on next launch and the setup remains.
 
 The app uses the reference design's light appearance. Report roots independently set a light color scheme and explicit navy text, because they do not reliably inherit the host's appearance. Secondary copy and chart axis labels use opaque dark gray on white/pale-gray surfaces. The isolated design preview accepts `--dark` to check that the report remains readable when its surrounding app requests Dark Mode.

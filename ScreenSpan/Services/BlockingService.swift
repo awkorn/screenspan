@@ -32,12 +32,17 @@ final class BlockingService: ObservableObject {
 
     /// Strict mode forbids anything that would end a running block.
     func canTurnOff(_ schedule: BlockSchedule, at date: Date = Date()) -> Bool {
-        !(configuration.strictMode && schedule.isEnabled && schedule.isActive(at: date))
+        !(configuration.isStrict(at: date) && schedule.isEnabled && schedule.isActive(at: date))
     }
 
-    var canEndSession: Bool { !configuration.strictMode }
+    var canEndSession: Bool { !configuration.isStrict() }
 
     var canDisableStrictMode: Bool { !isBlocking() }
+
+    /// When strict mode switches itself off, if the user asked while limits ran.
+    var strictModeEndsAt: Date? {
+        configuration.isStrict() ? configuration.strictModeEndsAt : nil
+    }
 
     // MARK: - Block list
 
@@ -132,16 +137,29 @@ final class BlockingService: ObservableObject {
 
     // MARK: - Daily limits
 
+    /// Saves a new or changed limit. Under strict mode, a change that allows
+    /// more (more time, fewer apps, switched off) waits until midnight, when
+    /// today's allowance would reset anyway; tightening applies right away.
     func save(_ limit: AppLimit) {
         guard !limit.selection.isEmpty, limit.dailyMinutes > 0 else { return }
+        var updated = limit
+        updated.pending = nil
         if let index = configuration.limits.firstIndex(where: { $0.id == limit.id }) {
-            configuration.limits[index] = limit
+            let current = configuration.limits[index]
+            if configuration.isStrict(), current.isLoosened(by: limit) {
+                configuration.limits[index].pending = AppLimit.PendingChange(
+                    selection: limit.selection, dailyMinutes: limit.dailyMinutes, isEnabled: limit.isEnabled,
+                    effective: BlockingConfiguration.nextMidnight())
+                save()
+                return
+            }
+            configuration.limits[index] = updated
         } else {
             guard configuration.limits.count < BlockingConfiguration.maximumLimits else { return }
-            configuration.limits.append(limit)
+            configuration.limits.append(updated)
         }
         save()
-        restart(limit)
+        restart(updated)
     }
 
     func setEnabled(_ enabled: Bool, limit: AppLimit) {
@@ -151,9 +169,26 @@ final class BlockingService: ObservableObject {
     }
 
     func delete(_ limit: AppLimit) {
-        configuration.limits.removeAll { $0.id == limit.id }
+        guard let index = configuration.limits.firstIndex(where: { $0.id == limit.id }) else { return }
+        if configuration.isStrict(), configuration.limits[index].isEnabled {
+            let current = configuration.limits[index]
+            configuration.limits[index].pending = AppLimit.PendingChange(
+                selection: current.selection, dailyMinutes: current.dailyMinutes, isEnabled: false, removes: true,
+                effective: BlockingConfiguration.nextMidnight())
+            save()
+            return
+        }
+        configuration.limits.remove(at: index)
         save()
         stop(.limit(limit.id))
+    }
+
+    /// Drops a change waiting for midnight. Keeping the stricter limit is
+    /// always allowed.
+    func cancelPendingChange(_ limit: AppLimit) {
+        guard let index = configuration.limits.firstIndex(where: { $0.id == limit.id }) else { return }
+        configuration.limits[index].pending = nil
+        save()
     }
 
     private func restart(_ limit: AppLimit) {
@@ -186,9 +221,22 @@ final class BlockingService: ObservableObject {
 
     // MARK: - Strict mode
 
+    /// Turning strict mode on is immediate. Turning it off waits for nothing
+    /// to be blocking, and, while daily limits run, until midnight; otherwise
+    /// switching it off would undo a used-up limit early.
     func setStrictMode(_ enabled: Bool) {
-        guard enabled || canDisableStrictMode else { return }
-        configuration.strictMode = enabled
+        if enabled {
+            configuration.strictMode = true
+            configuration.strictModeEndsAt = nil
+        } else {
+            guard canDisableStrictMode, configuration.isStrict() else { return }
+            if configuration.limits.contains(where: \.isEnabled) {
+                configuration.strictModeEndsAt = BlockingConfiguration.nextMidnight()
+            } else {
+                configuration.strictMode = false
+                configuration.strictModeEndsAt = nil
+            }
+        }
         save()
     }
 
@@ -206,6 +254,7 @@ final class BlockingService: ObservableObject {
     func reconcile(now: Date = Date()) {
         guard isEntitled else { return }
         configuration = .load()
+        applyDueChanges(now: now)
         if let session = configuration.session {
             if session.isActive(at: now) {
                 BlockingRule.session.shield(configuration.blockList)
@@ -235,6 +284,29 @@ final class BlockingService: ObservableObject {
         for name in monitored.subtracting(known) {
             if let rule = BlockingRule(rawValue: name) { stop(rule) }
         }
+    }
+
+    /// Applies what strict mode held back once its midnight has passed.
+    private func applyDueChanges(now: Date) {
+        var changed = false
+        if configuration.strictMode, let end = configuration.strictModeEndsAt, now >= end {
+            configuration.strictMode = false
+            configuration.strictModeEndsAt = nil
+            changed = true
+        }
+        for limit in configuration.limits {
+            guard let pending = limit.pending, now >= pending.effective else { continue }
+            changed = true
+            if let applied = limit.applying(at: now),
+               let index = configuration.limits.firstIndex(where: { $0.id == limit.id }) {
+                configuration.limits[index] = applied
+                restart(applied)
+            } else {
+                configuration.limits.removeAll { $0.id == limit.id }
+                stop(.limit(limit.id))
+            }
+        }
+        if changed { save() }
     }
 
     private func deactivateAll() {
