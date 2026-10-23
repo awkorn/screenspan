@@ -30,6 +30,16 @@ final class BlockingService: ObservableObject {
             || (!configuration.blockList.isEmpty && !configuration.activeSchedules(at: date).isEmpty)
     }
 
+    /// What is blocking now and until when: the focus block first, otherwise
+    /// the running schedule that ends last.
+    func currentBlock(at date: Date = Date()) -> (end: Date, isFocus: Bool)? {
+        if let session = configuration.activeSession(at: date) { return (session.end, true) }
+        guard !configuration.blockList.isEmpty,
+              let end = configuration.activeSchedules(at: date).compactMap({ $0.end(after: date) }).max()
+        else { return nil }
+        return (end, false)
+    }
+
     /// Strict mode forbids anything that would end a running block.
     func canTurnOff(_ schedule: BlockSchedule, at date: Date = Date()) -> Bool {
         !(configuration.isStrict(at: date) && schedule.isEnabled && schedule.isActive(at: date))

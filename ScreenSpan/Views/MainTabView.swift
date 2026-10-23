@@ -141,8 +141,9 @@ struct MainTabView: View {
     }
 }
 
-/// The header's way into blocking. It shows when a block is running, so the
-/// dashboard says at a glance whether apps are locked right now.
+/// The header's way into blocking, styled as a plain text button. While a
+/// block runs it shows how long is left, so the dashboard says at a glance
+/// whether apps are locked.
 private struct BlockButton: View {
     let isPro: Bool
     let action: () -> Void
@@ -150,19 +151,28 @@ private struct BlockButton: View {
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 15)) { context in
-            let isBlocking = isPro && blocking.isBlocking(at: context.date)
+            let block = isPro ? blocking.currentBlock(at: context.date) : nil
             Button(action: action) {
-                Label(isBlocking ? "Blocking" : "Block", systemImage: isBlocking ? "lock.fill" : "lock.open")
-                    .font(.geist(size: 14, weight: .semibold))
+                Label(block.map { Self.status($0, now: context.date) } ?? "Block",
+                      systemImage: block == nil ? "lock.open" : "lock.fill")
+                    .font(.geist(size: 15, weight: .semibold))
                     .labelStyle(.titleAndIcon)
-                    .foregroundStyle(isBlocking ? Color(hex: "#1E8A55") : .white)
-                    .padding(.horizontal, 12)
-                    .frame(height: 32)
-                    .background(isBlocking ? Color(hex: "#E3F5EB") : Color(hex: "#0A1F38"), in: Capsule())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    .foregroundStyle(block == nil ? Color(hex: "#0063D6") : Color(hex: "#1E8A55"))
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityHint(isBlocking ? "Apps are blocked right now. Opens Blocking." : "Opens Blocking.")
+            .accessibilityHint(block == nil ? "Opens Blocking." : "Apps are blocked right now. Opens Blocking.")
         }
+    }
+
+    /// "42m left" for a focus block, "Until 7:00 AM" for a schedule.
+    private static func status(_ block: (end: Date, isFocus: Bool), now: Date) -> String {
+        guard block.isFocus else { return "Until \(block.end.formatted(date: .omitted, time: .shortened))" }
+        let minutes = max(Int((block.end.timeIntervalSince(now) / 60).rounded(.up)), 1)
+        return minutes < 60 ? "\(minutes)m left" : "\(minutes / 60)h \(minutes % 60)m left"
     }
 }
 
