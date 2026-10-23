@@ -5,8 +5,21 @@ import SwiftUI
 struct DashboardReportView: View {
     let payload: ScreenTimeReportPayload
     @State private var page = 0
+    @AppStorage(SharedConstants.UserDefaultsKey.dashboardBottomInset.rawValue, store: .appGroup)
+    private var hostBottomInset = 0.0
 
     var body: some View {
+        // The host extends the report under the home indicator; the tab bar
+        // sits above it whether or not iOS passes the safe area through.
+        GeometryReader { proxy in
+            content(bottomInset: max(proxy.safeAreaInsets.bottom, hostBottomInset))
+                .ignoresSafeArea(.container, edges: .bottom)
+        }
+        .background(Color.white)
+        .screenSpanLightSurface()
+    }
+
+    private func content(bottomInset: CGFloat) -> some View {
         VStack(spacing: 0) {
             if payload.isAvailable {
                 Group {
@@ -18,16 +31,17 @@ struct DashboardReportView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 // Floats over the page; scrolling content shows around it.
-                .safeAreaInset(edge: .bottom, spacing: 0) { tabBar }
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    tabBar.padding(.bottom, bottomInset + 6)
+                }
             } else {
                 ScreenTimeUnavailableView(
                     title: "No recent activity available",
                     message: "Use this iPhone with Screen Time enabled, then try Refresh. Your report uses the last seven completed days."
                 )
+                .padding(.bottom, bottomInset)
             }
         }
-        .background(Color.white)
-        .screenSpanLightSurface()
     }
 
     private var tabBar: some View {
@@ -37,11 +51,8 @@ struct DashboardReportView: View {
             tab("Progress", icon: "chart.line.uptrend.xyaxis", value: 2)
         }
         .padding(4)
-        .background(.regularMaterial, in: Capsule())
-        .overlay(Capsule().stroke(Color.black.opacity(0.06), lineWidth: 0.5))
-        .shadow(color: .black.opacity(0.12), radius: 14, y: 6)
+        .background(Color(hex: "#F6F7FA"), in: Capsule())
         .padding(.horizontal, 40)
-        .padding(.bottom, 6)
     }
 
     private func tab(_ title: String, icon: String, value: Int) -> some View {

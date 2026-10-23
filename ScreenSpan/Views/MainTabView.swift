@@ -10,6 +10,8 @@ struct MainTabView: View {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(SharedConstants.UserDefaultsKey.pendingBlockingSetup.rawValue, store: .appGroup)
     private var pendingBlockingSetup = false
+    @AppStorage(SharedConstants.UserDefaultsKey.dashboardBottomInset.rawValue, store: .appGroup)
+    private var reportBottomInset = 0.0
     @State private var filter = DeviceActivityFilter.screenSpanDashboard
     @State private var reportID = UUID()
     @State private var reportDay = Calendar.current.startOfDay(for: Date())
@@ -50,6 +52,8 @@ struct MainTabView: View {
                         .id(reportID)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                // Pages scroll to the screen's edge behind the report's tab bar.
+                .ignoresSafeArea(.container, edges: .bottom)
             } else {
                 VStack(spacing: 18) {
                     Image(systemName: "chart.bar.xaxis").font(.system(size: 38))
@@ -69,6 +73,15 @@ struct MainTabView: View {
             }
         }
         .background(Color.white.ignoresSafeArea())
+        .background {
+            // The report may not receive the host's safe area, so tell it how
+            // far the home indicator reaches.
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { reportBottomInset = proxy.safeAreaInsets.bottom }
+                    .onChange(of: proxy.safeAreaInsets.bottom) { _, inset in reportBottomInset = inset }
+            }
+        }
         .sheet(isPresented: $showSettings, onDismiss: {
             if settingsBeforePresentation != settingsSignature { refresh() }
         }) {

@@ -39,6 +39,9 @@ enum SharedConstants {
         case blockingConfiguration
         /// Set after a purchase so the dashboard opens Blocking once.
         case pendingBlockingSetup
+        /// The host's bottom safe-area inset in points, a layout value, so the
+        /// report can keep its tab bar above the home indicator.
+        case dashboardBottomInset
     }
 
     enum DefaultValues {
