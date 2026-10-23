@@ -7,6 +7,8 @@ Open `ScreenSpan.xcodeproj`, select the ScreenSpan scheme, and run on a physical
 ```sh
 xcodegen generate
 Scripts/test-calculations.sh
+# Regenerate the app icon after changing Scripts/render-app-icon.swift
+swift Scripts/render-app-icon.swift ScreenSpan/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
 # Optional: build a separate Simulator app with clearly labeled sample data
 python3 Scripts/build-design-preview.py
 ```
