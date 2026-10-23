@@ -52,6 +52,8 @@ struct DashboardReportView: View {
         }
         .padding(4)
         .background(Color(hex: "#F6F7FA"), in: Capsule())
+        // Keeps the bar distinct over cards of the same gray.
+        .overlay(Capsule().strokeBorder(Color(hex: "#E1E5EB"), lineWidth: 1))
         .padding(.horizontal, 40)
     }
 
