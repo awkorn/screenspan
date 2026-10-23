@@ -113,6 +113,12 @@ final class AppGroupManager {
         }
     }
 
+    /// True after a purchase until the dashboard has opened Blocking once.
+    var pendingBlockingSetup: Bool {
+        get { userDefaults.bool(forKey: SharedConstants.UserDefaultsKey.pendingBlockingSetup.rawValue) }
+        set { userDefaults.set(newValue, forKey: SharedConstants.UserDefaultsKey.pendingBlockingSetup.rawValue) }
+    }
+
     /// Whether onboarding is completed
     var onboardingCompleted: Bool {
         get {

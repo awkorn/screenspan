@@ -1,0 +1,96 @@
+{
+  "identifier" : "BF154C10-1AE0-4620-9246-0F29B2E40C56",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21564826",
+      "localizations" : [
+        {
+          "description" : "Block apps on your terms",
+          "displayName" : "ScreenSpan Pro",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "ScreenSpan Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "29.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6739210001",
+          "introductoryOffer" : {
+            "internalID" : "6739210003",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Focus blocks, schedules, and daily limits",
+              "displayName" : "ScreenSpan Pro Annual",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.screenspan.subscription.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Pro Annual",
+          "subscriptionGroupID" : "21564826",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6739210002",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Focus blocks, schedules, and daily limits",
+              "displayName" : "ScreenSpan Pro Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.screenspan.subscription.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Pro Monthly",
+          "subscriptionGroupID" : "21564826",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

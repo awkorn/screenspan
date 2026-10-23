@@ -7,21 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0276EF32E3655DE184A6EEC9 /* UserDefaults+AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C48EC6DDF3E57788CA87B /* UserDefaults+AppGroup.swift */; };
 		02A82E570EFC46C6635F0920 /* ScreenSpanReport.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = C8EA298EF7CB1876A1B306BF /* ScreenSpanReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		06CCA74893BE360F4CDCC051 /* BlockingConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 742E45FF184F9B2A26A7B210 /* BlockingConfiguration.swift */; };
+		09DBE3F450929BA2513DA718 /* BlockingEditors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D813B250D08E484000A146C /* BlockingEditors.swift */; };
 		0F572863C112270027377EE5 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F4A4A71CB8C9A7C783A67D8 /* MainTabView.swift */; };
+		0F9EC5E11E2788782BCE31C7 /* ScreenSpanShield.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3ED41D8E3C94DCCBAF8BF553 /* ScreenSpanShield.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		11A4ADD4C1559E92E22C91A2 /* ActivitySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6285B74674298E92260D6F0 /* ActivitySummary.swift */; };
 		167DBF2AC44011F5336F91DA /* GeistVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 27A0813948392BCAE1B3FCA3 /* GeistVF.ttf */; };
 		18B0D8B2D527966D29D10F27 /* OnboardingReportViewport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6C9EB6BF4959BE60DD1E0C /* OnboardingReportViewport.swift */; };
+		1BDCFE2268B9C54590FA6AC8 /* BlockingRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC84D5D3FA2FE94E69A96188 /* BlockingRule.swift */; };
 		1C04A2C31387C6632D4B8737 /* Environment+ScreenSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98B2E6C7985B4098510525C /* Environment+ScreenSpan.swift */; };
 		1DBEDE22D8A952DC1453B688 /* TimeIntention.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF82A268487C5AC03C8A995D /* TimeIntention.swift */; };
 		1EF93A0969318E46DB80B9E8 /* UserGoal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8A84266D5C67D2A5DA73E8 /* UserGoal.swift */; };
 		1F2E15C436B13BB384055DC0 /* GeistMonoVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BE34D57A0A7DEE22E6C522B7 /* GeistMonoVF.ttf */; };
 		2FF689C97CDC644D27D555BC /* DeviceActivityFilter+ScreenSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C29874BF92FC9D9478EB192 /* DeviceActivityFilter+ScreenSpan.swift */; };
 		304900B8BDC5296E96DF6319 /* AppGroupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756444A3B2BC26E2CCD3993F /* AppGroupManager.swift */; };
+		3144CD2A97C9F2FC3283522B /* BlockingConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 742E45FF184F9B2A26A7B210 /* BlockingConfiguration.swift */; };
+		31691C810909B7B1CF7E67D0 /* UserDefaults+AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C48EC6DDF3E57788CA87B /* UserDefaults+AppGroup.swift */; };
 		36E9E3C27D1C542C47003FF1 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9454C7ED8B41B24B9FC8F2ED /* AppConstants.swift */; };
 		3AB766590720920C591E37DC /* EstimateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DED79828C7D51C84E41CF2B /* EstimateView.swift */; };
 		3B864EEDD44928DF0C865CE3 /* OnboardingRevealPanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC001674A06509B90440FE1 /* OnboardingRevealPanels.swift */; };
 		3E043136C66F025ABE384DA7 /* StatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7D83D181F6D3AF608C6F5D /* StatsViewModel.swift */; };
+		3E26C62D3F920DFF6FE2567C /* BlockSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13087A939D48C292559235F /* BlockSchedule.swift */; };
 		3F41162A39F0FF7F6E097804 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12CA9AC27285FCD6EE14F9A8 /* NotificationService.swift */; };
 		4288D9394E6BA2D742E38996 /* DeviceActivityReport+Contexts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A42CDBD4EE314FAA1AC439 /* DeviceActivityReport+Contexts.swift */; };
 		42B3B290BB44180F07427ACE /* AgeInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB7C2C906DF72C56290CB002 /* AgeInputView.swift */; };
@@ -53,6 +61,8 @@
 		67385984CDF1FEB760B7C12E /* DonutChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A93D9C33850C3C05045FC653 /* DonutChartView.swift */; };
 		70508DE61057684BEC9A80B9 /* ProjectionCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C243C4B38CF92C03D01F92AB /* ProjectionCalculator.swift */; };
 		7CA6D26D4488504C8E363E2A /* Color+ScreenSpanReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51463CC93AF1FC395F23A659 /* Color+ScreenSpanReport.swift */; };
+		846999AF845956B5927390FE /* ScreenSpanShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4CEBF04EDCFB919ED6042EB6 /* ScreenSpanShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		8697A5144EBD85FF0A3E166F /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38E5AE07FAD3E06B5BEC8EF1 /* PaywallView.swift */; };
 		8919445EF7490602BAA2D63E /* ProjectionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */; };
 		8A28E4ADC1A4B179C11E717E /* ScreenSpanAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCFE517652396A0F9ACDA79 /* ScreenSpanAppearance.swift */; };
 		8F0240414A51F7444F3A2F90 /* HistoryReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B745744BA2354B4E399F1C41 /* HistoryReportView.swift */; };
@@ -60,24 +70,35 @@
 		9A0AF529672DD47AE388D675 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21AA338A8BC8C3E45D8D551 /* OnboardingViewModel.swift */; };
 		9C509A7A0EB6D0422634921C /* GeistItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */; };
 		9DB102EEFD27E1CF5149435F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA623384754EB8634D457F80 /* ContentView.swift */; };
+		A02D00B155D4C0D557643B50 /* TimeIntention.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF82A268487C5AC03C8A995D /* TimeIntention.swift */; };
+		A32E4CF8BDC9F4FE043F3B45 /* ShieldConfigurationExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8793C65F5F0C0FF42C2736 /* ShieldConfigurationExtension.swift */; };
 		A3AB714CFC74FF3CD8ADCDFB /* AppGroupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756444A3B2BC26E2CCD3993F /* AppGroupManager.swift */; };
+		A4D1A65E9CD083450D467A02 /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
 		A53070273FEF27861FD66E84 /* ScreenSpanAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCFE517652396A0F9ACDA79 /* ScreenSpanAppearance.swift */; };
 		A65A927040C251DE6BF21BC5 /* ActivitySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6285B74674298E92260D6F0 /* ActivitySummary.swift */; };
 		A7BA55370667EBB5975595DA /* StoreKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7D5F6A44622236803D7EED /* StoreKitService.swift */; };
+		A842D69D5C77E8CBB463F4F4 /* ScreenSpanMonitorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B9CCC5FAC1260FEF5189086 /* ScreenSpanMonitorExtension.swift */; };
+		A9E23254695DCCEE7DAA9DD9 /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
 		AFAE3FD26CE8D5923D988FCF /* ScreenSpanApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A4D8FAD2211C2AAFF1DED04 /* ScreenSpanApp.swift */; };
+		B1A22B3C560C1A2A5056F428 /* ScreenSpanMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4578A80401F41FC1D227951E /* ScreenSpanMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B332C830AE7B42989EDCB00B /* BlockingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4974BF9183CAAC52B17EE9A5 /* BlockingService.swift */; };
 		B4ACF05184003E71EE7D5385 /* LifeRegainedProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */; };
 		B833F397A362DF5E65D771ED /* StatsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF9074527819B4C453EF03BE /* StatsTabView.swift */; };
-		C56DA5C41E9F896D234A80A4 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6335E4D884CF036670B084F /* PaywallView.swift */; };
+		BCF6F78B3D755D11032EC993 /* BlockingRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC84D5D3FA2FE94E69A96188 /* BlockingRule.swift */; };
+		BEA1AE92D67D9F32550E1D58 /* BlockingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273EF992FFD25C2EDACC9649 /* BlockingView.swift */; };
 		C73B4B869E90C5CD06E20BE2 /* LifeGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2AC75288B4E2F4E8469DC82 /* LifeGridView.swift */; };
+		C826A41158E71382F9ACA62F /* BlockSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13087A939D48C292559235F /* BlockSchedule.swift */; };
 		C99386D1BCF8F92DBB1D41BD /* StatsReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7644C84804CDFEA305490E75 /* StatsReportView.swift */; };
 		C9B6E6E5C1E4C0731B8C03CE /* UsageCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0566A6F1DC738D34D1A54F66 /* UsageCategory.swift */; };
 		CA2D5C7D0E6A414F6F1BDC64 /* GoalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ED6AB14CDB6BFE776AABD07 /* GoalService.swift */; };
 		CC7193538DCD95E3D84A9607 /* GeistVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 27A0813948392BCAE1B3FCA3 /* GeistVF.ttf */; };
+		CD10F110D781688CD2D7A783 /* BlockSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13087A939D48C292559235F /* BlockSchedule.swift */; };
 		CD3F589C787C3D53B49BDC8F /* DeviceActivityReport+Contexts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A42CDBD4EE314FAA1AC439 /* DeviceActivityReport+Contexts.swift */; };
 		D0A5297F6EEA299543506846 /* LifeGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2AC75288B4E2F4E8469DC82 /* LifeGridView.swift */; };
 		D42BBEFFEF7BEA7F809D953D /* PlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C36511F5739D6DCD5EE75BBB /* PlanView.swift */; };
 		D437D6C50F289BE97635B5BE /* GeistMonoVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BE34D57A0A7DEE22E6C522B7 /* GeistMonoVF.ttf */; };
 		D84D7A276B739F6E73F38281 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA7EFCABE6CC65E07FE10C6C /* SettingsView.swift */; };
+		D96FC850D086C652B2A8CEA9 /* BlockingConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 742E45FF184F9B2A26A7B210 /* BlockingConfiguration.swift */; };
 		D9B4D9BDD484D0CE6BFBC295 /* PermissionRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39154E949451B6CF3E2EE0BE /* PermissionRequestView.swift */; };
 		DADD58A89397D097FF44F393 /* RevealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C02734202C44624F0FC951C /* RevealView.swift */; };
 		DF5E2C6764FF1FD529274BC6 /* ChartViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9801013D24B5FFBF50A18946 /* ChartViewModel.swift */; };
@@ -85,7 +106,9 @@
 		E497BD738F5227E4D7D4335D /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
 		E4BF3488E576DA5544AD71A7 /* LifeRegainedProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */; };
 		E6222E286ED8B85D046E0362 /* ProgressInsights.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9386737EA0349AC8891EC0 /* ProgressInsights.swift */; };
+		E903E789B202E24425E7F574 /* ShieldActionExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF1AC49990819D559046F77D /* ShieldActionExtension.swift */; };
 		E909B357CB330BF565FBA9B9 /* ProjectionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */; };
+		EEB02920524F9DED2CCAEA60 /* BlockingRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC84D5D3FA2FE94E69A96188 /* BlockingRule.swift */; };
 		EEFC74152742F33836C9D61D /* Color+ScreenSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B64696CA1F5AF4236B8F96 /* Color+ScreenSpan.swift */; };
 		F420A4DEF7335FF818D107A2 /* GeistItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */; };
 		F51CE5698164331490E5433C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 086D3D5A2EE570B7E1E8DEBA /* Assets.xcassets */; };
@@ -93,12 +116,33 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		2619B090BCF061E480C662D6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4680A505477AC6B935A68AD6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D8945663AFCD3315BC4F6D1D;
+			remoteInfo = ScreenSpanShieldAction;
+		};
 		A0C33A7BEF6FC7B15AC7D4C7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4680A505477AC6B935A68AD6 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = F45D2442A6FC40A5BF0B4A80;
 			remoteInfo = ScreenSpanReport;
+		};
+		BC151FEBCB24E3E623FB5020 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4680A505477AC6B935A68AD6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AB920C4EEB2A31FF6E4CB0FC;
+			remoteInfo = ScreenSpanShield;
+		};
+		C9FDDCF3B43F3185A07ECF6F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4680A505477AC6B935A68AD6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3A0CCC5B98907F26AA054382;
+			remoteInfo = ScreenSpanMonitor;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -114,25 +158,46 @@
 			name = "Embed ExtensionKit Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5954019D85F589D28A47F484 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B1A22B3C560C1A2A5056F428 /* ScreenSpanMonitor.appex in Embed Foundation Extensions */,
+				0F9EC5E11E2788782BCE31C7 /* ScreenSpanShield.appex in Embed Foundation Extensions */,
+				846999AF845956B5927390FE /* ScreenSpanShieldAction.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0566A6F1DC738D34D1A54F66 /* UsageCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageCategory.swift; sourceTree = "<group>"; };
 		086D3D5A2EE570B7E1E8DEBA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectionModel.swift; sourceTree = "<group>"; };
+		0B9CCC5FAC1260FEF5189086 /* ScreenSpanMonitorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSpanMonitorExtension.swift; sourceTree = "<group>"; };
 		1281DF0923E1F2BF29939CD2 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		12CA9AC27285FCD6EE14F9A8 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		1C29874BF92FC9D9478EB192 /* DeviceActivityFilter+ScreenSpan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DeviceActivityFilter+ScreenSpan.swift"; sourceTree = "<group>"; };
+		273EF992FFD25C2EDACC9649 /* BlockingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingView.swift; sourceTree = "<group>"; };
 		27A0813948392BCAE1B3FCA3 /* GeistVF.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GeistVF.ttf; sourceTree = "<group>"; };
 		2C02734202C44624F0FC951C /* RevealView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevealView.swift; sourceTree = "<group>"; };
+		2D813B250D08E484000A146C /* BlockingEditors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingEditors.swift; sourceTree = "<group>"; };
 		2ED6AB14CDB6BFE776AABD07 /* GoalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalService.swift; sourceTree = "<group>"; };
 		2F4A4A71CB8C9A7C783A67D8 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		38E5AE07FAD3E06B5BEC8EF1 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		39154E949451B6CF3E2EE0BE /* PermissionRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionRequestView.swift; sourceTree = "<group>"; };
 		3B577B6D6F23BCC19AD8C743 /* IntentionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentionsView.swift; sourceTree = "<group>"; };
 		3D0C74C00317100ECF78D95A /* ChartReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartReportView.swift; sourceTree = "<group>"; };
+		3ED41D8E3C94DCCBAF8BF553 /* ScreenSpanShield.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ScreenSpanShield.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4578A80401F41FC1D227951E /* ScreenSpanMonitor.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ScreenSpanMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4974BF9183CAAC52B17EE9A5 /* BlockingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingService.swift; sourceTree = "<group>"; };
 		4A56375C9303772106FD27DA /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedConstants.swift; sourceTree = "<group>"; };
 		4C7D0DC0F02AE285A6F4DF8E /* DashboardReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardReportView.swift; sourceTree = "<group>"; };
+		4CEBF04EDCFB919ED6042EB6 /* ScreenSpanShieldAction.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ScreenSpanShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4DCF7DEE10E84FCB52021934 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		51463CC93AF1FC395F23A659 /* Color+ScreenSpanReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+ScreenSpanReport.swift"; sourceTree = "<group>"; };
 		5A1386C8E8351CD19946B3E8 /* AuthorizationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthorizationService.swift; sourceTree = "<group>"; };
@@ -144,6 +209,7 @@
 		6C81C7FF094260103C3D6646 /* ChartTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartTabView.swift; sourceTree = "<group>"; };
 		6DED79828C7D51C84E41CF2B /* EstimateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EstimateView.swift; sourceTree = "<group>"; };
 		70334E36F1FD04BF4207E98B /* OnboardingScaffold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingScaffold.swift; sourceTree = "<group>"; };
+		742E45FF184F9B2A26A7B210 /* BlockingConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingConfiguration.swift; sourceTree = "<group>"; };
 		756444A3B2BC26E2CCD3993F /* AppGroupManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupManager.swift; sourceTree = "<group>"; };
 		7644C84804CDFEA305490E75 /* StatsReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsReportView.swift; sourceTree = "<group>"; };
 		768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GeistItalicVF.ttf; sourceTree = "<group>"; };
@@ -153,9 +219,11 @@
 		9801013D24B5FFBF50A18946 /* ChartViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartViewModel.swift; sourceTree = "<group>"; };
 		9A4D8FAD2211C2AAFF1DED04 /* ScreenSpanApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSpanApp.swift; sourceTree = "<group>"; };
 		9B7D83D181F6D3AF608C6F5D /* StatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsViewModel.swift; sourceTree = "<group>"; };
+		A13087A939D48C292559235F /* BlockSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockSchedule.swift; sourceTree = "<group>"; };
 		A2210D930D532B57F4473C84 /* GeistFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeistFont.swift; sourceTree = "<group>"; };
 		A93D9C33850C3C05045FC653 /* DonutChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DonutChartView.swift; sourceTree = "<group>"; };
 		AA623384754EB8634D457F80 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AA8793C65F5F0C0FF42C2736 /* ShieldConfigurationExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldConfigurationExtension.swift; sourceTree = "<group>"; };
 		AC7D5F6A44622236803D7EED /* StoreKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitService.swift; sourceTree = "<group>"; };
 		AF9074527819B4C453EF03BE /* StatsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsTabView.swift; sourceTree = "<group>"; };
 		B21AA338A8BC8C3E45D8D551 /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
@@ -171,10 +239,10 @@
 		C2AC75288B4E2F4E8469DC82 /* LifeGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeGridView.swift; sourceTree = "<group>"; };
 		C36511F5739D6DCD5EE75BBB /* PlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanView.swift; sourceTree = "<group>"; };
 		C8EA298EF7CB1876A1B306BF /* ScreenSpanReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = ScreenSpanReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC84D5D3FA2FE94E69A96188 /* BlockingRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingRule.swift; sourceTree = "<group>"; };
 		CCCFE517652396A0F9ACDA79 /* ScreenSpanAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSpanAppearance.swift; sourceTree = "<group>"; };
 		CF82A268487C5AC03C8A995D /* TimeIntention.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeIntention.swift; sourceTree = "<group>"; };
 		D541E0CE886AB9530162F9E3 /* GeistMonoItalicVF.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GeistMonoItalicVF.ttf; sourceTree = "<group>"; };
-		D6335E4D884CF036670B084F /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeRegainedProgress.swift; sourceTree = "<group>"; };
 		D98B2E6C7985B4098510525C /* Environment+ScreenSpan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Environment+ScreenSpan.swift"; sourceTree = "<group>"; };
 		E51E27A769C43E1E9DEC012F /* ScreenSpan.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ScreenSpan.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -183,6 +251,7 @@
 		EB9386737EA0349AC8891EC0 /* ProgressInsights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressInsights.swift; sourceTree = "<group>"; };
 		F5DF1B1B7123E0DD82F222F4 /* HistoryTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryTabView.swift; sourceTree = "<group>"; };
 		FEFB5FF71316F7E1E7057F1A /* SubscriptionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStatus.swift; sourceTree = "<group>"; };
+		FF1AC49990819D559046F77D /* ShieldActionExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldActionExtension.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -202,6 +271,15 @@
 			path = Chart;
 			sourceTree = "<group>";
 		};
+		2519992612CD67B8B84B9497 /* Blocking */ = {
+			isa = PBXGroup;
+			children = (
+				2D813B250D08E484000A146C /* BlockingEditors.swift */,
+				273EF992FFD25C2EDACC9649 /* BlockingView.swift */,
+			);
+			path = Blocking;
+			sourceTree = "<group>";
+		};
 		3129E71587C0E67A670B6EF0 /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
@@ -210,7 +288,6 @@
 				3B577B6D6F23BCC19AD8C743 /* IntentionsView.swift */,
 				5AC2AE376C93D5CA9A49DACE /* OnboardingContainerView.swift */,
 				70334E36F1FD04BF4207E98B /* OnboardingScaffold.swift */,
-				D6335E4D884CF036670B084F /* PaywallView.swift */,
 				39154E949451B6CF3E2EE0BE /* PermissionRequestView.swift */,
 				C36511F5739D6DCD5EE75BBB /* PlanView.swift */,
 				2C02734202C44624F0FC951C /* RevealView.swift */,
@@ -228,6 +305,14 @@
 				27A0813948392BCAE1B3FCA3 /* GeistVF.ttf */,
 			);
 			path = Geist;
+			sourceTree = "<group>";
+		};
+		3EB6644184CB9A6AC6E9FB0D /* ScreenSpanShield */ = {
+			isa = PBXGroup;
+			children = (
+				AA8793C65F5F0C0FF42C2736 /* ShieldConfigurationExtension.swift */,
+			);
+			path = ScreenSpanShield;
 			sourceTree = "<group>";
 		};
 		4730CE8F65F5C8116E30F328 /* Shared */ = {
@@ -249,6 +334,7 @@
 				4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */,
 				CF82A268487C5AC03C8A995D /* TimeIntention.swift */,
 				6C0C48EC6DDF3E57788CA87B /* UserDefaults+AppGroup.swift */,
+				927FB143BB9FDBE5B1F3924F /* Blocking */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -272,10 +358,27 @@
 			path = Fonts;
 			sourceTree = "<group>";
 		};
+		64F01B7D7A44FC8C1ED7ABF5 /* ScreenSpanShieldAction */ = {
+			isa = PBXGroup;
+			children = (
+				FF1AC49990819D559046F77D /* ShieldActionExtension.swift */,
+			);
+			path = ScreenSpanShieldAction;
+			sourceTree = "<group>";
+		};
+		725CCE35F7D9E8919658581F /* ScreenSpanMonitor */ = {
+			isa = PBXGroup;
+			children = (
+				0B9CCC5FAC1260FEF5189086 /* ScreenSpanMonitorExtension.swift */,
+			);
+			path = ScreenSpanMonitor;
+			sourceTree = "<group>";
+		};
 		7480FB8B85FB231A943CC93A /* Services */ = {
 			isa = PBXGroup;
 			children = (
 				5A1386C8E8351CD19946B3E8 /* AuthorizationService.swift */,
+				4974BF9183CAAC52B17EE9A5 /* BlockingService.swift */,
 				2ED6AB14CDB6BFE776AABD07 /* GoalService.swift */,
 				12CA9AC27285FCD6EE14F9A8 /* NotificationService.swift */,
 				AC7D5F6A44622236803D7EED /* StoreKitService.swift */,
@@ -297,7 +400,10 @@
 			isa = PBXGroup;
 			children = (
 				8B1F49A42BFED3F77CC8D017 /* ScreenSpan */,
+				725CCE35F7D9E8919658581F /* ScreenSpanMonitor */,
 				8BC16DFA052E2CA74743DBA2 /* ScreenSpanReport */,
+				3EB6644184CB9A6AC6E9FB0D /* ScreenSpanShield */,
+				64F01B7D7A44FC8C1ED7ABF5 /* ScreenSpanShieldAction */,
 				4730CE8F65F5C8116E30F328 /* Shared */,
 				C7933EA52986A362CA905CE1 /* Products */,
 			);
@@ -341,6 +447,16 @@
 			path = ScreenSpanReport;
 			sourceTree = "<group>";
 		};
+		927FB143BB9FDBE5B1F3924F /* Blocking */ = {
+			isa = PBXGroup;
+			children = (
+				742E45FF184F9B2A26A7B210 /* BlockingConfiguration.swift */,
+				CC84D5D3FA2FE94E69A96188 /* BlockingRule.swift */,
+				A13087A939D48C292559235F /* BlockSchedule.swift */,
+			);
+			path = Blocking;
+			sourceTree = "<group>";
+		};
 		974850209D20419311DA2A82 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -369,7 +485,10 @@
 			isa = PBXGroup;
 			children = (
 				E51E27A769C43E1E9DEC012F /* ScreenSpan.app */,
+				4578A80401F41FC1D227951E /* ScreenSpanMonitor.appex */,
 				C8EA298EF7CB1876A1B306BF /* ScreenSpanReport.appex */,
+				3ED41D8E3C94DCCBAF8BF553 /* ScreenSpanShield.appex */,
+				4CEBF04EDCFB919ED6042EB6 /* ScreenSpanShieldAction.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -396,14 +515,24 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		E9FD552368465AD55F54AF79 /* Paywall */ = {
+			isa = PBXGroup;
+			children = (
+				38E5AE07FAD3E06B5BEC8EF1 /* PaywallView.swift */,
+			);
+			path = Paywall;
+			sourceTree = "<group>";
+		};
 		EEDEC3EB0154A19417FD294A /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				AA623384754EB8634D457F80 /* ContentView.swift */,
 				2F4A4A71CB8C9A7C783A67D8 /* MainTabView.swift */,
+				2519992612CD67B8B84B9497 /* Blocking */,
 				18B9E1A5EDFD17CD91CAD02F /* Chart */,
 				B1BDE5AA8465B38787390DE2 /* History */,
 				3129E71587C0E67A670B6EF0 /* Onboarding */,
+				E9FD552368465AD55F54AF79 /* Paywall */,
 				974850209D20419311DA2A82 /* Settings */,
 				B80E5BA84F09AB4D26216D6F /* Stats */,
 			);
@@ -419,12 +548,16 @@
 			buildPhases = (
 				67E4A8486BDD5C538804921A /* Sources */,
 				FE39FCFE93CEE1D94FE5FE97 /* Resources */,
+				5954019D85F589D28A47F484 /* Embed Foundation Extensions */,
 				46B2968B0AA9E068AF9742C5 /* Embed ExtensionKit Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				1E34040CA0E3E4C4D0625E94 /* PBXTargetDependency */,
+				71EF3FD04DAAAA2C42990B03 /* PBXTargetDependency */,
+				DC3D308B946939C70F7869E3 /* PBXTargetDependency */,
+				35C95237E1447F8775928B97 /* PBXTargetDependency */,
 			);
 			name = ScreenSpan;
 			packageProductDependencies = (
@@ -432,6 +565,57 @@
 			productName = ScreenSpan;
 			productReference = E51E27A769C43E1E9DEC012F /* ScreenSpan.app */;
 			productType = "com.apple.product-type.application";
+		};
+		3A0CCC5B98907F26AA054382 /* ScreenSpanMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C0C1F457C8F65FF28461959B /* Build configuration list for PBXNativeTarget "ScreenSpanMonitor" */;
+			buildPhases = (
+				F6FE9A43A2848FF4659B4239 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ScreenSpanMonitor;
+			packageProductDependencies = (
+			);
+			productName = ScreenSpanMonitor;
+			productReference = 4578A80401F41FC1D227951E /* ScreenSpanMonitor.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		AB920C4EEB2A31FF6E4CB0FC /* ScreenSpanShield */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 572F3712FC3F9DF8AF329F52 /* Build configuration list for PBXNativeTarget "ScreenSpanShield" */;
+			buildPhases = (
+				D2E844EE8E45669F87CE9607 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ScreenSpanShield;
+			packageProductDependencies = (
+			);
+			productName = ScreenSpanShield;
+			productReference = 3ED41D8E3C94DCCBAF8BF553 /* ScreenSpanShield.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		D8945663AFCD3315BC4F6D1D /* ScreenSpanShieldAction */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 291A5F8B92044F19462EA110 /* Build configuration list for PBXNativeTarget "ScreenSpanShieldAction" */;
+			buildPhases = (
+				1B913C6C2CDBE82EA3AA8128 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ScreenSpanShieldAction;
+			packageProductDependencies = (
+			);
+			productName = ScreenSpanShieldAction;
+			productReference = 4CEBF04EDCFB919ED6042EB6 /* ScreenSpanShieldAction.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		F45D2442A6FC40A5BF0B4A80 /* ScreenSpanReport */ = {
 			isa = PBXNativeTarget;
@@ -463,6 +647,15 @@
 					30B19937A410923515721407 = {
 						DevelopmentTeam = 9XXTA2SG5L;
 					};
+					3A0CCC5B98907F26AA054382 = {
+						DevelopmentTeam = 9XXTA2SG5L;
+					};
+					AB920C4EEB2A31FF6E4CB0FC = {
+						DevelopmentTeam = 9XXTA2SG5L;
+					};
+					D8945663AFCD3315BC4F6D1D = {
+						DevelopmentTeam = 9XXTA2SG5L;
+					};
 					F45D2442A6FC40A5BF0B4A80 = {
 						DevelopmentTeam = 9XXTA2SG5L;
 					};
@@ -483,7 +676,10 @@
 			projectRoot = "";
 			targets = (
 				30B19937A410923515721407 /* ScreenSpan */,
+				3A0CCC5B98907F26AA054382 /* ScreenSpanMonitor */,
 				F45D2442A6FC40A5BF0B4A80 /* ScreenSpanReport */,
+				AB920C4EEB2A31FF6E4CB0FC /* ScreenSpanShield */,
+				D8945663AFCD3315BC4F6D1D /* ScreenSpanShieldAction */,
 			);
 		};
 /* End PBXProject section */
@@ -516,6 +712,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		1B913C6C2CDBE82EA3AA8128 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E903E789B202E24425E7F574 /* ShieldActionExtension.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		64D3689A12B30F552C7CF77A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -554,6 +758,12 @@
 				36E9E3C27D1C542C47003FF1 /* AppConstants.swift in Sources */,
 				304900B8BDC5296E96DF6319 /* AppGroupManager.swift in Sources */,
 				E476A69F830E59062F2B1980 /* AuthorizationService.swift in Sources */,
+				3E26C62D3F920DFF6FE2567C /* BlockSchedule.swift in Sources */,
+				06CCA74893BE360F4CDCC051 /* BlockingConfiguration.swift in Sources */,
+				09DBE3F450929BA2513DA718 /* BlockingEditors.swift in Sources */,
+				BCF6F78B3D755D11032EC993 /* BlockingRule.swift in Sources */,
+				B332C830AE7B42989EDCB00B /* BlockingService.swift in Sources */,
+				BEA1AE92D67D9F32550E1D58 /* BlockingView.swift in Sources */,
 				F7250C587E1F3CB0892FDA1B /* ChartTabView.swift in Sources */,
 				DF5E2C6764FF1FD529274BC6 /* ChartViewModel.swift in Sources */,
 				EEFC74152742F33836C9D61D /* Color+ScreenSpan.swift in Sources */,
@@ -578,7 +788,7 @@
 				56EDA126CF5BC55982BB61F5 /* OnboardingRevealPanels.swift in Sources */,
 				536E0D5D1C6E8F2D19C3790C /* OnboardingScaffold.swift in Sources */,
 				9A0AF529672DD47AE388D675 /* OnboardingViewModel.swift in Sources */,
-				C56DA5C41E9F896D234A80A4 /* PaywallView.swift in Sources */,
+				8697A5144EBD85FF0A3E166F /* PaywallView.swift in Sources */,
 				D9B4D9BDD484D0CE6BFBC295 /* PermissionRequestView.swift in Sources */,
 				D42BBEFFEF7BEA7F809D953D /* PlanView.swift in Sources */,
 				E6222E286ED8B85D046E0362 /* ProgressInsights.swift in Sources */,
@@ -602,6 +812,33 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D2E844EE8E45669F87CE9607 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C826A41158E71382F9ACA62F /* BlockSchedule.swift in Sources */,
+				D96FC850D086C652B2A8CEA9 /* BlockingConfiguration.swift in Sources */,
+				EEB02920524F9DED2CCAEA60 /* BlockingRule.swift in Sources */,
+				A4D1A65E9CD083450D467A02 /* SharedConstants.swift in Sources */,
+				A32E4CF8BDC9F4FE043F3B45 /* ShieldConfigurationExtension.swift in Sources */,
+				A02D00B155D4C0D557643B50 /* TimeIntention.swift in Sources */,
+				0276EF32E3655DE184A6EEC9 /* UserDefaults+AppGroup.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F6FE9A43A2848FF4659B4239 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CD10F110D781688CD2D7A783 /* BlockSchedule.swift in Sources */,
+				3144CD2A97C9F2FC3283522B /* BlockingConfiguration.swift in Sources */,
+				1BDCFE2268B9C54590FA6AC8 /* BlockingRule.swift in Sources */,
+				A842D69D5C77E8CBB463F4F4 /* ScreenSpanMonitorExtension.swift in Sources */,
+				A9E23254695DCCEE7DAA9DD9 /* SharedConstants.swift in Sources */,
+				31691C810909B7B1CF7E67D0 /* UserDefaults+AppGroup.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -609,6 +846,21 @@
 			isa = PBXTargetDependency;
 			target = F45D2442A6FC40A5BF0B4A80 /* ScreenSpanReport */;
 			targetProxy = A0C33A7BEF6FC7B15AC7D4C7 /* PBXContainerItemProxy */;
+		};
+		35C95237E1447F8775928B97 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D8945663AFCD3315BC4F6D1D /* ScreenSpanShieldAction */;
+			targetProxy = 2619B090BCF061E480C662D6 /* PBXContainerItemProxy */;
+		};
+		71EF3FD04DAAAA2C42990B03 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3A0CCC5B98907F26AA054382 /* ScreenSpanMonitor */;
+			targetProxy = C9FDDCF3B43F3185A07ECF6F /* PBXContainerItemProxy */;
+		};
+		DC3D308B946939C70F7869E3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AB920C4EEB2A31FF6E4CB0FC /* ScreenSpanShield */;
+			targetProxy = BC151FEBCB24E3E623FB5020 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -644,6 +896,23 @@
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
+		};
+		197C3120359674E3B52D7F2C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScreenSpanMonitor/ScreenSpanMonitor.entitlements;
+				DEVELOPMENT_TEAM = 9XXTA2SG5L;
+				INFOPLIST_FILE = ScreenSpanMonitor/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.screenspan.monitor;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
 		};
 		1DE44787E99A40AA56CE4FF7 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -786,6 +1055,57 @@
 			};
 			name = Debug;
 		};
+		7B8E97FF97541B743EC71771 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScreenSpanShield/ScreenSpanShield.entitlements;
+				DEVELOPMENT_TEAM = 9XXTA2SG5L;
+				INFOPLIST_FILE = ScreenSpanShield/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.screenspan.shield;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		90A6B8214DA14B7082EAE0F2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScreenSpanMonitor/ScreenSpanMonitor.entitlements;
+				DEVELOPMENT_TEAM = 9XXTA2SG5L;
+				INFOPLIST_FILE = ScreenSpanMonitor/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.screenspan.monitor;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A19A0008B4BF8429E755DC81 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScreenSpanShieldAction/ScreenSpanShieldAction.entitlements;
+				DEVELOPMENT_TEAM = 9XXTA2SG5L;
+				INFOPLIST_FILE = ScreenSpanShieldAction/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.screenspan.shieldaction;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 		D7AC931D40115ADA68F66703 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -804,9 +1124,52 @@
 			};
 			name = Release;
 		};
+		EE358C9366B36F1414374D34 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScreenSpanShieldAction/ScreenSpanShieldAction.entitlements;
+				DEVELOPMENT_TEAM = 9XXTA2SG5L;
+				INFOPLIST_FILE = ScreenSpanShieldAction/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.screenspan.shieldaction;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		FD135BD0FA9D171895353367 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScreenSpanShield/ScreenSpanShield.entitlements;
+				DEVELOPMENT_TEAM = 9XXTA2SG5L;
+				INFOPLIST_FILE = ScreenSpanShield/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.screenspan.shield;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		291A5F8B92044F19462EA110 /* Build configuration list for PBXNativeTarget "ScreenSpanShieldAction" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EE358C9366B36F1414374D34 /* Debug */,
+				A19A0008B4BF8429E755DC81 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		45031DE45E5465D38829CABD /* Build configuration list for PBXProject "ScreenSpan" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -825,11 +1188,29 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		572F3712FC3F9DF8AF329F52 /* Build configuration list for PBXNativeTarget "ScreenSpanShield" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FD135BD0FA9D171895353367 /* Debug */,
+				7B8E97FF97541B743EC71771 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		9C19951B8ED87E6CD19E4345 /* Build configuration list for PBXNativeTarget "ScreenSpanReport" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				15F047674593ABDA54A78CE4 /* Debug */,
 				0C36E31DA0C78ADB568A387B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C0C1F457C8F65FF28461959B /* Build configuration list for PBXNativeTarget "ScreenSpanMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				90A6B8214DA14B7082EAE0F2 /* Debug */,
+				197C3120359674E3B52D7F2C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

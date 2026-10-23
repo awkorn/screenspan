@@ -11,4 +11,4 @@ Scripts/test-calculations.sh
 python3 Scripts/build-design-preview.py
 ```
 
-See [the architecture investigation and physical-device checklist](docs/SCREEN_TIME_ARCHITECTURE.md) for Apple's constraints, implemented changes, verification, and remaining release work. The working flow provides reports and goal planning; app blocking and paid features are not enabled.
+See [the architecture investigation and physical-device checklist](docs/SCREEN_TIME_ARCHITECTURE.md) for Apple's constraints, implemented changes, verification, and remaining release work. Reports and goal planning are free. App blocking (focus blocks, schedules, daily limits, strict mode) is ScreenSpan Pro, sold as an auto-renewing subscription; see [Blocking and ScreenSpan Pro](docs/SCREEN_TIME_ARCHITECTURE.md#blocking-and-screenspan-pro). Run from Xcode to buy with the local `ScreenSpan.storekit` test configuration.

@@ -75,6 +75,20 @@ enum TimeIntention: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    /// A short suggestion on the block screen, in the user's own terms.
+    var nudge: String {
+        switch self {
+        case .read: "You wanted to read more. A few pages instead?"
+        case .language: "You wanted to learn a language. Ten minutes of practice?"
+        case .exercise: "You wanted to get fit. How about a quick walk?"
+        case .family: "You wanted more time with people you love. Call one of them?"
+        case .sleep: "You wanted to sleep better. Put the phone down for the night?"
+        case .create: "You wanted to make something. Pick it back up?"
+        case .travel: "You wanted to travel. Every hour back gets you closer."
+        case .outdoors: "You wanted to be outside. Step out for a minute?"
+        }
+    }
+
     /// Units that a year at `dailyHours` would cover.
     func unitsPerYear(dailyHours: Double) -> Double {
         guard dailyHours.isFinite, dailyHours > 0 else { return 0 }

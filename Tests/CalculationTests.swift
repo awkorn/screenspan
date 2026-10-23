@@ -137,6 +137,41 @@ struct CalculationTests {
 
         let worse = ProjectionCalculator.calculateRegained(startingDailyHours: 2, currentDailyHours: 4, currentAge: 25, targetAge: 80)
         expect(worse.yearsReclaimed == 0, "No negative regained time")
+        // Block schedules: windows, overnight weekday attribution, and DST.
+        func at(_ day: Int, _ hour: Int, _ minute: Int = 0, month: Int = 10) -> Date {
+            calendar.date(from: DateComponents(year: 2026, month: month, day: day, hour: hour, minute: minute))!
+        }
+        // October 2026: the 19th is a Monday, the 24th a Saturday, the 25th a Sunday.
+        let work = BlockSchedule(name: "Work", startMinute: 9 * 60, endMinute: 17 * 60, weekdays: BlockSchedule.weekdaysOnly)
+        expect(work.isActive(at: at(19, 9), calendar: calendar), "Window starts on time")
+        expect(!work.isActive(at: at(19, 17), calendar: calendar), "Window end is exclusive")
+        expect(!work.isActive(at: at(24, 12), calendar: calendar), "Skipped weekday")
+        expect(work.end(after: at(19, 12), calendar: calendar) == at(19, 17), "Daytime end")
+        expect(work.end(after: at(19, 18), calendar: calendar) == nil, "No end when inactive")
+        let bedtime = BlockSchedule(name: "Bed", startMinute: 22 * 60, endMinute: 7 * 60, weekdays: [6]) // Friday nights
+        expect(bedtime.isOvernight && bedtime.durationMinutes == 9 * 60, "Overnight duration")
+        expect(bedtime.isActive(at: at(23, 23), calendar: calendar), "Friday night is on")
+        expect(bedtime.isActive(at: at(24, 6, 59), calendar: calendar), "Saturday morning belongs to Friday")
+        expect(!bedtime.isActive(at: at(24, 23), calendar: calendar), "Saturday night is off")
+        expect(!bedtime.isActive(at: at(23, 6), calendar: calendar), "Friday morning belongs to Thursday")
+        expect(bedtime.windowStartWeekday(for: at(24, 3), calendar: calendar) == 6, "Window started Friday")
+        expect(bedtime.end(after: at(23, 23), calendar: calendar) == at(24, 7), "Overnight end is next morning")
+        let saturdayNight = BlockSchedule(name: "Sat", startMinute: 22 * 60, endMinute: 7 * 60, weekdays: [7])
+        expect(saturdayNight.isActive(at: at(25, 2), calendar: calendar), "Sunday morning wraps to Saturday")
+        expect(!BlockSchedule(name: "Short", startMinute: 600, endMinute: 610).isValid, "Under 15 minutes rejected")
+        expect(!BlockSchedule(name: "Always", startMinute: 600, endMinute: 600).isValid, "All-day rejected")
+        expect(!BlockSchedule(name: "None", startMinute: 600, endMinute: 700, weekdays: []).isValid, "No days rejected")
+        expect(BlockSchedule.presets.allSatisfy(\.isValid), "Presets are valid")
+        let copy = BlockSchedule.presets[0].duplicated()
+        expect(copy.id != BlockSchedule.presets[0].id && copy.startMinute == BlockSchedule.presets[0].startMinute, "Preset copies get new IDs")
+        // US DST ends Sunday, November 1, 2026 at 2:00.
+        let overnightDST = BlockSchedule(name: "Bed", startMinute: 22 * 60, endMinute: 7 * 60)
+        expect(overnightDST.end(after: at(31, 23, month: 10), calendar: calendar) == at(1, 7, month: 11), "Overnight end across DST")
+        var english = calendar
+        english.locale = Locale(identifier: "en_US")
+        expect(work.weekdaySummary(calendar: english) == "Weekdays" && bedtime.weekdaySummary(calendar: english) == "Fri", "Day summaries")
+        expect(BlockSchedule.orderedWeekdays(calendar: calendar).count == 7, "All weekdays listed")
+
         print("Passed \(checks) calculation and aggregation checks")
     }
 }

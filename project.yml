@@ -43,9 +43,13 @@ targets:
       TARGETED_DEVICE_FAMILY: 1
     dependencies:
       - target: ScreenSpanReport
+      - target: ScreenSpanMonitor
+      - target: ScreenSpanShield
+      - target: ScreenSpanShieldAction
     frameworks:
       - DeviceActivity
       - FamilyControls
+      - ManagedSettings
       - StoreKit
 
   ScreenSpanReport:
@@ -57,6 +61,8 @@ targets:
           - "*.entitlements"
           - "DeviceActivityReport+Contexts.swift"
       - path: Shared
+        excludes:
+          - "Blocking/**"
       - path: ScreenSpan/Resources/Fonts/Geist
         buildPhase: resources
     info:
@@ -86,6 +92,102 @@ targets:
       - FamilyControls
       - ManagedSettings
 
+  ScreenSpanMonitor:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: ScreenSpanMonitor
+        excludes:
+          - "*.entitlements"
+          - Info.plist
+      - path: Shared/Blocking
+      - path: Shared/SharedConstants.swift
+      - path: Shared/UserDefaults+AppGroup.swift
+    info:
+      path: ScreenSpanMonitor/Info.plist
+      properties:
+        CFBundleDisplayName: ScreenSpan Monitor
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.deviceactivity.monitor-extension
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ScreenSpanMonitorExtension
+    entitlements:
+      path: ScreenSpanMonitor/ScreenSpanMonitor.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups:
+          - group.com.screenspan.shared
+    settings:
+      DEVELOPMENT_TEAM: 9XXTA2SG5L
+      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.monitor
+      TARGETED_DEVICE_FAMILY: 1
+    frameworks:
+      - DeviceActivity
+      - FamilyControls
+      - ManagedSettings
+
+  ScreenSpanShield:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: ScreenSpanShield
+        excludes:
+          - "*.entitlements"
+          - Info.plist
+      - path: Shared/Blocking
+      - path: Shared/SharedConstants.swift
+      - path: Shared/UserDefaults+AppGroup.swift
+      - path: Shared/TimeIntention.swift
+    info:
+      path: ScreenSpanShield/Info.plist
+      properties:
+        CFBundleDisplayName: ScreenSpan Shield
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.ManagedSettingsUI.shield-configuration-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShieldConfigurationExtension
+    entitlements:
+      path: ScreenSpanShield/ScreenSpanShield.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups:
+          - group.com.screenspan.shared
+    settings:
+      DEVELOPMENT_TEAM: 9XXTA2SG5L
+      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.shield
+      TARGETED_DEVICE_FAMILY: 1
+    frameworks:
+      - DeviceActivity
+      - FamilyControls
+      - ManagedSettings
+      - ManagedSettingsUI
+
+  ScreenSpanShieldAction:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: ScreenSpanShieldAction
+        excludes:
+          - "*.entitlements"
+          - Info.plist
+    info:
+      path: ScreenSpanShieldAction/Info.plist
+      properties:
+        CFBundleDisplayName: ScreenSpan Shield Action
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.ManagedSettings.shield-action-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShieldActionExtension
+    entitlements:
+      path: ScreenSpanShieldAction/ScreenSpanShieldAction.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups:
+          - group.com.screenspan.shared
+    settings:
+      DEVELOPMENT_TEAM: 9XXTA2SG5L
+      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.shieldaction
+      TARGETED_DEVICE_FAMILY: 1
+    frameworks:
+      - ManagedSettings
+
 schemes:
   ScreenSpan:
     build:
@@ -93,6 +195,7 @@ schemes:
         ScreenSpan: all
     run:
       config: Debug
+      storeKitConfiguration: ScreenSpan.storekit
     test:
       config: Debug
     profile:

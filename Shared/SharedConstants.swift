@@ -34,6 +34,11 @@ enum SharedConstants {
         case estimatedDailyMinutes
         /// `TimeIntention` raw values the user picked in onboarding.
         case timeIntentions
+        /// JSON `BlockingConfiguration`: the user's block list, focus block,
+        /// schedules, and limits, as opaque Screen Time tokens. Never usage.
+        case blockingConfiguration
+        /// Set after a purchase so the dashboard opens Blocking once.
+        case pendingBlockingSetup
     }
 
     enum DefaultValues {

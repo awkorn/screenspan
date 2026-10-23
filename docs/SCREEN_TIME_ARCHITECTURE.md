@@ -56,7 +56,53 @@ The life chart initially represents the measured average. Its slider is an in-re
 
 Projections use 365-day, 24-hour years. The waking-time percentage separately assumes 16 waking hours. Invalid inputs and exhausted planning horizons cannot produce negative grid counts. Combined daily usage is capped at 24 hours for the lifetime projection; the waking-time percentage is capped at 100%.
 
-The existing paywall, StoreKit, notification, and blocking scaffolds are not a finished paid product. The working flow exposes reports and goal planning for free. It does not prompt for notifications, claim to block apps, or sell placeholder benefits. Implement those independently with supported APIs before restoring the paid flow.
+Notifications remain unimplemented; the app does not prompt for them.
+
+## Blocking and ScreenSpan Pro
+
+Reports, Life Grid, Stats, and Progress are free. ScreenSpan Pro, an auto-renewing subscription (`com.screenspan.subscription.annual` with a free-trial introductory offer, and `com.screenspan.subscription.monthly`, in one subscription group), unlocks blocking:
+
+- **Focus blocks:** block the distraction list for 15 minutes to 4 hours, with a live countdown.
+- **Schedules:** repeating windows (Bedtime, Work hours, Slow mornings, or custom) on chosen weekdays, including overnight windows.
+- **Daily limits:** a shared allowance for chosen apps; once used, they're blocked until midnight.
+- **Strict mode:** focus blocks can't end early, and a running schedule can't be turned off, edited, or deleted. Strict mode itself can only be turned off when nothing is blocking.
+- **Shield screen:** names the app, why it's blocked and until when, and nudges toward one of the user's own onboarding intentions. Its only button closes the app.
+
+### How it works
+
+`FamilyActivityPicker` returns opaque tokens. `BlockingConfiguration` (the distraction list, focus block, schedules, limits, strict mode) is saved as JSON in the App Group. It contains only user choices and tokens, never usage, consistent with the privacy model above. App names and icons are drawn from tokens by iOS.
+
+Each rule (`BlockingRule`) has its own `ManagedSettingsStore` and `DeviceActivityName`, so lifting one never lifts another. The app applies shields immediately; DeviceActivity monitoring lets `ScreenSpanMonitor` apply and clear them later while the app isn't running:
+
+- Focus block: a one-off interval; the monitor clears the shield at its end.
+- Schedule: one daily-repeating interval per schedule. On `intervalDidStart` the monitor checks the weekday the window started on, so overnight windows belong to the evening they begin. This keeps one activity per schedule rather than one per weekday (iOS allows 20 activities per app; ScreenSpan caps schedules and limits at 8 each).
+- Daily limit: a 00:00–23:59 interval with one threshold event; the monitor shields on `eventDidReachThreshold` and clears at the next interval. On iOS 17.4+ the event includes time already used today.
+
+`BlockingService.reconcile()` runs on launch and foreground. It re-applies shields for blocks that should be running, clears ones that shouldn't, and restarts missing monitoring, so missed extension callbacks heal when the app opens.
+
+Shields are applied only with a verified entitlement. `StoreKitService` checks `Transaction.currentEntitlements` at launch and listens to `Transaction.updates`. It records the result (`free`, `trial`, `premium`) in the App Group; the extensions refuse to apply shields without it. Losing Pro clears every shield and stops monitoring but keeps the user's setup for resubscribing. Blocking is never turned off on a cold start before StoreKit answers.
+
+### Paywall
+
+Shown after the plan step at the end of onboarding (skipped for existing subscribers), from the dashboard's Block button, and from Settings. It has a visible close button. Prices, trial length, and the per-month equivalent come from StoreKit. The renewal terms sit beside the purchase button. Restore Purchases, Terms of Use (Apple's standard EULA), and the Privacy Policy are linked from the paywall and Settings. Settings shows the plan, trial or renewal date, and Apple's manage-subscriptions sheet. After a purchase, Blocking opens with the app picker.
+
+### Before App Review
+
+1. **Family Controls distribution entitlement for every target.** Request it for `com.screenspan.monitor`, `com.screenspan.shield`, and `com.screenspan.shieldaction` as well as the app and report extension. Create their App IDs with the App Group and Family Controls capabilities, then confirm each distribution profile includes `com.apple.developer.family-controls`.
+2. **App Store Connect:** create the subscription group and both products with the IDs above, the annual free-trial introductory offer, localized names, and review screenshots of the paywall. Submit them with the app version.
+3. **Privacy policy:** replace `AppConstants.Legal.privacyPolicy` with the URL entered in App Store Connect. If you publish your own terms, replace `termsOfUse` too and add it to the app description.
+4. **Review notes:** explain that blocking needs Screen Time authorization (a real device with a passcode) and a subscription, and that StoreKit sandbox purchases unlock it.
+
+### Device checks for blocking
+
+The Simulator can show the screens, but it can't grant Screen Time access without a device passcode, and it doesn't enforce shields. On a physical iPhone, run from Xcode (which uses `ScreenSpan.storekit`) or TestFlight sandbox:
+
+1. Buy the annual trial; confirm Blocking opens with the picker and Settings shows the trial end date. Restore on a second install.
+2. Start a 15-minute focus block; open a blocked app and check the shield's name, reason, end time, and nudge. Confirm it lifts at the end with ScreenSpan force-quit.
+3. Add a schedule that starts in two minutes and one that crosses midnight on selected weekdays only. Confirm each turns on and off with the app closed, and that unselected days stay unblocked.
+4. Add a 15-minute daily limit, use the app past it, and confirm the shield; confirm it clears after midnight.
+5. With strict mode on, confirm End early, schedule toggles, editing, and deleting are unavailable while blocking, and strict mode can't be turned off until it ends.
+6. Expire or refund the subscription in the StoreKit transaction manager; confirm shields lift on next launch and the setup remains.
 
 The app uses the reference design's light appearance. Report roots independently set a light color scheme and explicit navy text, because they do not reliably inherit the host's appearance. Secondary copy and chart axis labels use opaque dark gray on white/pale-gray surfaces. The isolated design preview accepts `--dark` to check that the report remains readable when its surrounding app requests Dark Mode.
 

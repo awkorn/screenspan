@@ -12,6 +12,8 @@ enum OnboardingStep: Int, CaseIterable, Equatable {
     case reveal
     case goal
     case plan
+    /// ScreenSpan Pro, offered once the user has a goal to protect.
+    case paywall
 }
 
 /// Onboarding state. Everything stored here is user-entered (age, guess,

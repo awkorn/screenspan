@@ -17,6 +17,11 @@ struct OnboardingContainerView: View {
                 // One branch keeps the same report mounted across both steps.
                 case .reveal, .goal: RevealView(viewModel: viewModel)
                 case .plan: PlanView(viewModel: viewModel)
+                case .paywall:
+                    PaywallView { purchased in
+                        if purchased { AppGroupManager.shared.pendingBlockingSetup = true }
+                        Task { await viewModel.completeOnboarding() }
+                    }
                 }
             }
             .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),

@@ -5,19 +5,28 @@ import SwiftUI
 /// app, and presenting it does not unmount the report. No usage crosses back.
 struct MainTabView: View {
     @EnvironmentObject private var authService: AuthorizationService
+    @EnvironmentObject private var store: StoreKitService
+    @EnvironmentObject private var blocking: BlockingService
     @Environment(\.scenePhase) private var scenePhase
+    @AppStorage(SharedConstants.UserDefaultsKey.pendingBlockingSetup.rawValue, store: .appGroup)
+    private var pendingBlockingSetup = false
     @State private var filter = DeviceActivityFilter.screenSpanDashboard
     @State private var reportID = UUID()
     @State private var reportDay = Calendar.current.startOfDay(for: Date())
     @State private var showSettings = false
     @State private var showHelp = false
     @State private var settingsBeforePresentation = ""
+    @State private var showBlocking = false
+    @State private var blockingOpensPicker = false
+    @State private var showPaywall = false
 
     var body: some View {
         VStack(spacing: 0) {
             HStack {
                 Text("ScreenSpan").font(.geist(size: 21, weight: .bold))
                 Spacer()
+                BlockButton(isPro: store.isPro, action: openBlocking)
+                    .padding(.trailing, 14)
                 Button("Refresh", systemImage: "arrow.clockwise", action: refresh)
                     .labelStyle(.iconOnly)
                     .disabled(!authService.isAuthorized)
@@ -65,6 +74,21 @@ struct MainTabView: View {
         }) {
             SettingsView()
         }
+        .sheet(isPresented: $showBlocking, onDismiss: { blockingOpensPicker = false }) {
+            BlockingView(opensPickerOnAppear: blockingOpensPicker)
+        }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView { purchased in
+                showPaywall = false
+                guard purchased else { return }
+                // Go straight to choosing apps once the cover has closed.
+                Task {
+                    try? await Task.sleep(for: .milliseconds(500))
+                    blockingOpensPicker = true
+                    showBlocking = true
+                }
+            }
+        }
         .alert("Waiting for Screen Time?", isPresented: $showHelp) {
             Button("OK", role: .cancel) { }
         } message: {
@@ -73,10 +97,16 @@ struct MainTabView: View {
         .onAppear {
             // Backfilling today matches the filter already built without a start date.
             AppGroupManager.shared.ensureTrackingStartDate()
+            if pendingBlockingSetup, store.isPro {
+                pendingBlockingSetup = false
+                blockingOpensPicker = true
+                showBlocking = true
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             guard phase == .active else { return }
             authService.refreshAuthorizationStatus()
+            blocking.reconcile()
             if reportDay != Calendar.current.startOfDay(for: Date()) { refresh() }
         }
     }
@@ -87,10 +117,39 @@ struct MainTabView: View {
         return "\(settings.currentAge)|\(settings.targetAge)|\(settings.screenTimeGoalMinutes)|\(start)|\(settings.startingDailyMinutes)"
     }
 
+    private func openBlocking() {
+        if store.isPro { showBlocking = true } else { showPaywall = true }
+    }
+
     private func refresh() {
         reportDay = Calendar.current.startOfDay(for: Date())
         filter = .screenSpanDashboard
         reportID = UUID()
+    }
+}
+
+/// The header's way into blocking. It shows when a block is running, so the
+/// dashboard says at a glance whether apps are locked right now.
+private struct BlockButton: View {
+    let isPro: Bool
+    let action: () -> Void
+    @EnvironmentObject private var blocking: BlockingService
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 15)) { context in
+            let isBlocking = isPro && blocking.isBlocking(at: context.date)
+            Button(action: action) {
+                Label(isBlocking ? "Blocking" : "Block", systemImage: isBlocking ? "lock.fill" : "lock.open")
+                    .font(.geist(size: 14, weight: .semibold))
+                    .labelStyle(.titleAndIcon)
+                    .foregroundStyle(isBlocking ? Color(hex: "#1E8A55") : .white)
+                    .padding(.horizontal, 12)
+                    .frame(height: 32)
+                    .background(isBlocking ? Color(hex: "#E3F5EB") : Color(hex: "#0A1F38"), in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint(isBlocking ? "Apps are blocked right now. Opens Blocking." : "Opens Blocking.")
+        }
     }
 }
 

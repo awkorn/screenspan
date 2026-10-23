@@ -3,6 +3,7 @@ import SwiftUI
 /// A short summary of what happens next, then the dashboard.
 struct PlanView: View {
     var viewModel: OnboardingViewModel
+    @EnvironmentObject private var store: StoreKitService
     @State private var isFinishing = false
 
     var body: some View {
@@ -31,8 +32,13 @@ struct PlanView: View {
             }
         } footer: {
             OnboardingPrimaryButton(title: "Start reclaiming my time", isEnabled: !isFinishing) {
-                isFinishing = true
-                Task { await viewModel.completeOnboarding() }
+                // Subscribers (a reinstall, say) skip the offer.
+                guard !store.isPro else {
+                    isFinishing = true
+                    Task { await viewModel.completeOnboarding() }
+                    return
+                }
+                viewModel.advance()
             }
         }
     }
