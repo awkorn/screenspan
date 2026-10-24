@@ -10,3 +10,6 @@ Package.resolved
 
 # macOS
 .DS_Store
+
+# Archives and exports
+build/

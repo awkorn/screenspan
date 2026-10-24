@@ -69,6 +69,7 @@ targets:
       path: ScreenSpanReport/Info.plist
       uses: [.plist]
       properties:
+        CFBundleDisplayName: ScreenSpan Report
         UIAppFonts:
           - GeistVF.ttf
           - GeistItalicVF.ttf
