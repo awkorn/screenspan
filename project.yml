@@ -137,6 +137,8 @@ targets:
       - path: Shared/SharedConstants.swift
       - path: Shared/UserDefaults+AppGroup.swift
       - path: Shared/TimeIntention.swift
+      - path: Shared/BlockScreenCopy.swift
+      - path: Shared/BlockScreenStyle.swift
     info:
       path: ScreenSpanShield/Info.plist
       properties:

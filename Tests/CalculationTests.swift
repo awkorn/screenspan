@@ -120,11 +120,41 @@ struct CalculationTests {
         expect(RevealMath.underestimateHours(guess: 3, actual: 4.5) == 1.5, "Underestimate is positive")
         expect(RevealMath.potentialTargets(currentDailyHours: 2.1) == [1], "Only targets meaningfully below pace")
         expect(RevealMath.potentialTargets(currentDailyHours: 0.9).isEmpty, "No targets when already low")
-        expect(close(TimeIntention.read.unitsPerYear(dailyHours: 6), 365), "Books per year")
-        expect(TimeIntention.language.unitsPerYear(dailyHours: -1) == 0, "No negative conversions")
+        // A year of phone time, spent on habits instead.
+        let heavy = HabitPlan(intentions: [.family, .sleep, .create], dailyHours: 6.84)
+        expect(heavy.fitsTogether && heavy.habits == [TimeIntention.family.habits[0], TimeIntention.sleep.habits[0], TimeIntention.create.habits[0]], "Heavy use covers the top habits")
+        expect(close(heavy.spareHours, 6.84 * 365 - 547.5 - 365 - 416), "Spare hours after habits")
+        let lighter = HabitPlan(intentions: [.family, .sleep, .create], dailyHours: 2.5)
+        expect(lighter.fitsTogether && lighter.habits == [TimeIntention.family.habits[1], TimeIntention.sleep.habits[0], TimeIntention.create.habits[1]], "Steps down the costliest habits first")
+        expect(lighter.habits.map(\.hoursPerYear).reduce(0, +) <= 2.5 * 365, "Stepped-down habits fit the year")
+        let tiny = HabitPlan(intentions: [.language, .sleep, .family], dailyHours: 0.6)
+        expect(!tiny.fitsTogether && tiny.spareHours == 0, "Too little time to fit together")
+        expect(tiny.habits == [TimeIntention.language.habits[1], TimeIntention.sleep.habits[1], TimeIntention.family.habits[1]], "Each gets the most it can fit alone")
+        expect(HabitPlan(intentions: [.travel], dailyHours: 0.05).habits.isEmpty, "Habits that can't fit are left out")
+        expect(HabitPlan(intentions: [.read], dailyHours: .nan).habits.isEmpty && HabitPlan(intentions: [], dailyHours: 5).habits.isEmpty, "Invalid plans are empty")
+        expect(TimeIntention.allCases.allSatisfy { intention in
+            zip(intention.habits, intention.habits.dropFirst()).allSatisfy { $0.hoursPerYear > $1.hoursPerYear }
+        }, "Habit tiers get lighter")
         expect(TimeIntention.resolve(nil) == TimeIntention.defaults && TimeIntention.resolve(["bogus"]) == TimeIntention.defaults, "Intention defaults")
         expect(TimeIntention.resolve(["sleep", "read"]) == [.read, .sleep], "Intentions in display order")
-        expect(TimeIntention.read.unitLabel(count: 1) == "book" && TimeIntention.read.unitLabel(count: 2) == "books", "Unit plurals")
+
+        // Block screen copy
+        let noon = calendar.date(from: DateComponents(year: 2026, month: 3, day: 10, hour: 12))!
+        let late = calendar.date(from: DateComponents(year: 2026, month: 3, day: 10, hour: 23))!
+        let focus = BlockScreenCopy(appName: "LinkedIn", reason: .focus(until: noon), intentions: [.read],
+                                    now: noon, calendar: calendar, nudge: \.first)
+        expect(focus.title == "LinkedIn can wait" && focus.subtitle.hasPrefix("Focus block · until "), "Focus copy")
+        expect(focus.subtitle.hasSuffix("\n" + TimeIntention.read.nudges[0].text) && focus.button == "Back to my day", "Nudge on its own line")
+        let limit = BlockScreenCopy(appName: nil, reason: .limit(minutes: 90), intentions: [.read], now: late, calendar: calendar, nudge: { _ in nil })
+        expect(limit.title == "That’s it for today" && limit.subtitle == "1h 30m daily limit · back tomorrow", "Limit copy")
+        expect(limit.button == "Good night", "Night button")
+        expect(BlockScreenCopy(appName: "X", reason: .limit(minutes: 30), intentions: [], now: noon, calendar: calendar, nudge: { _ in nil }).subtitle
+               == "30-minute daily limit · back tomorrow", "Short limit label")
+        let dayLines = BlockScreenCopy.nudges(for: [.sleep, .outdoors], at: noon, calendar: calendar)
+        let nightLines = BlockScreenCopy.nudges(for: [.sleep, .outdoors], at: late, calendar: calendar)
+        expect(dayLines.contains("Less phone today, better sleep tonight.") && !dayLines.contains("An extra hour of sleep starts now."), "Daytime sleep lines")
+        expect(nightLines.contains("An extra hour of sleep starts now.") && !nightLines.contains("Go find some sunlight."), "Night lines")
+        expect(BlockScreenCopy.nudges(for: [], at: late, calendar: calendar).count == 3, "General lines always available")
 
         // Reveal layout: the host's window must land on the right goal row.
         expect(OnboardingRevealLayout.goalValues.count == 31, "Goal rows from 30m to 8h in 15-minute steps")

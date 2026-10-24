@@ -34,65 +34,46 @@ enum TimeIntention: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// Hours one unit takes. Stated with every conversion shown to the user.
-    var hoursPerUnit: Double {
+    /// Ways to make room for this at a pace a real week can hold, most
+    /// ambitious first. The reveal steps down a tier when the user's phone
+    /// time can't cover all their picks at once.
+    var habits: [Habit] {
         switch self {
-        case .read: 6          // a typical novel at average adult reading speed
-        case .language: 700    // FSI estimate to working proficiency in an easier language
-        case .exercise: 0.75   // one 45-minute workout
-        case .family: 2        // one long dinner
-        case .sleep: 8         // one full night
-        case .create: 100      // one substantial side project
-        case .travel: 48       // one weekend away
-        case .outdoors: 3      // one half-day hike
+        case .read: [
+            Habit("A book every week", hoursPerYear: 52 * 6), // ~6 hours a novel at adult reading speed
+            Habit("A book every two weeks", hoursPerYear: 26 * 6),
+            Habit("A book every month", hoursPerYear: 12 * 6)]
+        case .language: [
+            // CEFR B1, "conversational", is ~350–400 guided hours.
+            Habit("Conversational in a new language within a year", hoursPerYear: 365), // an hour a day
+            Habit("Conversational in a new language within two years", hoursPerYear: 365 / 2),
+            Habit("15 minutes a day on a new language", hoursPerYear: 365 / 4)]
+        case .exercise: [
+            Habit("A 45-minute workout, five days a week", hoursPerYear: 52 * 5 * 0.75),
+            Habit("A 45-minute workout, three days a week", hoursPerYear: 52 * 3 * 0.75),
+            Habit("A 45-minute workout, twice a week", hoursPerYear: 52 * 2 * 0.75)]
+        case .family: [
+            Habit("Dinner with people you love, every night", hoursPerYear: 365 * 1.5),
+            Habit("A long dinner with people you love, twice a week", hoursPerYear: 52 * 2 * 2),
+            Habit("A long dinner with people you love, every week", hoursPerYear: 52 * 2)]
+        case .sleep: [
+            Habit("An extra hour of sleep, every night", hoursPerYear: 365),
+            Habit("An extra 30 minutes of sleep, every night", hoursPerYear: 365 / 2),
+            Habit("An extra 15 minutes of sleep, every night", hoursPerYear: 365 / 4)]
+        case .create: [
+            Habit("One full day a week on something of your own", hoursPerYear: 52 * 8),
+            Habit("One evening a week on something of your own", hoursPerYear: 52 * 3),
+            Habit("An hour a week on something of your own", hoursPerYear: 52)]
+        case .travel: [
+            // Two waking days, since phone time is waking time.
+            Habit("A weekend away every month", hoursPerYear: 12 * 32),
+            Habit("A weekend away every season", hoursPerYear: 4 * 32),
+            Habit("A weekend away every year", hoursPerYear: 32)]
+        case .outdoors: [
+            Habit("A half day outside every weekend", hoursPerYear: 52 * 4),
+            Habit("A half day outside every other weekend", hoursPerYear: 26 * 4),
+            Habit("A half day outside every month", hoursPerYear: 12 * 4)]
         }
-    }
-
-    func unitLabel(count: Double) -> String {
-        let one = count.rounded() == 1
-        switch self {
-        case .read: return one ? "book" : "books"
-        case .language: return one ? "new language" : "new languages"
-        case .exercise: return one ? "workout" : "workouts"
-        case .family: return one ? "long dinner together" : "long dinners together"
-        case .sleep: return one ? "full night of sleep" : "full nights of sleep"
-        case .create: return one ? "side project" : "side projects"
-        case .travel: return one ? "weekend trip" : "weekend trips"
-        case .outdoors: return one ? "half-day hike" : "half-day hikes"
-        }
-    }
-
-    var assumption: String {
-        switch self {
-        case .read: "6 hours per book"
-        case .language: "700 hours per language"
-        case .exercise: "45 minutes per workout"
-        case .family: "2 hours per dinner"
-        case .sleep: "8 hours per night"
-        case .create: "100 hours per project"
-        case .travel: "48 hours per trip"
-        case .outdoors: "3 hours per hike"
-        }
-    }
-
-    /// A short suggestion on the block screen, in the user's own terms.
-    var nudge: String {
-        switch self {
-        case .read: "You wanted to read more. A few pages instead?"
-        case .language: "You wanted to learn a language. Ten minutes of practice?"
-        case .exercise: "You wanted to get fit. How about a quick walk?"
-        case .family: "You wanted more time with people you love. Call one of them?"
-        case .sleep: "You wanted to sleep better. Put the phone down for the night?"
-        case .create: "You wanted to make something. Pick it back up?"
-        case .travel: "You wanted to travel. Every hour back gets you closer."
-        case .outdoors: "You wanted to be outside. Step out for a minute?"
-        }
-    }
-
-    /// Units that a year at `dailyHours` would cover.
-    func unitsPerYear(dailyHours: Double) -> Double {
-        guard dailyHours.isFinite, dailyHours > 0 else { return 0 }
-        return min(dailyHours, 24) * 365 / hoursPerUnit
     }
 
     static let defaults: [TimeIntention] = [.read, .language, .sleep]
@@ -102,6 +83,60 @@ enum TimeIntention: String, CaseIterable, Identifiable, Sendable {
         let chosen = Set(rawValues ?? [])
         let picked = allCases.filter { chosen.contains($0.rawValue) }
         return picked.isEmpty ? defaults : picked
+    }
+}
+
+/// One concrete way to spend time on an intention, with what it costs a year.
+struct Habit: Equatable, Sendable {
+    let title: String
+    let hoursPerYear: Double
+
+    init(_ title: String, hoursPerYear: Double) {
+        self.title = title
+        self.hoursPerYear = hoursPerYear
+    }
+}
+
+/// What a year of phone time could pay for instead: one habit per intention.
+struct HabitPlan: Equatable {
+    struct Item: Equatable {
+        let intention: TimeIntention
+        let habit: Habit
+    }
+
+    /// Hours a year at the user's daily pace.
+    let budgetHours: Double
+    let items: [Item]
+    /// All habits fit in the budget at once. Otherwise each fits on its own.
+    let fitsTogether: Bool
+
+    var habits: [Habit] { items.map(\.habit) }
+    var spareHours: Double { fitsTogether ? max(budgetHours - habits.map(\.hoursPerYear).reduce(0, +), 0) : 0 }
+
+    /// Starts every intention at its most ambitious habit and steps down the
+    /// costliest until they fit together. If even the lightest don't, each
+    /// intention gets the most ambitious habit that fits alone, and those
+    /// that can't fit are left out.
+    init(intentions: [TimeIntention], dailyHours: Double) {
+        let budget = dailyHours.isFinite ? min(max(dailyHours, 0), 24) * 365 : 0
+        budgetHours = budget
+        var tiers = Array(repeating: 0, count: intentions.count)
+        func cost(_ index: Int) -> Double { intentions[index].habits[tiers[index]].hoursPerYear }
+        while tiers.indices.map(cost).reduce(0, +) > budget,
+              let costliest = tiers.indices
+                .filter({ tiers[$0] < intentions[$0].habits.count - 1 })
+                .max(by: { cost($0) < cost($1) }) {
+            tiers[costliest] += 1
+        }
+        if !intentions.isEmpty, tiers.indices.map(cost).reduce(0, +) <= budget {
+            items = tiers.indices.map { Item(intention: intentions[$0], habit: intentions[$0].habits[tiers[$0]]) }
+            fitsTogether = true
+        } else {
+            items = intentions.compactMap { intention in
+                intention.habits.first { $0.hoursPerYear <= budget }.map { Item(intention: intention, habit: $0) }
+            }
+            fitsTogether = false
+        }
     }
 }
 

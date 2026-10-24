@@ -479,29 +479,7 @@ private struct YearlyCostPanel: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .background(RevealStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
-            Text("That’s enough time to:")
-                .font(.geist(size: 16, weight: .semibold))
-                .foregroundStyle(RevealStyle.navy)
-            VStack(spacing: 10) {
-                ForEach(data.intentions.prefix(3)) { intention in
-                    let count = intention.unitsPerYear(dailyHours: data.dailyHours)
-                    HStack(spacing: 14) {
-                        Image(systemName: intention.icon)
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(RevealStyle.green)
-                            .frame(width: 36, height: 36)
-                            .background(Color(hex: "#E7F5EC"), in: RoundedRectangle(cornerRadius: 10))
-                        (Text(formatCount(count)).font(.geist(size: 18, weight: .bold))
-                         + Text(" \(intention.unitLabel(count: count))").font(.geist(size: 15, weight: .medium)))
-                            .foregroundStyle(RevealStyle.navy)
-                        Spacer()
-                    }
-                    .accessibilityElement(children: .combine)
-                }
-            }
-            Text("Per year. Assumes " + data.intentions.prefix(3).map(\.assumption).joined(separator: ", ") + ".")
-                .font(.geist(size: 11))
-                .foregroundStyle(RevealStyle.muted)
+            HabitBudget(intentions: Array(data.intentions.prefix(3)), dailyHours: data.dailyHours)
         }
     }
 
@@ -514,6 +492,101 @@ private struct YearlyCostPanel: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
+    }
+}
+
+/// What a year of this phone time could pay for instead: one realistic habit
+/// per intention, a bar the size of the year, and what's left over.
+private struct HabitBudget: View {
+    let intentions: [TimeIntention]
+    let dailyHours: Double
+
+    var body: some View {
+        let plan = HabitPlan(intentions: intentions, dailyHours: dailyHours)
+        if !plan.items.isEmpty {
+            VStack(alignment: .leading, spacing: 14) {
+                Text(plan.fitsTogether ? "Every year, that time could cover all of this:"
+                                       : "Every year, that time could cover any one of these:")
+                    .font(.geist(size: 16, weight: .semibold))
+                    .foregroundStyle(RevealStyle.navy)
+                    .fixedSize(horizontal: false, vertical: true)
+                VStack(spacing: 10) {
+                    ForEach(plan.items, id: \.intention) { item in
+                        row(icon: item.intention.icon, habit: item.habit)
+                    }
+                }
+                if plan.fitsTogether {
+                    BudgetBar(budget: plan.budgetHours, segments: plan.habits.map(\.hoursPerYear))
+                    if let spare = spareText(plan.spareHours) {
+                        Text(spare)
+                            .font(.geist(size: 15, weight: .semibold))
+                            .foregroundStyle(RevealStyle.navy)
+                    }
+                }
+                Text(plan.fitsTogether ? "Hours per year. The bar is one year of your phone time." : "Hours per year.")
+                    .font(.geist(size: 11))
+                    .foregroundStyle(RevealStyle.muted)
+            }
+        }
+    }
+
+    private func row(icon: String, habit: Habit) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(RevealStyle.green)
+                .frame(width: 36, height: 36)
+                .background(Color(hex: "#E7F5EC"), in: RoundedRectangle(cornerRadius: 10))
+            Text(habit.title)
+                .font(.geist(size: 15, weight: .medium))
+                .foregroundStyle(RevealStyle.navy)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 8)
+            Text("\(formatCount(habit.hoursPerYear)) h")
+                .font(.geist(size: 13, weight: .medium))
+                .foregroundStyle(RevealStyle.muted)
+                .monospacedDigit()
+                .fixedSize()
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func spareText(_ hours: Double) -> String? {
+        let days = Int(hours / 24)
+        if days >= 2 { return "And you’d still have \(days) days left over." }
+        if hours >= 1 { return "And you’d still have \(Int(hours)) hours left over." }
+        return nil
+    }
+}
+
+/// One year of phone time, with each habit's share filled in and the rest
+/// left grey. Fills once revealed, like the waking-hours bar.
+private struct BudgetBar: View {
+    let budget: Double
+    let segments: [Double]
+    @State private var shown = false
+
+    var body: some View {
+        GeometryReader { proxy in
+            let gap: CGFloat = 3
+            let usable = max(proxy.size.width - gap * CGFloat(segments.count), 0)
+            ZStack(alignment: .leading) {
+                Capsule().fill(Color(hex: "#E3E7EE"))
+                HStack(spacing: gap) {
+                    ForEach(Array(segments.enumerated()), id: \.offset) { _, hours in
+                        Rectangle()
+                            .fill(Color(hex: "#2BB673"))
+                            .frame(width: budget > 0 ? usable * hours / budget * (shown ? 1 : 0) : 0)
+                    }
+                }
+                .clipShape(Capsule())
+            }
+        }
+        .frame(height: 10)
+        .onAppear {
+            withAnimation(.easeOut(duration: 1.2)) { shown = true }
+        }
+        .accessibilityHidden(true)
     }
 }
 

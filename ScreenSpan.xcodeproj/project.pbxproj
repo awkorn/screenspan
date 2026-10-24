@@ -11,6 +11,7 @@
 		02A82E570EFC46C6635F0920 /* ScreenSpanReport.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = C8EA298EF7CB1876A1B306BF /* ScreenSpanReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		06CCA74893BE360F4CDCC051 /* BlockingConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 742E45FF184F9B2A26A7B210 /* BlockingConfiguration.swift */; };
 		09DBE3F450929BA2513DA718 /* BlockingEditors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D813B250D08E484000A146C /* BlockingEditors.swift */; };
+		0D8BC829F5093221A532C21A /* BlockScreenStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 438CBA6159E068C2013642C0 /* BlockScreenStyle.swift */; };
 		0F572863C112270027377EE5 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F4A4A71CB8C9A7C783A67D8 /* MainTabView.swift */; };
 		0F9EC5E11E2788782BCE31C7 /* ScreenSpanShield.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3ED41D8E3C94DCCBAF8BF553 /* ScreenSpanShield.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		11A4ADD4C1559E92E22C91A2 /* ActivitySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6285B74674298E92260D6F0 /* ActivitySummary.swift */; };
@@ -21,12 +22,14 @@
 		1DBEDE22D8A952DC1453B688 /* TimeIntention.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF82A268487C5AC03C8A995D /* TimeIntention.swift */; };
 		1EF93A0969318E46DB80B9E8 /* UserGoal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8A84266D5C67D2A5DA73E8 /* UserGoal.swift */; };
 		1F2E15C436B13BB384055DC0 /* GeistMonoVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BE34D57A0A7DEE22E6C522B7 /* GeistMonoVF.ttf */; };
+		261FEE594F847D846E1E4906 /* BlockScreenStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 438CBA6159E068C2013642C0 /* BlockScreenStyle.swift */; };
 		2FF689C97CDC644D27D555BC /* DeviceActivityFilter+ScreenSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C29874BF92FC9D9478EB192 /* DeviceActivityFilter+ScreenSpan.swift */; };
 		304900B8BDC5296E96DF6319 /* AppGroupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756444A3B2BC26E2CCD3993F /* AppGroupManager.swift */; };
 		3144CD2A97C9F2FC3283522B /* BlockingConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 742E45FF184F9B2A26A7B210 /* BlockingConfiguration.swift */; };
 		31691C810909B7B1CF7E67D0 /* UserDefaults+AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C48EC6DDF3E57788CA87B /* UserDefaults+AppGroup.swift */; };
 		36E9E3C27D1C542C47003FF1 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9454C7ED8B41B24B9FC8F2ED /* AppConstants.swift */; };
 		3AB766590720920C591E37DC /* EstimateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DED79828C7D51C84E41CF2B /* EstimateView.swift */; };
+		3AF2237F2FEB3E33A23F7328 /* BlockScreenCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB11D04E3DD4C77AB2D5291F /* BlockScreenCopy.swift */; };
 		3B864EEDD44928DF0C865CE3 /* OnboardingRevealPanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC001674A06509B90440FE1 /* OnboardingRevealPanels.swift */; };
 		3E043136C66F025ABE384DA7 /* StatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7D83D181F6D3AF608C6F5D /* StatsViewModel.swift */; };
 		3E26C62D3F920DFF6FE2567C /* BlockSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13087A939D48C292559235F /* BlockSchedule.swift */; };
@@ -68,8 +71,10 @@
 		8F0240414A51F7444F3A2F90 /* HistoryReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B745744BA2354B4E399F1C41 /* HistoryReportView.swift */; };
 		98C0F9012844E9892B9D4BE1 /* ProgressInsights.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9386737EA0349AC8891EC0 /* ProgressInsights.swift */; };
 		9A0AF529672DD47AE388D675 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21AA338A8BC8C3E45D8D551 /* OnboardingViewModel.swift */; };
+		9A24FC61EB86355A93796B5F /* BlockScreenCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB11D04E3DD4C77AB2D5291F /* BlockScreenCopy.swift */; };
 		9C509A7A0EB6D0422634921C /* GeistItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */; };
 		9DB102EEFD27E1CF5149435F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA623384754EB8634D457F80 /* ContentView.swift */; };
+		9EAD49C9AD303AD49CAD391C /* BlockScreenStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 438CBA6159E068C2013642C0 /* BlockScreenStyle.swift */; };
 		A02D00B155D4C0D557643B50 /* TimeIntention.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF82A268487C5AC03C8A995D /* TimeIntention.swift */; };
 		A32E4CF8BDC9F4FE043F3B45 /* ShieldConfigurationExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8793C65F5F0C0FF42C2736 /* ShieldConfigurationExtension.swift */; };
 		A3AB714CFC74FF3CD8ADCDFB /* AppGroupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756444A3B2BC26E2CCD3993F /* AppGroupManager.swift */; };
@@ -102,6 +107,7 @@
 		D9B4D9BDD484D0CE6BFBC295 /* PermissionRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39154E949451B6CF3E2EE0BE /* PermissionRequestView.swift */; };
 		DADD58A89397D097FF44F393 /* RevealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C02734202C44624F0FC951C /* RevealView.swift */; };
 		DF5E2C6764FF1FD529274BC6 /* ChartViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9801013D24B5FFBF50A18946 /* ChartViewModel.swift */; };
+		DFADA2141193D941898CC26F /* BlockScreenCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB11D04E3DD4C77AB2D5291F /* BlockScreenCopy.swift */; };
 		E476A69F830E59062F2B1980 /* AuthorizationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1386C8E8351CD19946B3E8 /* AuthorizationService.swift */; };
 		E497BD738F5227E4D7D4335D /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
 		E4BF3488E576DA5544AD71A7 /* LifeRegainedProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */; };
@@ -192,6 +198,7 @@
 		3B577B6D6F23BCC19AD8C743 /* IntentionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentionsView.swift; sourceTree = "<group>"; };
 		3D0C74C00317100ECF78D95A /* ChartReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartReportView.swift; sourceTree = "<group>"; };
 		3ED41D8E3C94DCCBAF8BF553 /* ScreenSpanShield.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ScreenSpanShield.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		438CBA6159E068C2013642C0 /* BlockScreenStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockScreenStyle.swift; sourceTree = "<group>"; };
 		4578A80401F41FC1D227951E /* ScreenSpanMonitor.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ScreenSpanMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4974BF9183CAAC52B17EE9A5 /* BlockingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingService.swift; sourceTree = "<group>"; };
 		4A56375C9303772106FD27DA /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -247,6 +254,7 @@
 		D98B2E6C7985B4098510525C /* Environment+ScreenSpan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Environment+ScreenSpan.swift"; sourceTree = "<group>"; };
 		E51E27A769C43E1E9DEC012F /* ScreenSpan.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ScreenSpan.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA7EFCABE6CC65E07FE10C6C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		EB11D04E3DD4C77AB2D5291F /* BlockScreenCopy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockScreenCopy.swift; sourceTree = "<group>"; };
 		EB73D5B3524E52E89AB47303 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		EB9386737EA0349AC8891EC0 /* ProgressInsights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressInsights.swift; sourceTree = "<group>"; };
 		F5DF1B1B7123E0DD82F222F4 /* HistoryTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryTabView.swift; sourceTree = "<group>"; };
@@ -320,6 +328,8 @@
 			children = (
 				B6285B74674298E92260D6F0 /* ActivitySummary.swift */,
 				756444A3B2BC26E2CCD3993F /* AppGroupManager.swift */,
+				EB11D04E3DD4C77AB2D5291F /* BlockScreenCopy.swift */,
+				438CBA6159E068C2013642C0 /* BlockScreenStyle.swift */,
 				C2A42CDBD4EE314FAA1AC439 /* DeviceActivityReport+Contexts.swift */,
 				A93D9C33850C3C05045FC653 /* DonutChartView.swift */,
 				A2210D930D532B57F4473C84 /* GeistFont.swift */,
@@ -726,6 +736,8 @@
 			files = (
 				A65A927040C251DE6BF21BC5 /* ActivitySummary.swift in Sources */,
 				A3AB714CFC74FF3CD8ADCDFB /* AppGroupManager.swift in Sources */,
+				9A24FC61EB86355A93796B5F /* BlockScreenCopy.swift in Sources */,
+				9EAD49C9AD303AD49CAD391C /* BlockScreenStyle.swift in Sources */,
 				63A96DF2A8F6EAF116D2B484 /* ChartReportView.swift in Sources */,
 				7CA6D26D4488504C8E363E2A /* Color+ScreenSpanReport.swift in Sources */,
 				599713727556A635527C1D4B /* DashboardReportView.swift in Sources */,
@@ -759,6 +771,8 @@
 				304900B8BDC5296E96DF6319 /* AppGroupManager.swift in Sources */,
 				E476A69F830E59062F2B1980 /* AuthorizationService.swift in Sources */,
 				3E26C62D3F920DFF6FE2567C /* BlockSchedule.swift in Sources */,
+				3AF2237F2FEB3E33A23F7328 /* BlockScreenCopy.swift in Sources */,
+				261FEE594F847D846E1E4906 /* BlockScreenStyle.swift in Sources */,
 				06CCA74893BE360F4CDCC051 /* BlockingConfiguration.swift in Sources */,
 				09DBE3F450929BA2513DA718 /* BlockingEditors.swift in Sources */,
 				BCF6F78B3D755D11032EC993 /* BlockingRule.swift in Sources */,
@@ -817,6 +831,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				C826A41158E71382F9ACA62F /* BlockSchedule.swift in Sources */,
+				DFADA2141193D941898CC26F /* BlockScreenCopy.swift in Sources */,
+				0D8BC829F5093221A532C21A /* BlockScreenStyle.swift in Sources */,
 				D96FC850D086C652B2A8CEA9 /* BlockingConfiguration.swift in Sources */,
 				EEB02920524F9DED2CCAEA60 /* BlockingRule.swift in Sources */,
 				A4D1A65E9CD083450D467A02 /* SharedConstants.swift in Sources */,

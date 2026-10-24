@@ -15,7 +15,9 @@ struct PreviewApp: App {
             VStack(spacing: 0) {
                 Text("DESIGN PREVIEW · SAMPLE DATA").font(.caption2)
                     .foregroundStyle(ScreenSpanAppearance.text).padding(8)
-                if CommandLine.arguments.contains("--onboarding") {
+                if CommandLine.arguments.contains("--shield") {
+                    ShieldPreview()
+                } else if CommandLine.arguments.contains("--onboarding") {
                     if onboardingPage < OnboardingRevealPanels.panelCount {
                         GeometryReader { proxy in
                             OnboardingReportWindow(
@@ -56,5 +58,51 @@ struct PreviewApp: App {
             .map { AppUsage(application: nil, fallbackName: $0.0, dailyHours: $0.1) }
         return ScreenTimeReportPayload(dailyAverageHours: ActivityDay.averageHours(of: days), days: days, history: history,
                                        topApps: apps, pickupsPerDay: 84)
+    }
+}
+
+/// A stand-in for the system shield, laid out the way iOS draws one, with the
+/// shield extension's real copy and mark. Real shields only show on a device.
+/// Tap to step through the block reasons.
+struct ShieldPreview: View {
+    @State private var index = 0
+
+    var body: some View {
+        let now = Date()
+        let reasons: [(String?, BlockReason)] = [
+            ("LinkedIn", .focus(until: now.addingTimeInterval(14 * 60))),
+            ("Instagram", .schedule(name: "Work hours", until: now.addingTimeInterval(3 * 60 * 60))),
+            ("TikTok", .limit(minutes: 30)),
+            (nil, .unknown),
+        ]
+        let reason = reasons[index % reasons.count]
+        let copy = BlockScreenCopy(appName: reason.0, reason: reason.1, intentions: AppGroupManager.shared.timeIntentions,
+                                   now: now, nudge: { $0[index % $0.count] })
+        VStack(spacing: 0) {
+            Spacer()
+            Image(uiImage: BlockScreenStyle.mark())
+            Text(copy.title)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.white)
+                .padding(.top, 20)
+            Text(copy.subtitle)
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(Color(BlockScreenStyle.mist))
+                .padding(.top, 6)
+            Spacer()
+            Text(copy.button)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(Color(BlockScreenStyle.ink))
+                .frame(maxWidth: .infinity, minHeight: 50)
+                .background(.white, in: Capsule())
+                .padding(.horizontal, 8)
+                .padding(.bottom, 24)
+        }
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(BlockScreenStyle.navy))
+        .contentShape(Rectangle())
+        .onTapGesture { index += 1 }
     }
 }
