@@ -167,6 +167,12 @@ enum OnboardingRevealLayout {
     static let panelCount = 5
     static let goalRowHeight: CGFloat = 132
     static let goalValues: [Double] = Array(stride(from: 0.5, through: 8, by: 0.25))
+    /// The panel whose numbers unseal one at a time after a tap.
+    static let lifetimePanel = 1
+    /// The wait before each of the lifetime panel's stages, from the tap.
+    static let lifetimeRevealDelays: [Double] = [0, 1.7, 1.1, 1.1]
+    /// From the tap until the last stage has settled.
+    static var lifetimeRevealDuration: Double { lifetimeRevealDelays.reduce(0, +) + 0.6 }
 
     static func totalHeight(panelHeight: CGFloat) -> CGFloat {
         panelHeight * CGFloat(panelCount) + goalRowHeight * CGFloat(goalValues.count)

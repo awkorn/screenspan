@@ -10,10 +10,16 @@ struct RevealView: View {
     @Bindable var viewModel: OnboardingViewModel
     @State private var filter = DeviceActivityFilter.screenSpanProjectionAverage
     @State private var showsEstimateFallback = false
+    /// The lifetime panel unseals its numbers after a tap inside the report,
+    /// which can't tell the host when it's done. So the host notices that tap
+    /// and holds Continue until the sequence has played.
+    @State private var lifetimeTapped = false
+    @State private var lifetimeRevealed = false
     private let goalPresets: [Double] = [1, 1.5, 2, 3]
 
     private var isGoal: Bool { viewModel.currentStep == .goal }
     private var isLastPanel: Bool { viewModel.revealPanel == OnboardingRevealLayout.panelCount - 1 }
+    private var isLifetimePanel: Bool { !isGoal && viewModel.revealPanel == OnboardingRevealLayout.lifetimePanel }
 
     var body: some View {
         OnboardingScaffold(viewModel: viewModel) {
@@ -45,6 +51,9 @@ struct RevealView: View {
                         }
                     }
                     .frame(height: isGoal ? OnboardingRevealLayout.goalRowHeight : panelHeight)
+                    .simultaneousGesture(TapGesture().onEnded {
+                        if isLifetimePanel { lifetimeTapped = true }
+                    })
                     if isGoal {
                         goalControls
                     }
@@ -59,7 +68,8 @@ struct RevealView: View {
                     viewModel.advance()
                 }
             } else {
-                OnboardingPrimaryButton(title: isLastPanel ? "Choose my goal" : "Continue") { viewModel.advance() }
+                OnboardingPrimaryButton(title: isLastPanel ? "Choose my goal" : "Continue",
+                                        isEnabled: !isLifetimePanel || lifetimeRevealed) { viewModel.advance() }
                 if showsEstimateFallback && !viewModel.usesEstimate && viewModel.revealPanel == 0 {
                     OnboardingSecondaryButton(title: "Report not showing? Use my estimate") {
                         withAnimation { viewModel.usesEstimate = true }
@@ -72,6 +82,18 @@ struct RevealView: View {
             // fallback after a fixed wait; it is harmless once the report shows.
             try? await Task.sleep(for: .seconds(20))
             withAnimation { showsEstimateFallback = true }
+        }
+        .task(id: lifetimeTapped) {
+            guard lifetimeTapped else { return }
+            try? await Task.sleep(for: .seconds(OnboardingRevealLayout.lifetimeRevealDuration))
+            withAnimation { lifetimeRevealed = true }
+        }
+        .task(id: isLifetimePanel) {
+            // Never strand anyone if the tap doesn't reach the host.
+            guard isLifetimePanel, !lifetimeRevealed else { return }
+            try? await Task.sleep(for: .seconds(20))
+            guard !Task.isCancelled else { return }
+            withAnimation { lifetimeRevealed = true }
         }
     }
 

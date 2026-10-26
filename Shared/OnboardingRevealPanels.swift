@@ -327,7 +327,7 @@ private struct LifetimePanel: View {
 
     private func startReveal() {
         Task { @MainActor in
-            for (next, delay) in [(1, 0.0), (2, 1.7), (3, 1.1), (4, 1.1)] {
+            for (next, delay) in zip(1..., OnboardingRevealLayout.lifetimeRevealDelays) {
                 try? await Task.sleep(for: .seconds(delay))
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) { stage = next }
             }

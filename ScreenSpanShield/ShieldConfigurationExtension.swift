@@ -4,7 +4,7 @@ import ManagedSettings
 import ManagedSettingsUI
 import UIKit
 
-/// The screen shown over a blocked app: a calm navy pause with the app's life
+/// The screen shown over a blocked app: a calm white pause with the app's life
 /// grid, what's blocked and until when, and a nudge toward what the user said
 /// they'd rather be doing. The words live in `BlockScreenCopy`.
 final class ShieldConfigurationExtension: ShieldConfigurationDataSource {
@@ -32,12 +32,13 @@ final class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             UserDefaults.appGroup.stringArray(forKey: SharedConstants.UserDefaultsKey.timeIntentions.rawValue))
         let copy = BlockScreenCopy(appName: name, reason: reason, intentions: intentions)
         return ShieldConfiguration(
-            backgroundColor: BlockScreenStyle.navy,
+            backgroundBlurStyle: BlockScreenStyle.blur,
+            backgroundColor: BlockScreenStyle.background,
             icon: BlockScreenStyle.mark(),
-            title: .init(text: copy.title, color: .white),
-            subtitle: .init(text: copy.subtitle, color: BlockScreenStyle.mist),
-            primaryButtonLabel: .init(text: copy.button, color: BlockScreenStyle.ink),
-            primaryButtonBackgroundColor: .white
+            title: .init(text: copy.title, color: BlockScreenStyle.navy),
+            subtitle: .init(text: copy.subtitle, color: BlockScreenStyle.slate),
+            primaryButtonLabel: .init(text: copy.button, color: .white),
+            primaryButtonBackgroundColor: BlockScreenStyle.navy
         )
     }
 }

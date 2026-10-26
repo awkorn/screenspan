@@ -55,20 +55,32 @@ struct MainTabView: View {
                 // Pages scroll to the screen's edge behind the report's tab bar.
                 .ignoresSafeArea(.container, edges: .bottom)
             } else {
-                VStack(spacing: 18) {
-                    Image(systemName: "chart.bar.xaxis").font(.system(size: 38))
-                    Text("Your life, in perspective").font(.geist(size: 26, weight: .bold))
+                VStack(spacing: 0) {
+                    Spacer()
+                    Image(uiImage: BlockScreenStyle.mark(side: 64))
+                    Text("Your life, in perspective")
+                        .font(.geist(size: 26, weight: .bold))
+                        .foregroundStyle(ScreenSpanAppearance.text)
+                        .padding(.top, 24)
                     Text("Allow Screen Time access to see your life chart and recent iPhone activity.")
+                        .font(.geist(size: 16))
+                        .foregroundStyle(ScreenSpanAppearance.secondaryText)
                         .multilineTextAlignment(.center)
-                    Button("Allow Screen Time Access") {
+                        .padding(.top, 10)
+                    if let message = authService.authorizationErrorMessage {
+                        Text(message)
+                            .font(.geist(size: 13))
+                            .foregroundStyle(ScreenSpanAppearance.secondaryText)
+                            .multilineTextAlignment(.center)
+                            .padding(.top, 12)
+                    }
+                    Spacer()
+                    OnboardingPrimaryButton(title: "Allow Screen Time Access") {
                         Task { await authService.requestAuthorization() }
                     }
-                    .buttonStyle(.borderedProminent)
-                    if let message = authService.authorizationErrorMessage {
-                        Text(message).font(.footnote).foregroundStyle(ScreenSpanAppearance.secondaryText)
-                    }
                 }
-                .padding(24)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 16)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
