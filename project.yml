@@ -24,6 +24,7 @@ targets:
       path: ScreenSpan/Info.plist
       uses: [.plist]
       properties:
+        ITSAppUsesNonExemptEncryption: false
         UILaunchStoryboardName: LaunchScreen
         UIAppFonts:
           - GeistVF.ttf
