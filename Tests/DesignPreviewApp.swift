@@ -63,12 +63,12 @@ struct PreviewApp: App {
 
 /// A stand-in for the system shield, laid out the way iOS draws one, with the
 /// shield extension's real copy and mark. Real shields only show on a device.
-/// Tap to step through the block reasons.
+/// Tap to step through the block reasons, then the messages.
 struct ShieldPreview: View {
     @State private var index = 0
 
     var body: some View {
-        let now = Date()
+        let now = Date().addingTimeInterval(Double(index / 4) * 15 * 60)
         let reasons: [(String?, BlockReason)] = [
             ("LinkedIn", .focus(until: now.addingTimeInterval(14 * 60))),
             ("Instagram", .schedule(name: "Work hours", until: now.addingTimeInterval(3 * 60 * 60))),
@@ -76,8 +76,7 @@ struct ShieldPreview: View {
             (nil, .unknown),
         ]
         let reason = reasons[index % reasons.count]
-        let copy = BlockScreenCopy(appName: reason.0, reason: reason.1, intentions: AppGroupManager.shared.timeIntentions,
-                                   now: now, nudge: { $0[index % $0.count] })
+        let copy = BlockScreenCopy(appName: reason.0, reason: reason.1, now: now)
         VStack(spacing: 0) {
             Spacer()
             Image(uiImage: BlockScreenStyle.mark())

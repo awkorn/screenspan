@@ -9,63 +9,61 @@ enum BlockReason: Equatable {
     case unknown
 }
 
-/// The words on the block screen. Short enough to take in at a glance, framed
-/// as the user's own choice and as a pause rather than a ban, and ending on
-/// something concrete they said they'd rather do.
+/// Clear block details and a brief reminder of what stepping away makes room
+/// for. The message assumes neither distress nor a particular personal goal.
 struct BlockScreenCopy: Equatable {
     let title: String
     let subtitle: String
     let button: String
 
-    init(appName: String?, reason: BlockReason, intentions: [TimeIntention], now: Date = Date(),
-         calendar: Calendar = .current, nudge pick: ([String]) -> String? = { $0.randomElement() }) {
-        let name = appName ?? "This app"
-        func time(_ date: Date) -> String { date.formatted(date: .omitted, time: .shortened) }
+    init(appName: String?, reason: BlockReason, now: Date = Date(), calendar: Calendar = .current) {
+        let name = appName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        title = "\(name.flatMap { $0.isEmpty ? nil : $0 } ?? "This app") is paused"
+
+        func endLabel(_ date: Date) -> String {
+            let time = date.formatted(date: .omitted, time: .shortened)
+            if calendar.isDate(date, inSameDayAs: now) { return "until \(time)" }
+            if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now),
+               calendar.isDate(date, inSameDayAs: tomorrow) {
+                return "until tomorrow at \(time)"
+            }
+            return "until \(date.formatted(date: .abbreviated, time: .shortened))"
+        }
+
         let status: String
         switch reason {
         case .focus(let end):
-            title = "\(name) can wait"
-            status = "Focus block · until \(time(end))"
+            status = "Focus block · \(endLabel(end))"
         case .schedule(let schedule, let end):
-            title = "\(name) can wait"
-            status = "\(schedule) · until \(time(end))"
+            let label = schedule.trimmingCharacters(in: .whitespacesAndNewlines)
+            status = "\(label.isEmpty ? "Scheduled break" : label) · \(endLabel(end))"
         case .limit(let minutes):
-            title = appName.map { "That’s \($0) for today" } ?? "That’s it for today"
-            status = "\(Self.limitLabel(minutes: minutes)) daily limit · back tomorrow"
+            status = "\(Self.limitLabel(minutes: minutes)) limit · resets at midnight"
         case .unknown:
-            title = "\(name) can wait"
-            status = "Blocked with ScreenSpan"
+            status = "App blocking is on"
         }
-        let nudge = pick(Self.nudges(for: intentions, at: now, calendar: calendar))
-        subtitle = [status, nudge].compactMap { $0 }.joined(separator: "\n")
-        button = Self.isNight(now, calendar: calendar) ? "Good night" : "Back to my day"
+        subtitle = status + "\n\n" + Self.message(at: now)
+        button = "Close app"
     }
 
-    /// Every line that suits this moment: the user's own intentions first,
-    /// then a few about the time itself.
-    static func nudges(for intentions: [TimeIntention], at date: Date, calendar: Calendar = .current) -> [String] {
-        let night = isNight(date, calendar: calendar)
-        let hour = calendar.component(.hour, from: date)
-        let daylight = (8..<19).contains(hour)
-        return (intentions.flatMap(\.nudges) + general).compactMap { line in
-            switch line.when {
-            case .any: line.text
-            case .night: night ? line.text : nil
-            case .day: night ? nil : line.text
-            case .daylight: daylight ? line.text : nil
-            }
-        }
+    /// Keep the same message across apps and extension reloads within each
+    /// 15-minute window. Repeated attempts shouldn't produce a stream of advice.
+    /// This needs no saved state or tracking of the user's app-opening attempts.
+    static func message(at date: Date) -> String {
+        let window = Int(floor(date.timeIntervalSince1970 / (15 * 60)))
+        let index = (window % messages.count + messages.count) % messages.count
+        return messages[index]
     }
 
-    static func isNight(_ date: Date, calendar: Calendar = .current) -> Bool {
-        let hour = calendar.component(.hour, from: date)
-        return hour >= 21 || hour < 4
-    }
-
-    private static let general: [Nudge] = [
-        Nudge("Small blocks add up to years."),
-        Nudge("This is the time you said you wanted back."),
-        Nudge("Past you set this up for a reason."),
+    // Concrete time, choice, and responding to urges before entering an app.
+    // Evidence and editorial decisions: docs/BLOCK_SCREEN_COPY.md.
+    private static let messages = [
+        "Your attention is yours to spend.",
+        "Reclaim your time. Start with this moment.",
+        "Resist the urge.",
+        "Take back your time.",
+        "20 minutes less a day frees up over 5 days a year.",
+        "The next few minutes are yours to choose.",
     ]
 
     private static func limitLabel(minutes: Int) -> String {
@@ -73,65 +71,5 @@ struct BlockScreenCopy: Equatable {
         if minutes < 60 { return "\(minutes)-minute" }
         if minutes % 60 == 0 { return "\(minutes / 60)-hour" }
         return "\(minutes / 60)h \(minutes % 60)m"
-    }
-}
-
-/// One line for the block screen and when it makes sense to show it.
-struct Nudge: Equatable {
-    enum When { case any, day, night, daylight }
-    let text: String
-    let when: When
-
-    init(_ text: String, when: When = .any) {
-        self.text = text
-        self.when = when
-    }
-}
-
-extension TimeIntention {
-    /// Offers, not orders: small, concrete, and in the terms the user picked.
-    var nudges: [Nudge] {
-        switch self {
-        case .read: [
-            Nudge("This could be reading time. Five pages?"),
-            Nudge("Your book’s still where you left it."),
-            Nudge("Read one page. See if you want another."),
-        ]
-        case .language: [
-            Nudge("Five minutes of practice instead?"),
-            Nudge("Learn five new words instead?"),
-            Nudge("An hour a day gets you conversational in about a year."),
-        ]
-        case .exercise: [
-            Nudge("Ten push-ups, then decide."),
-            Nudge("A short walk would feel better than this.", when: .day),
-            Nudge("Stretch for two minutes instead?"),
-        ]
-        case .family: [
-            Nudge("Text someone you love instead?"),
-            Nudge("Who haven’t you talked to in a while?"),
-            Nudge("Call someone. They’ll be glad you did.", when: .day),
-        ]
-        case .sleep: [
-            Nudge("Put it down. Tomorrow you’ll be glad you did.", when: .night),
-            Nudge("An extra hour of sleep starts now.", when: .night),
-            Nudge("Less phone today, better sleep tonight.", when: .day),
-        ]
-        case .create: [
-            Nudge("Ten minutes on your project instead?"),
-            Nudge("Something you make beats something you scroll."),
-            Nudge("Make one small thing today.", when: .day),
-        ]
-        case .travel: [
-            Nudge("Plan your next trip instead?"),
-            Nudge("Look up somewhere you’ve never been."),
-            Nudge("Pick a weekend and put it on the calendar."),
-        ]
-        case .outdoors: [
-            Nudge("Step outside for five minutes?", when: .daylight),
-            Nudge("Go find some sunlight.", when: .daylight),
-            Nudge("Plan some time outside this weekend."),
-        ]
-        }
     }
 }

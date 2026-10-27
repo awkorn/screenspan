@@ -66,7 +66,7 @@ Reports, Life Grid, Stats, and Progress are free. ScreenSpan Pro, an auto-renewi
 - **Schedules:** repeating windows (Bedtime, Work hours, Slow mornings, or custom) on chosen weekdays, including overnight windows.
 - **Daily limits:** a shared allowance for chosen apps; once used, they're blocked until midnight.
 - **Strict mode:** focus blocks can't end early, and a running schedule can't be turned off, edited, or deleted. Daily limits can tighten immediately, but loosening one (more time, fewer apps, off, or deleted) is held as a pending change until the next midnight, when today's allowance resets anyway. The app never learns whether a limit was reached, so the rule doesn't depend on it. Strict mode itself can only be turned off when nothing is blocking, and with limits on it switches off at midnight. The app applies due changes on launch, foreground, and opening Blocking. Until then the monitor applies a due change that removes or disables a limit, and doesn't shield a limit whose new allowance exceeds the threshold iOS is still watching.
-- **Shield screen:** names the app, why it's blocked and until when, and nudges toward one of the user's own onboarding intentions. Its only button closes the app.
+- **Shield screen:** names the paused app, why it's blocked and until when, followed by one brief reminder about time gained, control over attention, or choosing to stop despite the pull to keep going. Six messages rotate in 15-minute windows shared across apps, so repeated attempts don't generate new advice. Copy does not depend on onboarding goals or track attempts. Its consistent **Close app** button closes the app. See [the copy rationale and research](BLOCK_SCREEN_COPY.md).
 
 ### How it works
 
@@ -98,7 +98,7 @@ Shown after the plan step at the end of onboarding (skipped for existing subscri
 The Simulator can show the screens, but it can't grant Screen Time access without a device passcode, and it doesn't enforce shields. On a physical iPhone, run from Xcode (which uses `ScreenSpan.storekit`) or TestFlight sandbox:
 
 1. Buy the annual trial; confirm Blocking opens with the picker and Settings shows the trial end date. Restore on a second install.
-2. Start a 15-minute focus block; open a blocked app and check the shield's name, reason, end time, and nudge. Confirm it lifts at the end with ScreenSpan force-quit.
+2. Start a 15-minute focus block; open a blocked app and check the shield's name, reason, end time, and supportive message. Confirm it lifts at the end with ScreenSpan force-quit.
 3. Add a schedule that starts in two minutes and one that crosses midnight on selected weekdays only. Confirm each turns on and off with the app closed, and that unselected days stay unblocked.
 4. Add a 15-minute daily limit, use the app past it, and confirm the shield; confirm it clears after midnight.
 5. With strict mode on, confirm End early, schedule toggles, editing, and deleting are unavailable while blocking, and strict mode can't be turned off until it ends. Raise and delete a daily limit; both should show as taking effect at midnight, and apply after it. With limits on, turning strict mode off should wait until midnight.

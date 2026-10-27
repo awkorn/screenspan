@@ -5,8 +5,8 @@ import ManagedSettingsUI
 import UIKit
 
 /// The screen shown over a blocked app: a calm white pause with the app's life
-/// grid, what's blocked and until when, and a nudge toward what the user said
-/// they'd rather be doing. The words live in `BlockScreenCopy`.
+/// grid, clear block details, and one supportive message. The words live in
+/// `BlockScreenCopy`.
 final class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     override func configuration(shielding application: Application) -> ShieldConfiguration {
         make(name: application.localizedDisplayName,
@@ -28,9 +28,7 @@ final class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     }
 
     private func make(name: String?, reason: BlockReason) -> ShieldConfiguration {
-        let intentions = TimeIntention.resolve(
-            UserDefaults.appGroup.stringArray(forKey: SharedConstants.UserDefaultsKey.timeIntentions.rawValue))
-        let copy = BlockScreenCopy(appName: name, reason: reason, intentions: intentions)
+        let copy = BlockScreenCopy(appName: name, reason: reason)
         return ShieldConfiguration(
             backgroundBlurStyle: BlockScreenStyle.blur,
             backgroundColor: BlockScreenStyle.background,

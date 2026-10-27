@@ -141,20 +141,26 @@ struct CalculationTests {
         // Block screen copy
         let noon = calendar.date(from: DateComponents(year: 2026, month: 3, day: 10, hour: 12))!
         let late = calendar.date(from: DateComponents(year: 2026, month: 3, day: 10, hour: 23))!
-        let focus = BlockScreenCopy(appName: "LinkedIn", reason: .focus(until: noon), intentions: [.read],
-                                    now: noon, calendar: calendar, nudge: \.first)
-        expect(focus.title == "LinkedIn can wait" && focus.subtitle.hasPrefix("Focus block · until "), "Focus copy")
-        expect(focus.subtitle.hasSuffix("\n" + TimeIntention.read.nudges[0].text) && focus.button == "Back to my day", "Nudge on its own line")
-        let limit = BlockScreenCopy(appName: nil, reason: .limit(minutes: 90), intentions: [.read], now: late, calendar: calendar, nudge: { _ in nil })
-        expect(limit.title == "That’s it for today" && limit.subtitle == "1h 30m daily limit · back tomorrow", "Limit copy")
-        expect(limit.button == "Good night", "Night button")
-        expect(BlockScreenCopy(appName: "X", reason: .limit(minutes: 30), intentions: [], now: noon, calendar: calendar, nudge: { _ in nil }).subtitle
-               == "30-minute daily limit · back tomorrow", "Short limit label")
-        let dayLines = BlockScreenCopy.nudges(for: [.sleep, .outdoors], at: noon, calendar: calendar)
-        let nightLines = BlockScreenCopy.nudges(for: [.sleep, .outdoors], at: late, calendar: calendar)
-        expect(dayLines.contains("Less phone today, better sleep tonight.") && !dayLines.contains("An extra hour of sleep starts now."), "Daytime sleep lines")
-        expect(nightLines.contains("An extra hour of sleep starts now.") && !nightLines.contains("Go find some sunlight."), "Night lines")
-        expect(BlockScreenCopy.nudges(for: [], at: late, calendar: calendar).count == 3, "General lines always available")
+        let focus = BlockScreenCopy(appName: "LinkedIn", reason: .focus(until: noon), now: noon, calendar: calendar)
+        expect(focus.title == "LinkedIn is paused" && focus.subtitle.hasPrefix("Focus block · until "), "Focus copy")
+        expect(focus.subtitle.contains("\n\n") && focus.button == "Close app", "Separate support from status; literal close action")
+        let limit = BlockScreenCopy(appName: nil, reason: .limit(minutes: 90), now: late, calendar: calendar)
+        expect(limit.title == "This app is paused" && limit.subtitle.hasPrefix("1h 30m limit · resets at midnight"), "Limit copy")
+        expect(limit.button == focus.button, "Same close action at night")
+        let tomorrowMorning = calendar.date(byAdding: .hour, value: 8, to: late)!
+        let overnight = BlockScreenCopy(appName: "Instagram", reason: .schedule(name: "Evenings", until: tomorrowMorning),
+                                        now: late, calendar: calendar)
+        expect(overnight.subtitle.hasPrefix("Evenings · until tomorrow at "), "Overnight schedules identify the next day")
+        let unnamed = BlockScreenCopy(appName: "  ", reason: .unknown, now: noon)
+        expect(unnamed.title == "This app is paused" && unnamed.subtitle.hasPrefix("App blocking is on"), "Missing names and reasons stay clear")
+        let windowStart = Date(timeIntervalSince1970: 1_800_000_000)
+        let firstAttempt = BlockScreenCopy(appName: "Instagram", reason: .unknown, now: windowStart)
+        let repeatedAttempt = BlockScreenCopy(appName: "Instagram", reason: .unknown, now: windowStart.addingTimeInterval(899))
+        expect(firstAttempt == repeatedAttempt, "Repeated attempts keep the message throughout a 15-minute window")
+        let anotherApp = BlockScreenCopy(appName: "TikTok", reason: .unknown, now: windowStart)
+        expect(firstAttempt.subtitle == anotherApp.subtitle, "Switching apps doesn't generate more advice")
+        let laterAttempt = BlockScreenCopy(appName: "Instagram", reason: .unknown, now: windowStart.addingTimeInterval(900))
+        expect(firstAttempt.subtitle != laterAttempt.subtitle, "Messages change at the next window")
 
         // Reveal layout: the host's window must land on the right goal row.
         expect(OnboardingRevealLayout.goalValues.count == 31, "Goal rows from 30m to 8h in 15-minute steps")
