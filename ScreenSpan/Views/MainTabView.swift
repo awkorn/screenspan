@@ -27,8 +27,6 @@ struct MainTabView: View {
             HStack {
                 Text("ScreenSpan").font(.geist(size: 21, weight: .bold))
                 Spacer()
-                BlockButton(isPro: store.isPro, action: openBlocking)
-                    .padding(.trailing, 14)
                 Button("Refresh", systemImage: "arrow.clockwise", action: refresh)
                     .labelStyle(.iconOnly)
                     .disabled(!authService.isAuthorized)
@@ -44,6 +42,17 @@ struct MainTabView: View {
             .foregroundStyle(Color(hex: "#0A1F38"))
             .padding(.horizontal, 24)
             .padding(.vertical, 12)
+
+            TimelineView(.periodic(from: .now, by: 15)) { context in
+                BlockingStatusBanner(
+                    block: store.isPro ? blocking.currentBlock(at: context.date) : nil,
+                    now: context.date,
+                    action: openBlocking
+                )
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 4)
+            .padding(.bottom, 12)
 
             if authService.isAuthorized {
                 ZStack {
@@ -153,31 +162,59 @@ struct MainTabView: View {
     }
 }
 
-/// The header's way into blocking, styled as a plain text button. While a
-/// block runs it shows how long is left, so the dashboard says at a glance
-/// whether apps are locked.
-private struct BlockButton: View {
-    let isPro: Bool
+/// A dedicated entry into blocking below the header, with the current state
+/// and its end time kept separate from the dashboard's navigation controls.
+private struct BlockingStatusBanner: View {
+    let block: (end: Date, isFocus: Bool)?
+    let now: Date
     let action: () -> Void
-    @EnvironmentObject private var blocking: BlockingService
+
+    private var title: String { block == nil ? "Apps unblocked" : "Apps blocked" }
+    private var detail: String { block.map { Self.status($0, now: now) } ?? "Manage blocking" }
+    private var foreground: Color {
+        block == nil ? ScreenSpanAppearance.secondaryText : Color(hex: "#188253")
+    }
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 15)) { context in
-            let block = isPro ? blocking.currentBlock(at: context.date) : nil
-            Button(action: action) {
-                Label(block.map { Self.status($0, now: context.date) } ?? "Block",
-                      systemImage: block == nil ? "lock.open" : "lock.fill")
-                    .font(.geist(size: 15, weight: .semibold))
-                    .labelStyle(.titleAndIcon)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                    .foregroundStyle(block == nil ? Color(hex: "#0063D6") : Color(hex: "#1E8A55"))
-                    .frame(minHeight: 44)
-                    .contentShape(Rectangle())
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: block == nil ? "shield" : "checkmark.shield")
+                    .font(.system(size: 17, weight: .medium))
+                    .accessibilityHidden(true)
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 12) {
+                        Text(title)
+                            .font(.geist(size: 13, weight: .semibold))
+                            .fixedSize()
+                        Spacer(minLength: 0)
+                        Text(detail)
+                            .font(.geist(size: 12))
+                            .fixedSize()
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(title).font(.geist(size: 13, weight: .semibold))
+                        Text(detail).font(.geist(size: 12))
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+                    .opacity(0.65)
+                    .accessibilityHidden(true)
             }
-            .buttonStyle(.plain)
-            .accessibilityHint(block == nil ? "Opens Blocking." : "Apps are blocked right now. Opens Blocking.")
+            .foregroundStyle(foreground)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 13)
+            .frame(maxWidth: .infinity, minHeight: 49)
+            .background(block == nil ? Color(hex: "#F4F6FA") : Color(hex: "#EDF7F1"),
+                        in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
         }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title), \(detail)")
+        .accessibilityHint("Opens Blocking.")
     }
 
     /// "42m left" for a focus block, "Until 7:00 AM" for a schedule.
