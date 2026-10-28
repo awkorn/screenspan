@@ -18,7 +18,7 @@ struct DonutChartView: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 20) {
             donutChart
 
             legend
@@ -30,15 +30,19 @@ struct DonutChartView: View {
             let size = min(proxy.size.width, proxy.size.height)
             let ringWidth = size * 0.18
 
+            // Inset by half the ring so the stroke stays inside the frame
+            // instead of spilling into the content above and below.
             ZStack {
                 Circle()
                     .stroke(Color(hex: "#0063D6"), style: StrokeStyle(lineWidth: ringWidth, lineCap: .round))
+                    .padding(ringWidth / 2)
                     .shadow(color: Color.black.opacity(0.07), radius: 12, x: 0, y: 4)
 
                 Circle()
                     .trim(from: 0, to: phonePercentage / 100)
                     .stroke(Color(hex: "#F63232"), style: StrokeStyle(lineWidth: ringWidth, lineCap: .butt))
                     .rotationEffect(.degrees(-90))
+                    .padding(ringWidth / 2)
 
                 Circle()
                     .fill(.white)
@@ -60,7 +64,7 @@ struct DonutChartView: View {
             .frame(width: size, height: size)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(height: 260)
+        .frame(height: 236)
     }
 
     private var formattedPercentage: String {
@@ -68,20 +72,17 @@ struct DonutChartView: View {
     }
 
     private var legend: some View {
-        HStack(spacing: 24) {
+        HStack(spacing: 28) {
             legendDot(
                 color: Color(hex: "#0063D6"),
                 label: "Rest of Life"
             )
-
-            Spacer()
 
             legendDot(
                 color: Color(hex: "#F63232"),
                 label: "Phone Time"
             )
         }
-        .padding(.horizontal, 18)
     }
 
     private func legendDot(color: Color, label: String) -> some View {

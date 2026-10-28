@@ -42,6 +42,8 @@ struct StatsReportView: View {
                             phoneTime: projection.dailyPhoneHours,
                             totalWakingHours: SharedConstants.DefaultValues.wakeHoursPerDay
                         )
+                        .padding(.top, 12)
+                        .padding(.bottom, 4)
                         habitTiles
                         if !payload.topApps.isEmpty {
                             topAppsSection
