@@ -6,8 +6,6 @@ import SwiftUI
 struct ScreenSpanApp: App {
     @StateObject private var authService = AuthorizationService()
     @StateObject private var storeKitService = StoreKitService()
-    @StateObject private var notificationService = NotificationService()
-    @StateObject private var goalService = GoalService()
     @StateObject private var blockingService = BlockingService()
 
     var body: some Scene {
@@ -18,8 +16,6 @@ struct ScreenSpanApp: App {
                 .environment(\.appGroupIdentifier, SharedConstants.appGroupIdentifier)
                 .environmentObject(authService)
                 .environmentObject(storeKitService)
-                .environmentObject(notificationService)
-                .environmentObject(goalService)
                 .environmentObject(blockingService)
                 .onAppear {
                     setupServices()

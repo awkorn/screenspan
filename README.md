@@ -13,4 +13,6 @@ swift Scripts/render-app-icon.swift ScreenSpan/Resources/Assets.xcassets/AppIcon
 python3 Scripts/build-design-preview.py
 ```
 
+To ship a new build, bump `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` in `project.yml`; every target's Info.plist reads them. The app, report, monitor, and shield each carry a `PrivacyInfo.xcprivacy` declaring their App Group `UserDefaults` access.
+
 See [the architecture investigation and physical-device checklist](docs/SCREEN_TIME_ARCHITECTURE.md) for Apple's constraints, implemented changes, verification, and remaining release work. Reports and goal planning are free. App blocking (focus blocks, schedules, daily limits, strict mode) is ScreenSpan Pro, sold as an auto-renewing subscription; see [Blocking and ScreenSpan Pro](docs/SCREEN_TIME_ARCHITECTURE.md#blocking-and-screenspan-pro). Run from Xcode to buy with the local `ScreenSpan.storekit` test configuration.

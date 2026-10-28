@@ -27,7 +27,7 @@ struct SettingsView: View {
             Form {
                 proSection
                 Section("Your life chart") {
-                    Stepper("Current age: \(age)", value: $age, in: 1...120)
+                    Stepper("Current age: \(age)", value: $age, in: 13...120)
                     Stepper("Planning age: \(targetAge)", value: $targetAge, in: 1...120)
                     Text("Planning age is an assumption you choose, not a prediction of your lifespan.")
                         .font(.footnote).foregroundStyle(ScreenSpanAppearance.secondaryText)
