@@ -1,0 +1,160 @@
+/* ScreenSpan site: the app's navy, red and green on a pale gray page.
+   System fonts only, so the site makes no third-party requests. */
+:root {
+  --bg: #F5F6F8;
+  --surface: #FFFFFF;
+  --ink: #14213D;
+  --muted: #586377;
+  --line: #E0E4EA;
+  --red: #E5322D;
+  --green: #2BB673;
+  --cell: #DCE1E8;
+  --link: #0063D6;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0D1320;
+    --surface: #151D2C;
+    --ink: #E7EBF2;
+    --muted: #9AA5B8;
+    --line: #26314A;
+    --red: #FF5A52;
+    --green: #34C27F;
+    --cell: #2A3549;
+    --link: #6FAEFF;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+.page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 32px max(20px, env(safe-area-inset-right)) 64px max(20px, env(safe-area-inset-left));
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+  font-size: 15px;
+}
+
+nav .brand {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+nav .links { display: flex; gap: 20px; }
+nav .links a { color: var(--muted); text-decoration: none; }
+nav .links a:hover, nav .links a[aria-current="page"] { color: var(--ink); }
+
+h1 {
+  font-size: clamp(30px, 7vw, 40px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+  text-wrap: balance;
+}
+
+h2 {
+  font-size: 21px;
+  line-height: 1.3;
+  margin: 40px 0 8px;
+}
+
+h3 {
+  font-size: 17px;
+  margin: 24px 0 4px;
+}
+
+p, ul { margin: 0 0 14px; }
+ul { padding-left: 22px; }
+li { margin-bottom: 6px; }
+
+a { color: var(--link); }
+
+.lede { color: var(--muted); font-size: 19px; margin-bottom: 8px; }
+.meta { color: var(--muted); font-size: 14px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin: 24px 0;
+}
+
+.card p:last-child, .card ul:last-child { margin-bottom: 0; }
+
+.email {
+  font-weight: 600;
+  user-select: all;
+  word-break: break-all;
+}
+
+/* One square per month, as in the app's life grid. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(30, 1fr);
+  gap: 3px;
+  margin: 40px 0;
+}
+
+.grid span {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: var(--cell);
+}
+
+.grid .lived { background: var(--ink); opacity: 0.85; }
+.grid .phone { background: var(--red); }
+.grid .back { background: var(--green); }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: -28px;
+  margin-bottom: 40px;
+}
+
+.legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: 0;
+}
+
+footer {
+  margin-top: 56px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--muted);
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+footer a { color: var(--muted); }

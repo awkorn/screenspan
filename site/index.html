@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ScreenSpan</title>
+<meta name="description" content="ScreenSpan turns your iPhone's Screen Time into a life chart, one square per month, and helps you win some of those months back.">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="page">
+  <nav>
+    <a class="brand" href="/">ScreenSpan</a>
+    <div class="links">
+      <a href="/support">Support</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+  </nav>
+
+  <h1>Your life in months, and the ones your phone takes.</h1>
+  <p class="lede">ScreenSpan draws an 80-year life as 960 squares, one per month, and shows how many your current screen time adds up to. Set a daily goal, block the apps that pull you back in, and watch months turn back into yours.</p>
+
+  <div class="grid" aria-hidden="true">
+    <!-- 6 rows of 30: lived months, then a scatter of phone months, some won back. -->
+    <script>
+      (function () {
+        var grid = document.currentScript.parentNode;
+        for (var i = 0; i < 180; i++) {
+          var s = document.createElement("span");
+          var hash = (i * 7919 + 104729) % 97;
+          if (i < 54) s.className = "lived";
+          else if (hash < 14) s.className = "back";
+          else if (hash < 30) s.className = "phone";
+          grid.appendChild(s);
+        }
+      })();
+    </script>
+  </div>
+  <div class="legend" aria-hidden="true">
+    <span><i style="background:var(--ink)"></i>Lived</span>
+    <span><i style="background:var(--red)"></i>On your phone</span>
+    <span><i style="background:var(--green)"></i>Won back</span>
+  </div>
+
+  <p>Your Screen Time stays on your iPhone. ScreenSpan reads it through Apple's private Screen Time report and never sees, stores or uploads it.</p>
+  <p class="meta">Coming soon to the App Store for iPhone.</p>
+
+  <footer>
+    <span>© 2026 ScreenSpan</span>
+    <a href="/support">Support</a>
+    <a href="/privacy">Privacy Policy</a>
+  </footer>
+</div>
+</body>
+</html>
