@@ -68,6 +68,8 @@ targets:
       - path: Shared
         excludes:
           - "Blocking/**"
+      # Token-free plan math, for showing progress against each step.
+      - path: Shared/Blocking/ReductionCourse.swift
       - path: ScreenSpan/Resources/Fonts/Geist
         buildPhase: resources
     info:

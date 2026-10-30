@@ -22,6 +22,7 @@
 		1DBEDE22D8A952DC1453B688 /* TimeIntention.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF82A268487C5AC03C8A995D /* TimeIntention.swift */; };
 		1F2E15C436B13BB384055DC0 /* GeistMonoVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BE34D57A0A7DEE22E6C522B7 /* GeistMonoVF.ttf */; };
 		261FEE594F847D846E1E4906 /* BlockScreenStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 438CBA6159E068C2013642C0 /* BlockScreenStyle.swift */; };
+		28D10D291CD358C876ACF8DC /* ReductionCourse.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBCAEEC2ACCB94A5A510F9E5 /* ReductionCourse.swift */; };
 		2FF689C97CDC644D27D555BC /* DeviceActivityFilter+ScreenSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C29874BF92FC9D9478EB192 /* DeviceActivityFilter+ScreenSpan.swift */; };
 		304900B8BDC5296E96DF6319 /* AppGroupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756444A3B2BC26E2CCD3993F /* AppGroupManager.swift */; };
 		3144CD2A97C9F2FC3283522B /* BlockingConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 742E45FF184F9B2A26A7B210 /* BlockingConfiguration.swift */; };
@@ -49,16 +50,20 @@
 		536E0D5D1C6E8F2D19C3790C /* OnboardingScaffold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70334E36F1FD04BF4207E98B /* OnboardingScaffold.swift */; };
 		56EDA126CF5BC55982BB61F5 /* OnboardingRevealPanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC001674A06509B90440FE1 /* OnboardingRevealPanels.swift */; };
 		5899087DD153621F52A860BE /* ProjectionCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C243C4B38CF92C03D01F92AB /* ProjectionCalculator.swift */; };
+		5926CEB012E3EE74A4F9B8EE /* ReductionCourse.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBCAEEC2ACCB94A5A510F9E5 /* ReductionCourse.swift */; };
 		592C7462F3ADB44C070A8E3A /* GeistMonoItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D541E0CE886AB9530162F9E3 /* GeistMonoItalicVF.ttf */; };
 		599713727556A635527C1D4B /* DashboardReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C7D0DC0F02AE285A6F4DF8E /* DashboardReportView.swift */; };
 		59BFC6CC6EAC27863395F717 /* DonutChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A93D9C33850C3C05045FC653 /* DonutChartView.swift */; };
 		5C367FC644651AFE4F80A3DB /* ScreenSpanReportExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68EB2E6FD7CF107932E803D2 /* ScreenSpanReportExtension.swift */; };
+		5E3795D828D3BE49D76BF88B /* ReductionPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863A5A3E939A13A701826B2B /* ReductionPlan.swift */; };
 		5E88766087C202317A5BEEC7 /* GeistMonoItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D541E0CE886AB9530162F9E3 /* GeistMonoItalicVF.ttf */; };
+		5F23AF387EC0868520FB5F0F /* ReductionCourse.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBCAEEC2ACCB94A5A510F9E5 /* ReductionCourse.swift */; };
 		5F6F01F65A14D660320092E5 /* IntentionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B577B6D6F23BCC19AD8C743 /* IntentionsView.swift */; };
 		60343D12704D8AE5781615F2 /* SubscriptionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEFB5FF71316F7E1E7057F1A /* SubscriptionStatus.swift */; };
 		63A96DF2A8F6EAF116D2B484 /* ChartReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0C74C00317100ECF78D95A /* ChartReportView.swift */; };
 		67385984CDF1FEB760B7C12E /* DonutChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A93D9C33850C3C05045FC653 /* DonutChartView.swift */; };
 		70508DE61057684BEC9A80B9 /* ProjectionCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C243C4B38CF92C03D01F92AB /* ProjectionCalculator.swift */; };
+		76A30899C3B09403548F878C /* ReductionCourse+Projection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5038F2615D67A1D5E00575D5 /* ReductionCourse+Projection.swift */; };
 		7A8478D08CF7910C16F732AF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D7A6A230E201C6A5E34E064D /* PrivacyInfo.xcprivacy */; };
 		7CA6D26D4488504C8E363E2A /* Color+ScreenSpanReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51463CC93AF1FC395F23A659 /* Color+ScreenSpanReport.swift */; };
 		846999AF845956B5927390FE /* ScreenSpanShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4CEBF04EDCFB919ED6042EB6 /* ScreenSpanShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -78,6 +83,7 @@
 		A4D1A65E9CD083450D467A02 /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
 		A53070273FEF27861FD66E84 /* ScreenSpanAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCFE517652396A0F9ACDA79 /* ScreenSpanAppearance.swift */; };
 		A65A927040C251DE6BF21BC5 /* ActivitySummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6285B74674298E92260D6F0 /* ActivitySummary.swift */; };
+		A714B4B31CC70134EEE8D5CB /* ReductionCourse+Projection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5038F2615D67A1D5E00575D5 /* ReductionCourse+Projection.swift */; };
 		A7BA55370667EBB5975595DA /* StoreKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7D5F6A44622236803D7EED /* StoreKitService.swift */; };
 		A842D69D5C77E8CBB463F4F4 /* ScreenSpanMonitorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B9CCC5FAC1260FEF5189086 /* ScreenSpanMonitorExtension.swift */; };
 		A9E23254695DCCEE7DAA9DD9 /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
@@ -102,16 +108,19 @@
 		D9B4D9BDD484D0CE6BFBC295 /* PermissionRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39154E949451B6CF3E2EE0BE /* PermissionRequestView.swift */; };
 		DADD58A89397D097FF44F393 /* RevealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C02734202C44624F0FC951C /* RevealView.swift */; };
 		DFADA2141193D941898CC26F /* BlockScreenCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB11D04E3DD4C77AB2D5291F /* BlockScreenCopy.swift */; };
+		E2106F756A419A3A5919B862 /* ReductionCourse.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBCAEEC2ACCB94A5A510F9E5 /* ReductionCourse.swift */; };
 		E476A69F830E59062F2B1980 /* AuthorizationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1386C8E8351CD19946B3E8 /* AuthorizationService.swift */; };
 		E497BD738F5227E4D7D4335D /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
 		E4BF3488E576DA5544AD71A7 /* LifeRegainedProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */; };
 		E6222E286ED8B85D046E0362 /* ProgressInsights.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9386737EA0349AC8891EC0 /* ProgressInsights.swift */; };
 		E903E789B202E24425E7F574 /* ShieldActionExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF1AC49990819D559046F77D /* ShieldActionExtension.swift */; };
 		E909B357CB330BF565FBA9B9 /* ProjectionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */; };
+		EB72B7FCDB61ED89A6E0EF44 /* ReductionPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863A5A3E939A13A701826B2B /* ReductionPlan.swift */; };
 		EEB02920524F9DED2CCAEA60 /* BlockingRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC84D5D3FA2FE94E69A96188 /* BlockingRule.swift */; };
 		EEFC74152742F33836C9D61D /* Color+ScreenSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B64696CA1F5AF4236B8F96 /* Color+ScreenSpan.swift */; };
 		F420A4DEF7335FF818D107A2 /* GeistItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */; };
 		F51CE5698164331490E5433C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 086D3D5A2EE570B7E1E8DEBA /* Assets.xcassets */; };
+		F9A996FA3DA97DE6F1DEEDC2 /* ReductionPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863A5A3E939A13A701826B2B /* ReductionPlan.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -196,6 +205,7 @@
 		4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedConstants.swift; sourceTree = "<group>"; };
 		4C7D0DC0F02AE285A6F4DF8E /* DashboardReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardReportView.swift; sourceTree = "<group>"; };
 		4CEBF04EDCFB919ED6042EB6 /* ScreenSpanShieldAction.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ScreenSpanShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		5038F2615D67A1D5E00575D5 /* ReductionCourse+Projection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReductionCourse+Projection.swift"; sourceTree = "<group>"; };
 		51463CC93AF1FC395F23A659 /* Color+ScreenSpanReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+ScreenSpanReport.swift"; sourceTree = "<group>"; };
 		5A1386C8E8351CD19946B3E8 /* AuthorizationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthorizationService.swift; sourceTree = "<group>"; };
 		5AC2AE376C93D5CA9A49DACE /* OnboardingContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingContainerView.swift; sourceTree = "<group>"; };
@@ -211,6 +221,7 @@
 		7644C84804CDFEA305490E75 /* StatsReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsReportView.swift; sourceTree = "<group>"; };
 		768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GeistItalicVF.ttf; sourceTree = "<group>"; };
 		7F6C9EB6BF4959BE60DD1E0C /* OnboardingReportViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingReportViewport.swift; sourceTree = "<group>"; };
+		863A5A3E939A13A701826B2B /* ReductionPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReductionPlan.swift; sourceTree = "<group>"; };
 		9454C7ED8B41B24B9FC8F2ED /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
 		9A4D8FAD2211C2AAFF1DED04 /* ScreenSpanApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSpanApp.swift; sourceTree = "<group>"; };
 		A13087A939D48C292559235F /* BlockSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockSchedule.swift; sourceTree = "<group>"; };
@@ -232,6 +243,7 @@
 		C2AC75288B4E2F4E8469DC82 /* LifeGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeGridView.swift; sourceTree = "<group>"; };
 		C36511F5739D6DCD5EE75BBB /* PlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanView.swift; sourceTree = "<group>"; };
 		C8EA298EF7CB1876A1B306BF /* ScreenSpanReport.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = ScreenSpanReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		CBCAEEC2ACCB94A5A510F9E5 /* ReductionCourse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReductionCourse.swift; sourceTree = "<group>"; };
 		CC84D5D3FA2FE94E69A96188 /* BlockingRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingRule.swift; sourceTree = "<group>"; };
 		CCCFE517652396A0F9ACDA79 /* ScreenSpanAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSpanAppearance.swift; sourceTree = "<group>"; };
 		CF82A268487C5AC03C8A995D /* TimeIntention.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeIntention.swift; sourceTree = "<group>"; };
@@ -319,6 +331,7 @@
 				EB9386737EA0349AC8891EC0 /* ProgressInsights.swift */,
 				C243C4B38CF92C03D01F92AB /* ProjectionCalculator.swift */,
 				0B16A6F5B2A7C3CBBBF9E446 /* ProjectionModel.swift */,
+				5038F2615D67A1D5E00575D5 /* ReductionCourse+Projection.swift */,
 				CCCFE517652396A0F9ACDA79 /* ScreenSpanAppearance.swift */,
 				4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */,
 				CF82A268487C5AC03C8A995D /* TimeIntention.swift */,
@@ -443,6 +456,8 @@
 				742E45FF184F9B2A26A7B210 /* BlockingConfiguration.swift */,
 				CC84D5D3FA2FE94E69A96188 /* BlockingRule.swift */,
 				A13087A939D48C292559235F /* BlockSchedule.swift */,
+				CBCAEEC2ACCB94A5A510F9E5 /* ReductionCourse.swift */,
+				863A5A3E939A13A701826B2B /* ReductionPlan.swift */,
 			);
 			path = Blocking;
 			sourceTree = "<group>";
@@ -727,6 +742,8 @@
 				98C0F9012844E9892B9D4BE1 /* ProgressInsights.swift in Sources */,
 				70508DE61057684BEC9A80B9 /* ProjectionCalculator.swift in Sources */,
 				8919445EF7490602BAA2D63E /* ProjectionModel.swift in Sources */,
+				A714B4B31CC70134EEE8D5CB /* ReductionCourse+Projection.swift in Sources */,
+				28D10D291CD358C876ACF8DC /* ReductionCourse.swift in Sources */,
 				A53070273FEF27861FD66E84 /* ScreenSpanAppearance.swift in Sources */,
 				5C367FC644651AFE4F80A3DB /* ScreenSpanReportExtension.swift in Sources */,
 				47CD9456C5A021217B34D7CE /* SharedConstants.swift in Sources */,
@@ -777,6 +794,9 @@
 				E6222E286ED8B85D046E0362 /* ProgressInsights.swift in Sources */,
 				5899087DD153621F52A860BE /* ProjectionCalculator.swift in Sources */,
 				E909B357CB330BF565FBA9B9 /* ProjectionModel.swift in Sources */,
+				76A30899C3B09403548F878C /* ReductionCourse+Projection.swift in Sources */,
+				E2106F756A419A3A5919B862 /* ReductionCourse.swift in Sources */,
+				F9A996FA3DA97DE6F1DEEDC2 /* ReductionPlan.swift in Sources */,
 				DADD58A89397D097FF44F393 /* RevealView.swift in Sources */,
 				AFAE3FD26CE8D5923D988FCF /* ScreenSpanApp.swift in Sources */,
 				8A28E4ADC1A4B179C11E717E /* ScreenSpanAppearance.swift in Sources */,
@@ -799,6 +819,8 @@
 				0D8BC829F5093221A532C21A /* BlockScreenStyle.swift in Sources */,
 				D96FC850D086C652B2A8CEA9 /* BlockingConfiguration.swift in Sources */,
 				EEB02920524F9DED2CCAEA60 /* BlockingRule.swift in Sources */,
+				5926CEB012E3EE74A4F9B8EE /* ReductionCourse.swift in Sources */,
+				EB72B7FCDB61ED89A6E0EF44 /* ReductionPlan.swift in Sources */,
 				A4D1A65E9CD083450D467A02 /* SharedConstants.swift in Sources */,
 				A32E4CF8BDC9F4FE043F3B45 /* ShieldConfigurationExtension.swift in Sources */,
 				A02D00B155D4C0D557643B50 /* TimeIntention.swift in Sources */,
@@ -813,6 +835,8 @@
 				CD10F110D781688CD2D7A783 /* BlockSchedule.swift in Sources */,
 				3144CD2A97C9F2FC3283522B /* BlockingConfiguration.swift in Sources */,
 				1BDCFE2268B9C54590FA6AC8 /* BlockingRule.swift in Sources */,
+				5F23AF387EC0868520FB5F0F /* ReductionCourse.swift in Sources */,
+				5E3795D828D3BE49D76BF88B /* ReductionPlan.swift in Sources */,
 				A842D69D5C77E8CBB463F4F4 /* ScreenSpanMonitorExtension.swift in Sources */,
 				A9E23254695DCCEE7DAA9DD9 /* SharedConstants.swift in Sources */,
 				31691C810909B7B1CF7E67D0 /* UserDefaults+AppGroup.swift in Sources */,

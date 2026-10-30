@@ -208,6 +208,75 @@ struct CalculationTests {
         expect(work.weekdaySummary(calendar: english) == "Weekdays" && bedtime.weekdaySummary(calendar: english) == "Fri", "Day summaries")
         expect(BlockSchedule.orderedWeekdays(calendar: calendar).count == 7, "All weekdays listed")
 
+        // Reduction plan: week-long steps from where the user started to their target.
+        expect(ReductionCourse.ladder(from: 180, to: 90) == [150, 120, 90], "3h to 1h 30m in three steps")
+        expect(ReductionCourse.ladder(from: 360, to: 180) == [330, 300, 270, 240, 210, 180], "Cuts capped at 30 minutes")
+        expect(ReductionCourse.ladder(from: 60, to: 30) == [50, 40, 30], "Smaller cuts near the floor")
+        expect(ReductionCourse.ladder(from: 150, to: 115) == [130, 115], "No token last step; split evenly")
+        expect(ReductionCourse.ladder(from: 90, to: 90).isEmpty && ReductionCourse.nextLimit(from: 60, toward: 90) == 60, "Nothing below the target")
+        var everyLadderSteps = true
+        for baseline in stride(from: ReductionCourse.minimumBaselineMinutes, through: ReductionCourse.maximumBaselineMinutes, by: 5) {
+            for target in stride(from: ReductionCourse.minimumTargetMinutes, through: baseline - ReductionCourse.minimumCut, by: 5) {
+                let limits = ReductionCourse.ladder(from: baseline, to: target)
+                let cuts = zip([baseline] + limits, limits).map { $0 - $1 }
+                everyLadderSteps = everyLadderSteps && limits.last == target && limits.allSatisfy { $0 % 5 == 0 }
+                    && cuts.allSatisfy { (ReductionCourse.minimumCut...ReductionCourse.maximumCut).contains($0) }
+            }
+        }
+        expect(everyLadderSteps, "Every ladder ends at its target in 10–30 minute cuts of whole 5 minutes")
+        expect(ReductionCourse.defaultTarget(baselineMinutes: 180) == 90 && ReductionCourse.defaultTarget(baselineMinutes: 25) == 15, "Default target is half")
+        expect(ReductionCourse.defaultTarget(baselineMinutes: 20) == 10, "Default target leaves room for one cut")
+
+        // October 19, 2026 is a Monday; US DST ends November 1.
+        let planStart = at(19, 9)
+        var course = ReductionCourse(baselineMinutes: 180, start: planStart)
+        expect(course.targetMinutes == 90 && course.currentMinutes == 150 && course.remainingLimits == [120, 90], "First step starts right away")
+        expect(course.minutesBack == 30 && course.minutesBackAtTarget == 90, "Minutes back now and at target")
+        expect(course.checkInDate(calendar: calendar) == at(26, 0), "Check-in a week after the first day")
+        expect(!course.isReadyForNextStep(at: at(25, 23, 59), calendar: calendar) && course.isReadyForNextStep(at: at(26, 0), calendar: calendar), "Ready at the check-in")
+        expect(course.projectedTargetDate(calendar: calendar) == at(2, 0, month: 11), "Target date counts whole days across DST")
+        expect(course.easedBackMinutes == 165, "Easing back the first step halves the cut")
+        course.hold(at: at(26, 10), calendar: calendar)
+        expect(course.checkInDate(calendar: calendar) == at(2, 0, month: 11) && course.currentMinutes == 150, "Holding keeps the limit a week")
+        course.stepDown(at: at(2, 8, month: 11))
+        expect(course.currentMinutes == 120 && course.steps.count == 2, "Stepping down takes the next limit")
+        expect(course.checkInDate(calendar: calendar) == at(9, 0, month: 11), "Stepping down clears the hold")
+        expect(course.easedBackMinutes == 150, "Easing back returns to the last limit")
+        course.easeBack(effective: at(3, 0, month: 11))
+        expect(course.currentMinutes == 150 && course.checkInDate(calendar: calendar) == at(10, 0, month: 11), "Eased limit restarts the week")
+        expect(course.easedBackMinutes == 165, "Easing back again halves the first cut")
+        course.retarget(60)
+        expect(course.remainingLimits == [120, 95, 75, 60], "Lower target extends the ladder")
+        course.retarget(500)
+        expect(course.targetMinutes == 170 && course.isAtTarget && course.currentMinutes == 150, "Raised target never loosens the limit")
+        expect(course.checkInDate(calendar: calendar) == nil && course.projectedTargetDate(calendar: calendar) == nil, "No check-ins at target")
+        let before = course
+        course.stepDown(at: at(12, 9, month: 11))
+        expect(course == before, "No step below the target")
+        course.retarget(3)
+        expect(course.targetMinutes == ReductionCourse.minimumTargetMinutes, "Target floor")
+
+        let smallApp = ReductionCourse(baselineMinutes: 7, start: planStart)
+        expect(smallApp.baselineMinutes == 20 && smallApp.currentMinutes == 10 && smallApp.isAtTarget, "Small apps get one step")
+        expect(smallApp.easedBackMinutes == 15, "Small apps can still ease back")
+        let odd = ReductionCourse(baselineMinutes: 2000, targetMinutes: 2, start: planStart)
+        expect(odd.baselineMinutes == 960 && odd.targetMinutes == 10, "Out-of-range entries clamped")
+        let tooHigh = ReductionCourse(baselineMinutes: 183, targetMinutes: 400, start: planStart)
+        expect(tooHigh.baselineMinutes == 185 && tooHigh.targetMinutes == 175 && tooHigh.currentMinutes == 175, "Target always below the start")
+
+        let light = ReductionCourse(baselineMinutes: 60, start: at(21, 20))
+        let plan = [ReductionCourse(baselineMinutes: 180, start: planStart), light]
+        expect(plan.minutesBack == 40 && plan.minutesBackAtTarget == 120, "Plan totals")
+        expect(plan.nextCheckIn(calendar: calendar) == at(26, 0), "Plan check-in is the earliest app's")
+        expect(close(plan.regained(currentAge: 30, targetAge: 80).yearsReclaimed, 50 * 365 * (40.0 / 60) / 8760), "Plan time back so far")
+        expect(close(plan[0].regained(atLimit: 90, currentAge: 30, targetAge: 80).yearsReclaimed, 50 * 365 * 1.5 / 8760), "Time back at one app's target")
+        expect(close(plan.regainedAtTarget(currentAge: 30, targetAge: 80).yearsReclaimed, 50 * 365 * 2.0 / 8760), "Plan time back at target")
+
+        let encoded = try! JSONEncoder().encode(before)
+        expect((try? JSONDecoder().decode(ReductionCourse.self, from: encoded)) == before, "Course round-trips")
+        let empty = #"{"baselineMinutes":180,"targetMinutes":90,"steps":[]}"#.data(using: .utf8)!
+        expect((try? JSONDecoder().decode(ReductionCourse.self, from: empty)) == nil, "A course without steps is rejected")
+
         print("Passed \(checks) calculation and aggregation checks")
     }
 }
