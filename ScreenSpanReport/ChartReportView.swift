@@ -41,7 +41,13 @@ struct ChartReportView: View {
     private var dailyAverageHours: Double { payload.dailyAverageHours ?? 0 }
     private var resolvedCurrentAge: Int { max(currentAge, 1) }
     private var resolvedTargetAge: Int { max(targetAge, resolvedCurrentAge) }
-    private var goalHours: Double { screenTimeGoalMinutes / 60 }
+    /// With a plan, the marker is where its targets would bring the day:
+    /// the starting pace less every app's cut. Otherwise the daily goal.
+    private var goalHours: Double {
+        guard !payload.plan.apps.isEmpty else { return screenTimeGoalMinutes / 60 }
+        let cut = Double(payload.plan.courses.minutesBackAtTarget) / 60
+        return max((startingPaceHours ?? dailyAverageHours) - cut, 0)
+    }
 
     private var startingPaceHours: Double? {
         payload.progress(trackingStartSeconds: trackingStartSeconds,
@@ -74,7 +80,7 @@ struct ChartReportView: View {
 
     private var markers: [SliderMarker] {
         var markers = [SliderMarker(label: "Now", hours: dailyAverageHours),
-                       SliderMarker(label: "Goal", hours: goalHours)]
+                       SliderMarker(label: payload.plan.apps.isEmpty ? "Goal" : "Plan", hours: goalHours)]
         if let startingPaceHours { markers.append(SliderMarker(label: "Start", hours: startingPaceHours)) }
         return markers
     }

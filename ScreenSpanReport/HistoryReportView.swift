@@ -1,9 +1,10 @@
 import SwiftUI
 import Charts
 
-/// Progress since the user started ScreenSpan. Daily totals, the measured
-/// starting pace, and every comparison stay inside this extension; the host
-/// supplies only the start date and an optional starting point the user typed.
+/// Progress since the user started ScreenSpan, led by the plan when there is
+/// one. Daily totals, the measured starting pace, and every comparison stay
+/// inside this extension; the host supplies only the start date, an optional
+/// starting point the user typed, and the plan the user chose.
 struct HistoryReportView: View {
     let payload: ScreenTimeReportPayload
     @AppStorage(SharedConstants.UserDefaultsKey.screenTimeGoalMinutes.rawValue, store: .appGroup)
@@ -30,15 +31,20 @@ struct HistoryReportView: View {
     }
 
     private var goalHours: Double { goalMinutes / 60 }
+    /// The plan's limits take the place of a single daily goal.
+    private var hasPlan: Bool { !payload.plan.apps.isEmpty }
 
     var body: some View {
         let progress = payload.progress(trackingStartSeconds: trackingStartSeconds,
                                         savedStartingMinutes: savedStartingMinutes)
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
+                if hasPlan {
+                    PlanReportSection(payload: payload, currentAge: currentAge, targetAge: targetAge)
+                }
                 regainSection(progress)
                 chartSection(progress)
-                goalSection(progress)
+                if !hasPlan { goalSection(progress) }
                 currentSection(progress)
                 Text("Projections compare your daily average since starting with your starting pace, from now until age \(targetAge). Days Screen Time did not report are left out, not counted as zero.")
                     .font(.geist(size: 12))
@@ -202,9 +208,11 @@ struct HistoryReportView: View {
                             .foregroundStyle(startingPaceColor)
                             .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4]))
                     }
-                    RuleMark(y: .value("Daily goal", goalHours))
-                        .foregroundStyle(goalColor)
-                        .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [2, 3]))
+                    if !hasPlan {
+                        RuleMark(y: .value("Daily goal", goalHours))
+                            .foregroundStyle(goalColor)
+                            .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [2, 3]))
+                    }
                 }
                 .chartXScale(domain: domain.start...domain.end)
                 .chartXAxis {
@@ -232,7 +240,7 @@ struct HistoryReportView: View {
                     if progress.startingPaceHours != nil {
                         legendSwatch(dash(startingPaceColor), "Start")
                     }
-                    legendSwatch(dash(goalColor), "Goal")
+                    if !hasPlan { legendSwatch(dash(goalColor), "Goal") }
                 }
             }
             .padding(18)
@@ -276,7 +284,7 @@ struct HistoryReportView: View {
         var parts = ["Daily screen time for \(dayCount(progress.trackedDays.count)) since starting"]
         if let current = progress.currentPaceHours { parts.append("averaging \(duration(current)) a day") }
         if let pace = progress.startingPaceHours { parts.append("starting pace \(duration(pace)) a day") }
-        parts.append("goal \(duration(goalHours)) a day")
+        if !hasPlan { parts.append("goal \(duration(goalHours)) a day") }
         return parts.joined(separator: ", ")
     }
 

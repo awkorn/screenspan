@@ -36,8 +36,11 @@ struct PreviewApp: App {
                         Text("Goal setting reached").foregroundStyle(ScreenSpanAppearance.text)
                         Spacer()
                     }
+                } else if CommandLine.arguments.contains("--checkin") {
+                    PlanCheckInReportView(payload: planFixture).frame(height: 2 * 188).padding(.horizontal, 20)
+                    Spacer()
                 } else {
-                    DashboardReportView(payload: fixture)
+                    DashboardReportView(payload: CommandLine.arguments.contains("--plan") ? planFixture : fixture)
                 }
             }
             .background(Color.white)
@@ -58,6 +61,28 @@ struct PreviewApp: App {
             .map { AppUsage(application: nil, fallbackName: $0.0, dailyHours: $0.1) }
         return ScreenTimeReportPayload(dailyAverageHours: ActivityDay.averageHours(of: days), days: days, history: history,
                                        topApps: apps, pickupsPerDay: 84)
+    }
+
+    /// Two planned apps (no real tokens, so no names) started nine days ago.
+    /// The first stepped down two days ago; the second is due a check-in.
+    var planFixture: ScreenTimeReportPayload {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        func day(_ offset: Int) -> Date { calendar.date(byAdding: .day, value: offset, to: today)! }
+        var heavy = ReductionCourse(baselineMinutes: 180, start: day(-9))
+        heavy.stepDown(effective: day(-2))
+        let light = ReductionCourse(baselineMinutes: 60, start: day(-9))
+        let heavyApp = PlannedApp(selection: .init(), course: heavy)
+        let lightApp = PlannedApp(selection: .init(), course: light)
+        let heavyHours = [3.1, 2.8, 3.3, 2.9, 3.0, 3.2, 2.7, 2.5, 2.2, 2.5, 1.9, 2.4, 2.1, 2.5, 1.8, 1.7]
+        let lightHours = [1.1, 0.9, 1.0, 1.2, 0.8, 1.0, 1.1, 0.8, 0.7, 0.83, 0.6, 0.75, 0.83, 0.5, 0.7, 0.8]
+        func usage(_ hours: [Double]) -> [ActivityDay] {
+            hours.enumerated().map { ActivityDay(date: day($0.offset - hours.count), hours: $0.element) }
+        }
+        var payload = fixture
+        payload.plan = ReductionPlan(apps: [heavyApp, lightApp])
+        payload.planUsage = [heavyApp.id: usage(heavyHours), lightApp.id: usage(lightHours)]
+        return payload
     }
 }
 

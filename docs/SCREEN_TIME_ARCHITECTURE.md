@@ -44,6 +44,18 @@ The host records `trackingStartDate` when onboarding completes (existing users a
 - **Chart:** faint daily bars plus a trailing seven-day average line (shown once three days of that window are reported, broken at gaps rather than interpolated), with the pre-start week shaded and the starting pace and goal as reference lines.
 - **Daily goal:** one square per calendar day since starting (up to 14), green at or under the goal, red over, dashed when not reported, plus the current streak. A missing day ends a streak because it cannot be confirmed.
 
+### Plan
+
+With a plan, the dashboard opens on the third tab, renamed Plan, and leads it with the plan. The report reads the plan (the user's picks as tokens and the limits they chose) from the App Group's blocking configuration, like the goal. During aggregation it sums each planned app's daily time, as app, category, or website, from the week before the plan's first limit; reported days without the app count as zero, unreported days stay missing (`PlanAppProgress`). It shows:
+
+- **Time back so far:** each app's starting point (the user's entry) minus its average since the plan started, summed, with the lifetime projection.
+- **Each app's week:** today's limit, step N of M, yesterday's time, and a bar per day of the step's last seven: green under the limit, amber at it (within a minute, since the block stops usage there), dashed when unreported. Then the next step's check-in date, a change due at midnight, or that the target is reached.
+- **Substitution:** if everything outside the plan rose 20+ minutes a day compared with the week before it (three reported days on each side), a note suggests adding the app that took over.
+
+The daily goal's streak and chart line are hidden for plan users; the life grid's marker becomes "Plan": the starting pace less every app's cut at target.
+
+**Check-ins** are host UI, because the report can't take actions or tell the host anything. The plan's dates are the user's own, so the host knows when a step's seventh day arrives and shows a check-in banner above the blocking status. Its sheet embeds a `.planCheckIn` report with each due app's week and advice (hold if the limit was reached on most reported days, otherwise step down), followed by the choices: step down, not yet, or ease back. Blocking lists the plan with today's limit, a change due at midnight (cancelable), and a menu to ease back, move the target, or remove the app. The report reads the plan when it loads, so the dashboard reloads once when the plan has changed, after any sheet closes.
+
 ### Stats and Life Grid
 
 Stats describes the last seven completed days: the lifetime projection, the waking-life donut, daily average, pickups per day, full 24-hour days a year at that average, and the top five apps by daily average with each app's lifetime projection. Per-app detail is read only for those seven daily segments; older segments contribute just their totals, so the 35-day query does not pay for app-level detail it never shows. App names and icons render from `Application` tokens with FamilyControls' `Label`, inside the extension. They are never logged, stored, or sent to the host. Pickups are app pickups plus pickups without app activity.

@@ -1,8 +1,8 @@
 import FamilyControls
 import SwiftUI
 
-/// ScreenSpan Pro's blocking hub: start a focus block, choose the distraction
-/// list, and manage schedules, daily limits, and strict mode.
+/// ScreenSpan Pro's blocking hub: start a focus block, adjust the plan, choose
+/// the distraction list, and manage schedules, daily limits, and strict mode.
 struct BlockingView: View {
     /// Opens the app picker right away, for first-time setup after purchase.
     var opensPickerOnAppear = false
@@ -32,6 +32,7 @@ struct BlockingView: View {
                                 startFocusCard
                             }
                         }
+                        PlanBlockingSection()
                         blockListSection
                         schedulesSection
                         limitsSection

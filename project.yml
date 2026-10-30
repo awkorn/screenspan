@@ -65,11 +65,11 @@ targets:
         excludes:
           - "*.entitlements"
           - "DeviceActivityReport+Contexts.swift"
+      # The blocking configuration, read for the plan's apps and limits.
+      # The report never applies shields, so it leaves out the rule.
       - path: Shared
         excludes:
-          - "Blocking/**"
-      # Token-free plan math, for showing progress against each step.
-      - path: Shared/Blocking/ReductionCourse.swift
+          - "Blocking/BlockingRule.swift"
       - path: ScreenSpan/Resources/Fonts/Geist
         buildPhase: resources
     info:

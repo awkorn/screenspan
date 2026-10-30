@@ -4,9 +4,15 @@ import SwiftUI
 /// stays inside the extension and never changes the host's context or filter.
 struct DashboardReportView: View {
     let payload: ScreenTimeReportPayload
-    @State private var page = 0
+    /// With a plan, the dashboard opens on it: it's the daily loop.
+    @State private var page: Int
     @AppStorage(SharedConstants.UserDefaultsKey.dashboardBottomInset.rawValue, store: .appGroup)
     private var hostBottomInset = 0.0
+
+    init(payload: ScreenTimeReportPayload) {
+        self.payload = payload
+        _page = State(initialValue: payload.plan.apps.isEmpty ? 0 : 2)
+    }
 
     var body: some View {
         // The host extends the report under the home indicator; the tab bar
@@ -48,7 +54,11 @@ struct DashboardReportView: View {
         HStack(spacing: 4) {
             tab("Life Grid", icon: "square.grid.3x3", value: 0)
             tab("Stats", icon: "chart.pie", value: 1)
-            tab("Progress", icon: "chart.line.uptrend.xyaxis", value: 2)
+            if payload.plan.apps.isEmpty {
+                tab("Progress", icon: "chart.line.uptrend.xyaxis", value: 2)
+            } else {
+                tab("Plan", icon: "chart.line.downtrend.xyaxis", value: 2)
+            }
         }
         .padding(4)
         .background(Color(hex: "#F6F7FA"), in: Capsule())

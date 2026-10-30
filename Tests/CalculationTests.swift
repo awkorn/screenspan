@@ -291,6 +291,44 @@ struct CalculationTests {
         expect(close(plan[0].regained(atLimit: 90, currentAge: 30, targetAge: 80).yearsReclaimed, 50 * 365 * 1.5 / 8760), "Time back at one app's target")
         expect(close(plan.regainedAtTarget(currentAge: 30, targetAge: 80).yearsReclaimed, 50 * 365 * 2.0 / 8760), "Plan time back at target")
 
+        // Plan progress, inside the report: the step's days against its limit.
+        let progressCourse = ReductionCourse(baselineMinutes: 180, start: planStart)
+        let stepHours: [Int: Double] = [20: 2.5, 21: 2.0, 22: 2.5, 23: 1.5, 25: 149.4 / 60]
+        var appUsage = (13...19).map { ActivityDay(date: at($0, 0), hours: 3) }
+        appUsage += stepHours.keys.sorted().map { ActivityDay(date: at($0, 0), hours: stepHours[$0]!) }
+        let midWeek = PlanAppProgress(course: progressCourse, usage: appUsage, now: at(26, 10), calendar: calendar)
+        expect(midWeek.stepIndex == 0 && midWeek.currentLimit == 150 && midWeek.stepDays.count == 6, "Completed days of the step in force")
+        expect(midWeek.stepDays.first { $0.date == at(24, 0) }?.hours == nil, "Unreported day kept as missing")
+        expect(midWeek.daysReported == 5 && midWeek.daysAtLimit == 3 && midWeek.daysUnder == 2, "At the limit within a minute; under otherwise")
+        expect(midWeek.suggestsHolding, "Reaching the limit most days suggests holding")
+        expect(midWeek.yesterday?.date == at(25, 0) && midWeek.yesterday?.reachedLimit == true, "Yesterday")
+        expect(midWeek.stepNumber == 1 && midWeek.stepCount == 3, "Step 1 of 3")
+        expect(midWeek.minutesBackSinceStart.map { close($0, 180 - 10.99 / 5 * 60) } == true, "Minutes back since the plan started")
+        let easyWeek = PlanAppProgress(course: progressCourse, usage: (20...25).map { ActivityDay(date: at($0, 0), hours: 1.5) },
+                                       now: at(26, 10), calendar: calendar)
+        expect(!easyWeek.suggestsHolding && easyWeek.daysUnder == 6, "An easy week suggests stepping down")
+        let notStarted = PlanAppProgress(course: progressCourse, usage: appUsage, now: at(19, 22), calendar: calendar)
+        expect(notStarted.stepIndex == nil && notStarted.stepDays.isEmpty && notStarted.minutesBackSinceStart == nil, "Nothing before the first limit")
+        var steppedCourse = progressCourse
+        steppedCourse.stepDown(effective: at(27, 0))
+        let afterStep = PlanAppProgress(course: steppedCourse, usage: appUsage, now: at(28, 9), calendar: calendar)
+        expect(afterStep.stepIndex == 1 && afterStep.currentLimit == 120 && afterStep.stepDays.map(\.date) == [at(27, 0)], "A new step starts its own week")
+        expect(afterStep.stepDays.first?.limitMinutes == 120 && afterStep.stepNumber == 2 && afterStep.stepCount == 3, "Step 2 of 3")
+        let heldLong = PlanAppProgress(course: progressCourse, usage: (20...30).map { ActivityDay(date: at($0, 0), hours: $0 < 24 ? 2.5 : 1) },
+                                       now: at(31, 9), calendar: calendar)
+        expect(heldLong.stepDays.count == 11 && heldLong.daysReported == 7 && heldLong.daysUnder == 7, "Held past check-in: judged on the last week")
+
+        // Other apps: did the time move elsewhere?
+        var phoneTotal = (13...19).map { ActivityDay(date: at($0, 0), hours: 5) }
+        phoneTotal += stepHours.keys.sorted().map { ActivityDay(date: at($0, 0), hours: stepHours[$0]! + 3) }
+        let shift = PlanProgress.otherAppsChangeMinutes(total: phoneTotal, planned: [appUsage], planStart: planStart,
+                                                        now: at(26, 10), calendar: calendar)
+        expect(shift.map { close($0, 60) } == true, "Other apps up an hour a day")
+        expect(PlanProgress.otherAppsChangeMinutes(total: phoneTotal, planned: [appUsage], planStart: planStart,
+                                                   now: at(22, 10), calendar: calendar) == nil, "Too few days since starting")
+        expect(PlanProgress.otherAppsChangeMinutes(total: Array(phoneTotal.suffix(5)), planned: [appUsage], planStart: planStart,
+                                                   now: at(26, 10), calendar: calendar) == nil, "No week before the plan")
+
         let encoded = try! JSONEncoder().encode(before)
         expect((try? JSONDecoder().decode(ReductionCourse.self, from: encoded)) == before, "Course round-trips")
         let empty = #"{"baselineMinutes":180,"targetMinutes":90,"steps":[]}"#.data(using: .utf8)!

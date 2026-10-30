@@ -15,6 +15,8 @@ extension DeviceActivityReport.Context {
     static let onboardingOverview = Self("onboardingOverview")
     /// Up to three apps with their seven-day daily average, for building the plan.
     static let appAverages = Self("appAverages")
+    /// How each planned app due a check-in did against its limit this week.
+    static let planCheckIn = Self("planCheckIn")
     /// Stats view: hero years number, donut chart, stat cards, reclaim preview.
     static let stats = Self("stats")
 
