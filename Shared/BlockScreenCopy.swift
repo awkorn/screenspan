@@ -6,6 +6,8 @@ enum BlockReason: Equatable {
     case focus(until: Date)
     case schedule(name: String, until: Date)
     case limit(minutes: Int)
+    /// Today's limit in the user's reduction plan.
+    case plan(minutes: Int)
     case unknown
 }
 
@@ -39,6 +41,8 @@ struct BlockScreenCopy: Equatable {
             status = "\(label.isEmpty ? "Scheduled break" : label) · \(endLabel(end))"
         case .limit(let minutes):
             status = "\(Self.limitLabel(minutes: minutes)) limit · resets at midnight"
+        case .plan(let minutes):
+            status = "Your plan: \(Self.durationLabel(minutes: minutes)) a day · resets at midnight"
         case .unknown:
             status = "App blocking is on"
         }
@@ -65,6 +69,12 @@ struct BlockScreenCopy: Equatable {
         "20 minutes less a day frees up over 5 days a year.",
         "The next few minutes are yours to choose.",
     ]
+
+    private static func durationLabel(minutes: Int) -> String {
+        let minutes = max(minutes, 0)
+        if minutes < 60 { return "\(minutes)m" }
+        return minutes % 60 == 0 ? "\(minutes / 60)h" : "\(minutes / 60)h \(minutes % 60)m"
+    }
 
     private static func limitLabel(minutes: Int) -> String {
         let minutes = max(minutes, 0)

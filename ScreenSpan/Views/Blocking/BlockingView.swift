@@ -416,8 +416,8 @@ struct BlockingView: View {
                 Text("You can turn strict mode off when nothing is blocking.")
                     .font(.geist(size: 12))
                     .foregroundStyle(OnboardingStyle.muted)
-            } else if configuration.isStrict() && configuration.limits.contains(where: \.isEnabled) {
-                Text("With daily limits on, turning strict mode off takes effect at midnight.")
+            } else if configuration.isStrict() && blocking.hasDailyLimits {
+                Text("With daily limits or your plan on, turning strict mode off takes effect at midnight.")
                     .font(.geist(size: 12))
                     .foregroundStyle(OnboardingStyle.muted)
             }

@@ -3,9 +3,9 @@ import FamilyControls
 import Foundation
 import ManagedSettings
 
-/// Focus blocks, schedules, and daily limits. The app applies shields right
-/// away; DeviceActivity monitoring lets the monitor extension turn them on
-/// and off later while ScreenSpan isn't running.
+/// Focus blocks, schedules, daily limits, and the reduction plan. The app
+/// applies shields right away; DeviceActivity monitoring lets the monitor
+/// extension turn them on and off later while ScreenSpan isn't running.
 @MainActor
 final class BlockingService: ObservableObject {
     @Published private(set) var configuration: BlockingConfiguration
@@ -48,6 +48,11 @@ final class BlockingService: ObservableObject {
     var canEndSession: Bool { !configuration.isStrict() }
 
     var canDisableStrictMode: Bool { !isBlocking() }
+
+    /// Daily limits or plan limits, which make turning strict mode off wait for midnight.
+    var hasDailyLimits: Bool {
+        configuration.limits.contains(where: \.isEnabled) || !configuration.plan.apps.isEmpty
+    }
 
     /// When strict mode switches itself off, if the user asked while limits ran.
     var strictModeEndsAt: Date? {
@@ -205,42 +210,154 @@ final class BlockingService: ObservableObject {
         let rule = BlockingRule.limit(limit.id)
         stop(rule)
         guard isEntitled, limit.isEnabled else { return }
-        let day = DeviceActivitySchedule(intervalStart: DateComponents(hour: 0, minute: 0),
-                                         intervalEnd: DateComponents(hour: 23, minute: 59),
-                                         repeats: true)
-        let threshold = DateComponents(minute: limit.dailyMinutes)
-        let event: DeviceActivityEvent
-        if #available(iOS 17.4, *) {
-            // Count time already used today, so a new limit applies right away.
-            event = DeviceActivityEvent(applications: limit.selection.applicationTokens,
-                                        categories: limit.selection.categoryTokens,
-                                        webDomains: limit.selection.webDomainTokens,
-                                        threshold: threshold, includesPastActivity: true)
-        } else {
-            event = DeviceActivityEvent(applications: limit.selection.applicationTokens,
-                                        categories: limit.selection.categoryTokens,
-                                        webDomains: limit.selection.webDomainTokens,
-                                        threshold: threshold)
-        }
+        let event = Self.event(for: limit.selection, minutes: limit.dailyMinutes)
         do {
-            try center.startMonitoring(rule.activityName, during: day, events: [BlockingRule.limitEvent: event])
+            try center.startMonitoring(rule.activityName, during: Self.wholeDay, events: [BlockingRule.limitEvent: event])
         } catch {
             errorMessage = Self.message(for: error)
         }
     }
 
+    // MARK: - Reduction plan
+
+    var canAddToPlan: Bool { configuration.plan.apps.count < ReductionPlan.maximumApps }
+
+    /// Adds an app to the plan. Its first limit starts at the next midnight,
+    /// a fresh day, rather than blocking time the user has already spent today.
+    func addToPlan(_ selection: FamilyActivitySelection, baselineMinutes: Int, targetMinutes: Int? = nil) {
+        guard !selection.isEmpty, canAddToPlan else { return }
+        let course = ReductionCourse(baselineMinutes: baselineMinutes, targetMinutes: targetMinutes,
+                                     start: BlockingConfiguration.nextMidnight())
+        let app = PlannedApp(selection: selection, course: course)
+        configuration.plan.apps.append(app)
+        save()
+        restart(app)
+    }
+
+    /// Changes where an app starts or ends up before its first limit starts.
+    /// Nothing is in force yet, so this loosens nothing.
+    func revise(_ app: PlannedApp, baselineMinutes: Int, targetMinutes: Int) {
+        let now = Date()
+        guard let current = plannedApp(app.id), current.course.steps.count == 1,
+              current.course.hasScheduledChange(at: now)
+        else { return }
+        update(app.id) {
+            $0.course = ReductionCourse(baselineMinutes: baselineMinutes, targetMinutes: targetMinutes,
+                                        start: current.course.latest.startedAt)
+        }
+    }
+
+    /// Takes the next limit at midnight, once the current one has had its week.
+    func stepDown(_ app: PlannedApp) {
+        let now = Date()
+        guard let current = plannedApp(app.id), current.isEnforced(at: now),
+              current.course.isReadyForNextStep(at: now)
+        else { return }
+        update(app.id) { $0.course.stepDown(effective: BlockingConfiguration.nextMidnight(after: now)) }
+    }
+
+    /// "Not yet": keeps the current limit and asks again in a week.
+    func hold(_ app: PlannedApp) {
+        guard plannedApp(app.id)?.course.isReadyForNextStep() == true else { return }
+        update(app.id, restartsMonitoring: false) { $0.course.hold() }
+    }
+
+    /// Goes back to a looser limit from midnight. Like every plan change it
+    /// waits for the next day, so it can't lift a block that's on now.
+    func easeBack(_ app: PlannedApp) {
+        let now = Date()
+        guard let current = plannedApp(app.id), current.isEnforced(at: now),
+              !current.course.hasScheduledChange(at: now)
+        else { return }
+        update(app.id) { $0.course.easeBack(effective: BlockingConfiguration.nextMidnight(after: now)) }
+    }
+
+    /// Keeps today's limit instead of the one due at midnight.
+    func cancelScheduledChange(_ app: PlannedApp) {
+        update(app.id) { $0.course.cancelScheduledChange(at: Date()) }
+    }
+
+    /// Moves the target. Today's limit doesn't change either way.
+    func retarget(_ app: PlannedApp, minutes: Int) {
+        update(app.id, restartsMonitoring: false) { $0.course.retarget(minutes) }
+    }
+
+    /// Takes an app out of the plan, at midnight under strict mode.
+    func removeFromPlan(_ app: PlannedApp) {
+        guard plannedApp(app.id) != nil else { return }
+        if configuration.isStrict() {
+            update(app.id, restartsMonitoring: false) { $0.removesAt = BlockingConfiguration.nextMidnight() }
+            return
+        }
+        configuration.plan.apps.removeAll { $0.id == app.id }
+        save()
+        stop(.plan(app.id))
+    }
+
+    /// Keeps an app in the plan after asking to remove it under strict mode.
+    func cancelRemoval(_ app: PlannedApp) {
+        update(app.id, restartsMonitoring: false) { $0.removesAt = nil }
+    }
+
+    private func plannedApp(_ id: UUID) -> PlannedApp? {
+        configuration.plan.apps.first { $0.id == id }
+    }
+
+    private func update(_ id: UUID, restartsMonitoring: Bool = true, _ change: (inout PlannedApp) -> Void) {
+        guard let index = configuration.plan.apps.firstIndex(where: { $0.id == id }) else { return }
+        change(&configuration.plan.apps[index])
+        save()
+        if restartsMonitoring { restart(configuration.plan.apps[index]) }
+    }
+
+    /// Watches a threshold for every limit in force today or scheduled, so a
+    /// limit due at midnight applies without the app. Today's limit never
+    /// changes mid-day, so an existing shield is left in place.
+    private func restart(_ app: PlannedApp, now: Date = Date()) {
+        let rule = BlockingRule.plan(app.id)
+        center.stopMonitoring([rule.activityName])
+        guard isEntitled, app.isEnforced(at: now) else { return rule.clear() }
+        let events = Dictionary(uniqueKeysWithValues: app.course.limitsInForce(from: now).map {
+            (BlockingRule.planEvent(minutes: $0), Self.event(for: app.selection, minutes: $0))
+        })
+        do {
+            try center.startMonitoring(rule.activityName, during: Self.wholeDay, events: events)
+        } catch {
+            errorMessage = Self.message(for: error)
+        }
+    }
+
+    private static let wholeDay = DeviceActivitySchedule(intervalStart: DateComponents(hour: 0, minute: 0),
+                                                         intervalEnd: DateComponents(hour: 23, minute: 59),
+                                                         repeats: true)
+
+    private static func event(for selection: FamilyActivitySelection, minutes: Int) -> DeviceActivityEvent {
+        let threshold = DateComponents(minute: minutes)
+        if #available(iOS 17.4, *) {
+            // Count time already used today, so a new limit applies right away.
+            return DeviceActivityEvent(applications: selection.applicationTokens,
+                                       categories: selection.categoryTokens,
+                                       webDomains: selection.webDomainTokens,
+                                       threshold: threshold, includesPastActivity: true)
+        }
+        return DeviceActivityEvent(applications: selection.applicationTokens,
+                                   categories: selection.categoryTokens,
+                                   webDomains: selection.webDomainTokens,
+                                   threshold: threshold)
+    }
+
     // MARK: - Strict mode
 
     /// Turning strict mode on is immediate. Turning it off waits for nothing
-    /// to be blocking, and, while daily limits run, until midnight; otherwise
-    /// switching it off would undo a used-up limit early.
+    /// to be blocking, and, while daily limits or the plan run, until
+    /// midnight; otherwise switching it off would undo a used-up limit early.
     func setStrictMode(_ enabled: Bool) {
         if enabled {
             configuration.strictMode = true
             configuration.strictModeEndsAt = nil
         } else {
             guard canDisableStrictMode, configuration.isStrict() else { return }
-            if configuration.limits.contains(where: \.isEnabled) {
+            if hasDailyLimits {
                 configuration.strictModeEndsAt = BlockingConfiguration.nextMidnight()
             } else {
                 configuration.strictMode = false
@@ -289,6 +406,15 @@ final class BlockingService: ObservableObject {
             let rule = BlockingRule.limit(limit.id)
             if limit.isEnabled != monitored.contains(rule.rawValue) { restart(limit) }
         }
+        for app in configuration.plan.apps {
+            let rule = BlockingRule.plan(app.id)
+            // Restart only when the watched thresholds are out of date: a
+            // restart before iOS 17.4 forgets time already used today.
+            let expected = Set(app.course.limitsInForce(from: now).map(BlockingRule.planEvent))
+            if !monitored.contains(rule.rawValue) || Set(center.events(for: rule.activityName).keys) != expected {
+                restart(app, now: now)
+            }
+        }
         // Monitoring left behind by deleted rules.
         let known = Set(BlockingRule.all(in: configuration).map(\.rawValue))
         for name in monitored.subtracting(known) {
@@ -315,6 +441,11 @@ final class BlockingService: ObservableObject {
                 configuration.limits.removeAll { $0.id == limit.id }
                 stop(.limit(limit.id))
             }
+        }
+        for app in configuration.plan.apps where !app.isEnforced(at: now) {
+            changed = true
+            configuration.plan.apps.removeAll { $0.id == app.id }
+            stop(.plan(app.id))
         }
         if changed { save() }
     }

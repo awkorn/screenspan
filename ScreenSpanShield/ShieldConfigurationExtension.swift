@@ -63,6 +63,11 @@ private extension BlockReason {
                 return
             }
         }
+        if let app = configuration.plan.enforcedApps(at: now).first(where: { matches($0.selection) }),
+           let minutes = app.course.limit(at: now) {
+            self = .plan(minutes: minutes)
+            return
+        }
         if let limit = configuration.limits.first(where: { $0.isEnabled && matches($0.selection) }) {
             self = .limit(minutes: limit.dailyMinutes)
             return

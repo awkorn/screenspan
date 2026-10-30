@@ -10,6 +10,8 @@ struct BlockingConfiguration: Codable, Equatable {
     var session: FocusSession?
     var schedules: [BlockSchedule] = []
     var limits: [AppLimit] = []
+    /// Step-by-step daily limits for the apps that take the most time.
+    var plan = ReductionPlan()
     /// Focus blocks can't end early, running schedules can't be turned off,
     /// and loosening a daily limit waits until the next midnight.
     var strictMode = false
@@ -17,7 +19,8 @@ struct BlockingConfiguration: Codable, Equatable {
     /// daily limits run, so that can't be used to undo a limit early.
     var strictModeEndsAt: Date?
 
-    /// DeviceActivity monitors at most 20 activities per app; one is the focus block.
+    /// DeviceActivity monitors at most 20 activities per app: the focus block,
+    /// these, and one per planned app (`ReductionPlan.maximumApps`).
     static let maximumSchedules = 8
     static let maximumLimits = 8
 
@@ -29,6 +32,7 @@ struct BlockingConfiguration: Codable, Equatable {
         session = try container.decodeIfPresent(FocusSession.self, forKey: .session)
         schedules = try container.decodeIfPresent([BlockSchedule].self, forKey: .schedules) ?? []
         limits = try container.decodeIfPresent([AppLimit].self, forKey: .limits) ?? []
+        plan = try container.decodeIfPresent(ReductionPlan.self, forKey: .plan) ?? ReductionPlan()
         strictMode = try container.decodeIfPresent(Bool.self, forKey: .strictMode) ?? false
         strictModeEndsAt = try container.decodeIfPresent(Date.self, forKey: .strictModeEndsAt)
     }

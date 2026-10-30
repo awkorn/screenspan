@@ -14,9 +14,14 @@ struct ReductionPlan: Codable, Equatable {
     var courses: [ReductionCourse] { apps.map(\.course) }
     var isComplete: Bool { !apps.isEmpty && apps.allSatisfy(\.course.isAtTarget) }
 
+    /// Apps whose limits iOS should be watching at `date`.
+    func enforcedApps(at date: Date = Date()) -> [PlannedApp] {
+        apps.filter { $0.isEnforced(at: date) }
+    }
+
     /// Apps due a check-in at `date`.
     func appsReadyForNextStep(at date: Date = Date(), calendar: Calendar = .current) -> [PlannedApp] {
-        apps.filter { $0.course.isReadyForNextStep(at: date, calendar: calendar) }
+        apps.filter { $0.isEnforced(at: date) && $0.course.isReadyForNextStep(at: date, calendar: calendar) }
     }
 }
 
@@ -26,4 +31,10 @@ struct PlannedApp: Codable, Identifiable, Equatable {
     /// Usually one app the user picked while the report showed their top apps.
     var selection: FamilyActivitySelection
     var course: ReductionCourse
+    /// When strict mode lets a removal take effect: the next midnight.
+    var removesAt: Date?
+
+    func isEnforced(at date: Date) -> Bool {
+        removesAt.map { date < $0 } ?? true
+    }
 }
