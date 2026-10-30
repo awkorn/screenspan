@@ -37,6 +37,10 @@ enum SharedConstants {
         /// JSON `BlockingConfiguration`: the user's block list, focus block,
         /// schedules, and limits, as opaque Screen Time tokens. Never usage.
         case blockingConfiguration
+        /// JSON `[PlanDraftItem]`: apps picked for the reduction plan, as
+        /// tokens, with the starting points and targets the user entered.
+        /// Kept until the plan starts, so declining Pro doesn't lose it.
+        case reductionPlanDraft
         /// Set after a purchase so the dashboard opens Blocking once.
         case pendingBlockingSetup
         /// The host's bottom safe-area inset in points, a layout value, so the

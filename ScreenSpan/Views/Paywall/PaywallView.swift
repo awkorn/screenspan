@@ -5,6 +5,8 @@ import SwiftUI
 /// Prices, trial length, and renewal terms all come from StoreKit, and the
 /// terms sit next to the button, as App Review requires.
 struct PaywallView: View {
+    /// Replaces the goal-based title, for example with the plan's time back.
+    var headline: String?
     /// Called with true after a purchase or restore, false when dismissed.
     var onFinish: (_ purchased: Bool) -> Void
 
@@ -31,13 +33,14 @@ struct PaywallView: View {
                     .foregroundStyle(OnboardingStyle.navy)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 24)
-                Text("Block the apps that pull you back in: on a timer, on a schedule, or after a daily limit.")
+                Text("Cut back on the apps that pull you in, a little each week, with limits that hold.")
                     .font(.geist(size: 15))
                     .foregroundStyle(OnboardingStyle.muted)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 8)
 
                 VStack(alignment: .leading, spacing: 14) {
+                    feature("chart.line.downtrend.xyaxis", "Your step-down plan", "Daily limits for your top apps that get a little lower each week.")
                     feature("hourglass", "Focus blocks", "Lock distracting apps for 15 minutes or the whole afternoon.")
                     feature("moon.zzz", "Schedules", "Bedtime and work hours turn on by themselves.")
                     feature("timer", "Daily limits", "Give an app 30 minutes a day. Then it waits until tomorrow.")
@@ -66,7 +69,8 @@ struct PaywallView: View {
     }
 
     private var title: String {
-        goalMinutes > 0 ? "Make your \(Self.format(minutes: goalMinutes)) goal stick" : "Take your time back"
+        if let headline { return headline }
+        return goalMinutes > 0 ? "Make your \(Self.format(minutes: goalMinutes)) goal stick" : "Take your time back"
     }
 
     // MARK: - Sections

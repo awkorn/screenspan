@@ -28,6 +28,19 @@ extension DeviceActivityFilter {
         )
     }
 
+    /// The projection week, narrowed to the apps the user picked for their
+    /// plan. The tokens are the user's own choices, like the start date.
+    static func screenSpanAppAverages(_ selection: FamilyActivitySelection) -> DeviceActivityFilter {
+        DeviceActivityFilter(
+            segment: .daily(during: ActivitySummary.projectionInterval()),
+            users: .all,
+            devices: .init([.iPhone]),
+            applications: selection.applicationTokens,
+            categories: selection.categoryTokens,
+            webDomains: selection.webDomainTokens
+        )
+    }
+
     static var screenSpanHistory: DeviceActivityFilter { screenSpanProjectionAverage }
 
     static var screenSpanDaily: DeviceActivityFilter {

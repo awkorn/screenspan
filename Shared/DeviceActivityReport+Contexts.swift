@@ -13,6 +13,8 @@ import _DeviceActivity_SwiftUI
 extension DeviceActivityReport.Context {
     static let dashboard = Self("dashboard")
     static let onboardingOverview = Self("onboardingOverview")
+    /// Up to three apps with their seven-day daily average, for building the plan.
+    static let appAverages = Self("appAverages")
     /// Stats view: hero years number, donut chart, stat cards, reclaim preview.
     static let stats = Self("stats")
 

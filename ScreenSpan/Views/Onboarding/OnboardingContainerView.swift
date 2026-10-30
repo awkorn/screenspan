@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OnboardingContainerView: View {
     @State private var viewModel = OnboardingViewModel()
+    @EnvironmentObject private var blocking: BlockingService
 
     var body: some View {
         ZStack {
@@ -16,10 +17,19 @@ struct OnboardingContainerView: View {
                 case .permission: PermissionRequestView(viewModel: viewModel)
                 // One branch keeps the same report mounted across both steps.
                 case .reveal, .goal: RevealView(viewModel: viewModel)
+                case .planApps: PlanAppsView(viewModel: viewModel)
+                case .planBaselines: PlanBaselinesView(viewModel: viewModel)
                 case .plan: PlanView(viewModel: viewModel)
                 case .paywall:
-                    PaywallView { purchased in
-                        if purchased { AppGroupManager.shared.pendingBlockingSetup = true }
+                    PaywallView(headline: viewModel.paywallHeadline) { purchased in
+                        // Without Pro the plan stays a draft the user can start later.
+                        if purchased {
+                            if viewModel.buildsPlan && viewModel.planIsReady {
+                                viewModel.startPlan(with: blocking)
+                            } else {
+                                AppGroupManager.shared.pendingBlockingSetup = true
+                            }
+                        }
                         Task { await viewModel.completeOnboarding() }
                     }
                 }

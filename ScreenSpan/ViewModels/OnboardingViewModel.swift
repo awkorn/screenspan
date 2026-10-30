@@ -1,3 +1,4 @@
+import FamilyControls
 import Foundation
 import Observation
 import SwiftUI
@@ -10,14 +11,19 @@ enum OnboardingStep: Int, CaseIterable, Equatable {
     case intentions
     case permission
     case reveal
+    /// Without Screen Time access, a single daily goal instead of a plan.
     case goal
+    /// With access: the apps that take the most, then where each starts.
+    case planApps
+    case planBaselines
     case plan
-    /// ScreenSpan Pro, offered once the user has a goal to protect.
+    /// ScreenSpan Pro, offered once the user has a plan or goal to protect.
     case paywall
 }
 
 /// Onboarding state. Everything stored here is user-entered (age, guess,
-/// intentions, goal) or navigation. Measured activity never reaches the host:
+/// intentions, goal, the plan's apps and starting points) or navigation.
+/// Measured activity never reaches the host:
 /// the reveal is rendered by the report extension, or, in estimate mode, from
 /// the user's own guess.
 @Observable
@@ -32,17 +38,33 @@ final class OnboardingViewModel {
     /// True when Screen Time access was declined or the report never appeared;
     /// the reveal then uses the user's estimate and says so.
     var usesEstimate = false
+    /// True once Screen Time access is allowed. Blocking needs it, so only
+    /// then is there a plan to build; otherwise the user sets a daily goal.
+    var buildsPlan = false
+    /// The apps picked for the plan, one item per app.
+    var planItems: [PlanDraftItem] = PlanDraftItem.load()
+
+    private var steps: [OnboardingStep] {
+        OnboardingStep.allCases.filter { step in
+            switch step {
+            case .goal: !buildsPlan
+            case .planApps, .planBaselines: buildsPlan
+            default: true
+            }
+        }
+    }
 
     var progress: Double {
-        Double(currentStep.rawValue) / Double(OnboardingStep.allCases.count - 1)
+        let steps = steps
+        return Double(steps.firstIndex(of: currentStep) ?? 0) / Double(steps.count - 1)
     }
 
     func advance() {
         withAnimation(.easeInOut(duration: 0.3)) {
             if currentStep == .reveal, revealPanel < OnboardingRevealPanels.panelCount - 1 {
                 revealPanel += 1
-            } else if let next = OnboardingStep(rawValue: currentStep.rawValue + 1) {
-                currentStep = next
+            } else if let index = steps.firstIndex(of: currentStep), index + 1 < steps.count {
+                currentStep = steps[index + 1]
             }
         }
     }
@@ -51,13 +73,47 @@ final class OnboardingViewModel {
         withAnimation(.easeInOut(duration: 0.25)) {
             if currentStep == .reveal, revealPanel > 0 {
                 revealPanel -= 1
-            } else if currentStep == .goal {
-                currentStep = .reveal
-                revealPanel = OnboardingRevealPanels.panelCount - 1
-            } else if let previous = OnboardingStep(rawValue: currentStep.rawValue - 1) {
-                currentStep = previous
+            } else if let index = steps.firstIndex(of: currentStep), index > 0 {
+                currentStep = steps[index - 1]
+                if currentStep == .reveal { revealPanel = OnboardingRevealPanels.panelCount - 1 }
             }
         }
+    }
+
+    // MARK: - Plan
+
+    /// Every picked app has a starting point the plan can step down from.
+    var planIsReady: Bool {
+        !planItems.isEmpty && planItems.allSatisfy { $0.course(start: Date()) != nil }
+    }
+
+    func setPlanSelection(_ selection: FamilyActivitySelection) {
+        planItems = PlanDraftItem.items(from: selection, keeping: planItems)
+        savePlanDraft()
+    }
+
+    func savePlanDraft() {
+        PlanDraftItem.save(planItems)
+    }
+
+    /// "Start your plan. Get 3.1 years back." Nil without a plan.
+    var paywallHeadline: String? {
+        guard buildsPlan else { return nil }
+        let courses = planItems.compactMap { $0.course(start: Date()) }
+        guard !courses.isEmpty else { return nil }
+        let years = courses.regainedAtTarget(currentAge: selectedAge, targetAge: SharedConstants.DefaultValues.targetAge).yearsReclaimed
+        return "Start your plan. Get \(PlanFormat.years(years)) back."
+    }
+
+    /// Starts the plan's limits at the next midnight and clears the draft.
+    @MainActor
+    func startPlan(with blocking: BlockingService) {
+        for item in planItems {
+            guard let baseline = item.baselineMinutes else { continue }
+            blocking.addToPlan(item.selection, baselineMinutes: baseline, targetMinutes: item.targetMinutes)
+        }
+        planItems = []
+        PlanDraftItem.save([])
     }
 
     func saveAge(_ age: Int) {

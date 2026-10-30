@@ -9,6 +9,7 @@ struct ScreenSpanReportExtension: DeviceActivityReportExtension {
     var body: some DeviceActivityReportScene {
         DashboardReportScene { DashboardReportView(payload: $0) }
         OnboardingOverviewReportScene { OnboardingOverviewReportView(payload: $0) }
+        AppAveragesReportScene { AppAveragesReportView(payload: $0) }
         StatsReportScene { payload in
             StatsReportView(payload: payload)
         }
@@ -57,7 +58,7 @@ struct HistoryReportScene: DeviceActivityReportScene {
 // No global cache: a context-only cache could return another filter's data or
 // survive an authorization change. One mounted dashboard reuses its payload.
 // Activity-derived values stay in the report process; never persist or export.
-private func extractDailyAverage(
+func extractDailyAverage(
     from results: DeviceActivityResults<DeviceActivityData>
 ) async -> ScreenTimeReportPayload {
     let logger = Logger(subsystem: "com.screenspan.deviceactivityreport", category: "ReportLoading")

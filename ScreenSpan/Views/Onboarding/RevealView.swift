@@ -68,7 +68,7 @@ struct RevealView: View {
                     viewModel.advance()
                 }
             } else {
-                OnboardingPrimaryButton(title: isLastPanel ? "Choose my goal" : "Continue",
+                OnboardingPrimaryButton(title: isLastPanel ? (viewModel.buildsPlan ? "Build my plan" : "Choose my goal") : "Continue",
                                         isEnabled: !isLifetimePanel || lifetimeRevealed) { viewModel.advance() }
                 if showsEstimateFallback && !viewModel.usesEstimate && viewModel.revealPanel == 0 {
                     OnboardingSecondaryButton(title: "Report not showing? Use my estimate") {

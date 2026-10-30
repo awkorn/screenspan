@@ -40,6 +40,7 @@ struct PermissionRequestView: View {
             if wasDeclined {
                 OnboardingSecondaryButton(title: "Continue with my estimate") {
                     viewModel.usesEstimate = true
+                    viewModel.buildsPlan = false
                     viewModel.revealPanel = 0
                     viewModel.advance()
                 }
@@ -77,6 +78,7 @@ struct PermissionRequestView: View {
                 return
             }
             viewModel.usesEstimate = false
+            viewModel.buildsPlan = true
             viewModel.revealPanel = 0
             viewModel.advance()
         }

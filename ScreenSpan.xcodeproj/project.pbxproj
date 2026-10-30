@@ -74,6 +74,7 @@
 		98C0F9012844E9892B9D4BE1 /* ProgressInsights.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9386737EA0349AC8891EC0 /* ProgressInsights.swift */; };
 		9A0AF529672DD47AE388D675 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B21AA338A8BC8C3E45D8D551 /* OnboardingViewModel.swift */; };
 		9A24FC61EB86355A93796B5F /* BlockScreenCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB11D04E3DD4C77AB2D5291F /* BlockScreenCopy.swift */; };
+		9B67F21D0F8F57309D2784CC /* PlanDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E2D229548958897EC71FEF5 /* PlanDraft.swift */; };
 		9C509A7A0EB6D0422634921C /* GeistItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */; };
 		9DB102EEFD27E1CF5149435F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA623384754EB8634D457F80 /* ContentView.swift */; };
 		9EAD49C9AD303AD49CAD391C /* BlockScreenStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 438CBA6159E068C2013642C0 /* BlockScreenStyle.swift */; };
@@ -88,11 +89,14 @@
 		A842D69D5C77E8CBB463F4F4 /* ScreenSpanMonitorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B9CCC5FAC1260FEF5189086 /* ScreenSpanMonitorExtension.swift */; };
 		A9E23254695DCCEE7DAA9DD9 /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
 		AFAE3FD26CE8D5923D988FCF /* ScreenSpanApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A4D8FAD2211C2AAFF1DED04 /* ScreenSpanApp.swift */; };
+		B0691071429D0798790A8E3F /* AppAveragesReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A2EA173563C2702D77379A /* AppAveragesReportView.swift */; };
 		B1A22B3C560C1A2A5056F428 /* ScreenSpanMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4578A80401F41FC1D227951E /* ScreenSpanMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B332C830AE7B42989EDCB00B /* BlockingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4974BF9183CAAC52B17EE9A5 /* BlockingService.swift */; };
 		B4ACF05184003E71EE7D5385 /* LifeRegainedProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */; };
 		BCF6F78B3D755D11032EC993 /* BlockingRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC84D5D3FA2FE94E69A96188 /* BlockingRule.swift */; };
 		BEA1AE92D67D9F32550E1D58 /* BlockingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273EF992FFD25C2EDACC9649 /* BlockingView.swift */; };
+		C4F663E111C60B7F05B93FC9 /* PlanBaselinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FF83F5D95FC17915C18EE36 /* PlanBaselinesView.swift */; };
+		C5CE5B332E978EB3FF006FC0 /* PlanAppsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98D9F80E05F29B9CD840A013 /* PlanAppsView.swift */; };
 		C73B4B869E90C5CD06E20BE2 /* LifeGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2AC75288B4E2F4E8469DC82 /* LifeGridView.swift */; };
 		C826A41158E71382F9ACA62F /* BlockSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13087A939D48C292559235F /* BlockSchedule.swift */; };
 		C99386D1BCF8F92DBB1D41BD /* StatsReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7644C84804CDFEA305490E75 /* StatsReportView.swift */; };
@@ -205,6 +209,7 @@
 		4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedConstants.swift; sourceTree = "<group>"; };
 		4C7D0DC0F02AE285A6F4DF8E /* DashboardReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardReportView.swift; sourceTree = "<group>"; };
 		4CEBF04EDCFB919ED6042EB6 /* ScreenSpanShieldAction.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ScreenSpanShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4E2D229548958897EC71FEF5 /* PlanDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanDraft.swift; sourceTree = "<group>"; };
 		5038F2615D67A1D5E00575D5 /* ReductionCourse+Projection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReductionCourse+Projection.swift"; sourceTree = "<group>"; };
 		51463CC93AF1FC395F23A659 /* Color+ScreenSpanReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+ScreenSpanReport.swift"; sourceTree = "<group>"; };
 		5A1386C8E8351CD19946B3E8 /* AuthorizationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthorizationService.swift; sourceTree = "<group>"; };
@@ -221,8 +226,11 @@
 		7644C84804CDFEA305490E75 /* StatsReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsReportView.swift; sourceTree = "<group>"; };
 		768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GeistItalicVF.ttf; sourceTree = "<group>"; };
 		7F6C9EB6BF4959BE60DD1E0C /* OnboardingReportViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingReportViewport.swift; sourceTree = "<group>"; };
+		83A2EA173563C2702D77379A /* AppAveragesReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAveragesReportView.swift; sourceTree = "<group>"; };
 		863A5A3E939A13A701826B2B /* ReductionPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReductionPlan.swift; sourceTree = "<group>"; };
+		8FF83F5D95FC17915C18EE36 /* PlanBaselinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanBaselinesView.swift; sourceTree = "<group>"; };
 		9454C7ED8B41B24B9FC8F2ED /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
+		98D9F80E05F29B9CD840A013 /* PlanAppsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanAppsView.swift; sourceTree = "<group>"; };
 		9A4D8FAD2211C2AAFF1DED04 /* ScreenSpanApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSpanApp.swift; sourceTree = "<group>"; };
 		A13087A939D48C292559235F /* BlockSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockSchedule.swift; sourceTree = "<group>"; };
 		A2210D930D532B57F4473C84 /* GeistFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeistFont.swift; sourceTree = "<group>"; };
@@ -287,6 +295,8 @@
 				5AC2AE376C93D5CA9A49DACE /* OnboardingContainerView.swift */,
 				70334E36F1FD04BF4207E98B /* OnboardingScaffold.swift */,
 				39154E949451B6CF3E2EE0BE /* PermissionRequestView.swift */,
+				98D9F80E05F29B9CD840A013 /* PlanAppsView.swift */,
+				8FF83F5D95FC17915C18EE36 /* PlanBaselinesView.swift */,
 				C36511F5739D6DCD5EE75BBB /* PlanView.swift */,
 				2C02734202C44624F0FC951C /* RevealView.swift */,
 				1281DF0923E1F2BF29939CD2 /* WelcomeView.swift */,
@@ -438,6 +448,7 @@
 		8BC16DFA052E2CA74743DBA2 /* ScreenSpanReport */ = {
 			isa = PBXGroup;
 			children = (
+				83A2EA173563C2702D77379A /* AppAveragesReportView.swift */,
 				3D0C74C00317100ECF78D95A /* ChartReportView.swift */,
 				51463CC93AF1FC395F23A659 /* Color+ScreenSpanReport.swift */,
 				4C7D0DC0F02AE285A6F4DF8E /* DashboardReportView.swift */,
@@ -493,6 +504,7 @@
 		E77AE0BD3306EDA1A03AD80F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				4E2D229548958897EC71FEF5 /* PlanDraft.swift */,
 				FEFB5FF71316F7E1E7057F1A /* SubscriptionStatus.swift */,
 			);
 			path = Models;
@@ -725,6 +737,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A65A927040C251DE6BF21BC5 /* ActivitySummary.swift in Sources */,
+				B0691071429D0798790A8E3F /* AppAveragesReportView.swift in Sources */,
 				A3AB714CFC74FF3CD8ADCDFB /* AppGroupManager.swift in Sources */,
 				9A24FC61EB86355A93796B5F /* BlockScreenCopy.swift in Sources */,
 				9EAD49C9AD303AD49CAD391C /* BlockScreenStyle.swift in Sources */,
@@ -790,6 +803,9 @@
 				9A0AF529672DD47AE388D675 /* OnboardingViewModel.swift in Sources */,
 				8697A5144EBD85FF0A3E166F /* PaywallView.swift in Sources */,
 				D9B4D9BDD484D0CE6BFBC295 /* PermissionRequestView.swift in Sources */,
+				C5CE5B332E978EB3FF006FC0 /* PlanAppsView.swift in Sources */,
+				C4F663E111C60B7F05B93FC9 /* PlanBaselinesView.swift in Sources */,
+				9B67F21D0F8F57309D2784CC /* PlanDraft.swift in Sources */,
 				D42BBEFFEF7BEA7F809D953D /* PlanView.swift in Sources */,
 				E6222E286ED8B85D046E0362 /* ProgressInsights.swift in Sources */,
 				5899087DD153621F52A860BE /* ProjectionCalculator.swift in Sources */,

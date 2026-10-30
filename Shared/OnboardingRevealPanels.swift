@@ -643,7 +643,7 @@ private struct PotentialPanel: View {
                     .font(.geist(size: 12))
                     .foregroundStyle(RevealStyle.muted)
             }
-            Text("Next, pick the daily goal you want to commit to.")
+            Text("Next, let’s make a plan you can stick to.")
                 .font(.geist(size: 16, weight: .semibold))
                 .foregroundStyle(RevealStyle.navy)
         }
