@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0276EF32E3655DE184A6EEC9 /* UserDefaults+AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C48EC6DDF3E57788CA87B /* UserDefaults+AppGroup.swift */; };
 		02A82E570EFC46C6635F0920 /* ScreenSpanReport.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = C8EA298EF7CB1876A1B306BF /* ScreenSpanReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		04513A9FFFC85CF0F624BEC8 /* PlanSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B233A5F5DE99DA054D4782CF /* PlanSetupView.swift */; };
 		06CCA74893BE360F4CDCC051 /* BlockingConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 742E45FF184F9B2A26A7B210 /* BlockingConfiguration.swift */; };
 		085D1345570AA484DAC81016 /* PlanViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64BC59F1ECBE9CA7338A41E2 /* PlanViews.swift */; };
 		09DBE3F450929BA2513DA718 /* BlockingEditors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D813B250D08E484000A146C /* BlockingEditors.swift */; };
@@ -248,6 +249,7 @@
 		AA8793C65F5F0C0FF42C2736 /* ShieldConfigurationExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldConfigurationExtension.swift; sourceTree = "<group>"; };
 		AC7D5F6A44622236803D7EED /* StoreKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitService.swift; sourceTree = "<group>"; };
 		B21AA338A8BC8C3E45D8D551 /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
+		B233A5F5DE99DA054D4782CF /* PlanSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanSetupView.swift; sourceTree = "<group>"; };
 		B6285B74674298E92260D6F0 /* ActivitySummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySummary.swift; sourceTree = "<group>"; };
 		B745744BA2354B4E399F1C41 /* HistoryReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryReportView.swift; sourceTree = "<group>"; };
 		BB7C2C906DF72C56290CB002 /* AgeInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgeInputView.swift; sourceTree = "<group>"; };
@@ -337,6 +339,7 @@
 		472E4777291E5DA146BC9988 /* Plan */ = {
 			isa = PBXGroup;
 			children = (
+				B233A5F5DE99DA054D4782CF /* PlanSetupView.swift */,
 				64BC59F1ECBE9CA7338A41E2 /* PlanViews.swift */,
 			);
 			path = Plan;
@@ -833,6 +836,7 @@
 				C4F663E111C60B7F05B93FC9 /* PlanBaselinesView.swift in Sources */,
 				9B67F21D0F8F57309D2784CC /* PlanDraft.swift in Sources */,
 				EB94A6FD93AF53DD0DB1D9CC /* PlanProgress.swift in Sources */,
+				04513A9FFFC85CF0F624BEC8 /* PlanSetupView.swift in Sources */,
 				D42BBEFFEF7BEA7F809D953D /* PlanView.swift in Sources */,
 				085D1345570AA484DAC81016 /* PlanViews.swift in Sources */,
 				E6222E286ED8B85D046E0362 /* ProgressInsights.swift in Sources */,

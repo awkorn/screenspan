@@ -8,21 +8,39 @@ enum OnboardingStyle {
 }
 
 /// Shared chrome for onboarding steps: back button, progress, title, content,
-/// and a pinned primary action.
+/// and a pinned primary action. The plan steps reuse it outside onboarding.
 struct OnboardingScaffold<Content: View, Footer: View>: View {
-    var viewModel: OnboardingViewModel
     var title: String?
     var subtitle: String?
-    var showsBack = true
+    /// Nil hides the progress bar.
+    var progress: Double?
+    /// Nil hides the back button.
+    var onBack: (() -> Void)?
     @ViewBuilder var content: () -> Content
     @ViewBuilder var footer: () -> Footer
+
+    init(title: String? = nil, subtitle: String? = nil, progress: Double?, onBack: (() -> Void)?,
+         @ViewBuilder content: @escaping () -> Content, @ViewBuilder footer: @escaping () -> Footer) {
+        self.title = title
+        self.subtitle = subtitle
+        self.progress = progress
+        self.onBack = onBack
+        self.content = content
+        self.footer = footer
+    }
+
+    init(viewModel: OnboardingViewModel, title: String? = nil, subtitle: String? = nil, showsBack: Bool = true,
+         @ViewBuilder content: @escaping () -> Content, @ViewBuilder footer: @escaping () -> Footer) {
+        self.init(title: title, subtitle: subtitle, progress: viewModel.progress,
+                  onBack: showsBack ? { viewModel.goBack() } : nil, content: content, footer: footer)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 16) {
-                if showsBack {
+                if let onBack {
                     Button {
-                        viewModel.goBack()
+                        onBack()
                     } label: {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 17, weight: .semibold))
@@ -31,9 +49,13 @@ struct OnboardingScaffold<Content: View, Footer: View>: View {
                     }
                     .accessibilityLabel("Back")
                 }
-                ProgressView(value: viewModel.progress)
-                    .tint(OnboardingStyle.red)
-                    .accessibilityLabel("Onboarding progress")
+                if let progress {
+                    ProgressView(value: progress)
+                        .tint(OnboardingStyle.red)
+                        .accessibilityLabel("Onboarding progress")
+                } else {
+                    Spacer()
+                }
             }
             .padding(.horizontal, 24)
             .padding(.top, 8)

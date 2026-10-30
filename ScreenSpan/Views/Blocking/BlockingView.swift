@@ -4,7 +4,8 @@ import SwiftUI
 /// ScreenSpan Pro's blocking hub: start a focus block, adjust the plan, choose
 /// the distraction list, and manage schedules, daily limits, and strict mode.
 struct BlockingView: View {
-    /// Opens the app picker right away, for first-time setup after purchase.
+    /// Opens plan setup (or, with a plan, the app picker) right away, for
+    /// first-time setup after purchase.
     var opensPickerOnAppear = false
 
     @Environment(\.dismiss) private var dismiss
@@ -16,6 +17,7 @@ struct BlockingView: View {
     @State private var editingSchedule: ScheduleDraft?
     @State private var editingLimit: LimitDraft?
     @State private var confirmsEndSession = false
+    @State private var showsPlanSetup = false
 
     private var configuration: BlockingConfiguration { blocking.configuration }
 
@@ -32,7 +34,7 @@ struct BlockingView: View {
                                 startFocusCard
                             }
                         }
-                        PlanBlockingSection()
+                        PlanBlockingSection(showsSetup: $showsPlanSetup)
                         blockListSection
                         schedulesSection
                         limitsSection
@@ -80,9 +82,15 @@ struct BlockingView: View {
         .task {
             // Apply anything strict mode held until a midnight that has passed.
             blocking.reconcile()
-            guard opensPickerOnAppear, authService.isAuthorized, configuration.blockList.isEmpty else { return }
-            try? await Task.sleep(for: .milliseconds(450))
-            openListPicker()
+            guard opensPickerOnAppear, authService.isAuthorized else { return }
+            // Right after buying Pro, start with the plan, the main thing it unlocks.
+            if configuration.plan.apps.isEmpty {
+                try? await Task.sleep(for: .milliseconds(450))
+                showsPlanSetup = true
+            } else if configuration.blockList.isEmpty {
+                try? await Task.sleep(for: .milliseconds(450))
+                openListPicker()
+            }
         }
     }
 

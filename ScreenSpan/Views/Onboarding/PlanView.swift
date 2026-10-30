@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The plan, step by step, with the time it gives back. Without Screen Time
-/// access there's no plan to enforce, so it summarizes the daily goal instead.
+/// The last plan step in onboarding. Without Screen Time access there's no
+/// plan to enforce, so it summarizes the daily goal instead.
 struct PlanView: View {
     @Bindable var viewModel: OnboardingViewModel
     @EnvironmentObject private var store: StoreKitService
@@ -10,82 +10,20 @@ struct PlanView: View {
 
     var body: some View {
         if viewModel.buildsPlan {
-            reductionPlan
-        } else {
-            goalSummary
-        }
-    }
-
-    // MARK: - Reduction plan
-
-    private var start: Date { BlockingConfiguration.nextMidnight() }
-    private var targetAge: Int { SharedConstants.DefaultValues.targetAge }
-    private var courses: [ReductionCourse] { viewModel.planItems.compactMap { $0.course(start: start) } }
-
-    private var reductionPlan: some View {
-        OnboardingScaffold(
-            viewModel: viewModel,
-            title: "Your plan",
-            subtitle: "Small cuts, a week at a time. Each week you choose: step down, hold, or ease back."
-        ) {
-            ScrollView {
-                VStack(spacing: 12) {
-                    hero
-                    ForEach($viewModel.planItems) { $item in
-                        if let course = item.course(start: start) {
-                            PlanCourseCard(item: $item, course: course, start: start,
-                                           currentAge: viewModel.selectedAge, targetAge: targetAge)
-                        }
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 24)
-            }
-        } footer: {
-            Text("Your first limits start tonight at midnight.")
-                .font(.geist(size: 13))
-                .foregroundStyle(OnboardingStyle.muted)
-            OnboardingPrimaryButton(title: "Start my plan", isEnabled: !isFinishing && viewModel.planIsReady) {
-                viewModel.savePlanDraft()
+            PlanPreviewView(draft: viewModel.planDraft, chrome: viewModel.planChrome,
+                            isStarting: isFinishing) {
                 // Subscribers (a reinstall, say) skip the offer.
                 guard !store.isPro else {
                     isFinishing = true
-                    viewModel.startPlan(with: blocking)
+                    viewModel.planDraft.start(with: blocking)
                     Task { await viewModel.completeOnboarding() }
                     return
                 }
                 viewModel.advance()
             }
+        } else {
+            goalSummary
         }
-    }
-
-    private var hero: some View {
-        let regained = courses.regainedAtTarget(currentAge: viewModel.selectedAge, targetAge: targetAge)
-        let finish = courses.compactMap { $0.projectedTargetDate() }.max()
-        return VStack(alignment: .leading, spacing: 6) {
-            Text("+\(PlanFormat.years(regained.yearsReclaimed))")
-                .font(.geist(size: 44, weight: .heavy))
-                .foregroundStyle(Color(hex: "#1F7A4D"))
-                .monospacedDigit()
-            Text("of your life back by age \(targetAge) once you reach your targets.")
-                .font(.geist(size: 15, weight: .semibold))
-                .foregroundStyle(OnboardingStyle.navy)
-                .fixedSize(horizontal: false, vertical: true)
-            Text(finishLine(minutesBack: courses.minutesBackAtTarget, finish: finish))
-                .font(.geist(size: 13))
-                .foregroundStyle(OnboardingStyle.muted)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(Color(hex: "#EEF8F2"), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .accessibilityElement(children: .combine)
-    }
-
-    private func finishLine(minutesBack: Int, finish: Date?) -> String {
-        let daily = "\(PlanFormat.duration(minutesBack)) a day back"
-        guard let finish else { return daily + " from tomorrow." }
-        return daily + " by \(finish.formatted(.dateTime.month(.wide).day())), if you step down each week."
     }
 
     // MARK: - Daily goal
@@ -158,6 +96,79 @@ struct PlanView: View {
         let minutes = Int((hours * 60).rounded())
         if minutes < 60 { return "\(minutes)m" }
         return minutes % 60 == 0 ? "\(minutes / 60)h" : "\(minutes / 60)h \(minutes % 60)m"
+    }
+}
+
+/// The plan, step by step, with the time it gives back. Used in onboarding
+/// and when setting up or adding to a plan later.
+struct PlanPreviewView: View {
+    @Bindable var draft: PlanDraftModel
+    let chrome: PlanStepChrome
+    var isStarting = false
+    let onStart: () -> Void
+
+    private var start: Date { BlockingConfiguration.nextMidnight() }
+    private var targetAge: Int { SharedConstants.DefaultValues.targetAge }
+
+    var body: some View {
+        OnboardingScaffold(
+            title: draft.isAdding ? "Your new step-down" : "Your plan",
+            subtitle: "Small cuts, a week at a time. Each week you choose: step down, hold, or ease back.",
+            progress: chrome.progress,
+            onBack: chrome.back
+        ) {
+            ScrollView {
+                VStack(spacing: 12) {
+                    hero
+                    ForEach($draft.items) { $item in
+                        if let course = item.course(start: start) {
+                            PlanCourseCard(item: $item, course: course, start: start,
+                                           currentAge: draft.currentAge, targetAge: targetAge)
+                        }
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 24)
+            }
+        } footer: {
+            Text(draft.items.count == 1 ? "Its first limit starts tonight at midnight." : "Your first limits start tonight at midnight.")
+                .font(.geist(size: 13))
+                .foregroundStyle(OnboardingStyle.muted)
+            OnboardingPrimaryButton(title: draft.isAdding ? "Add to my plan" : "Start my plan",
+                                    isEnabled: !isStarting && draft.isReady) {
+                draft.save()
+                onStart()
+            }
+        }
+    }
+
+    private var hero: some View {
+        let courses = draft.courses(start: start)
+        let finish = courses.compactMap { $0.projectedTargetDate() }.max()
+        return VStack(alignment: .leading, spacing: 6) {
+            Text("+\(PlanFormat.years(draft.yearsBackAtTarget))")
+                .font(.geist(size: 44, weight: .heavy))
+                .foregroundStyle(Color(hex: "#1F7A4D"))
+                .monospacedDigit()
+            Text("of your life back by age \(targetAge) once you reach \(courses.count == 1 ? "your target" : "your targets").")
+                .font(.geist(size: 15, weight: .semibold))
+                .foregroundStyle(OnboardingStyle.navy)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(finishLine(minutesBack: courses.minutesBackAtTarget, finish: finish))
+                .font(.geist(size: 13))
+                .foregroundStyle(OnboardingStyle.muted)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(20)
+        .background(Color(hex: "#EEF8F2"), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+
+    private func finishLine(minutesBack: Int, finish: Date?) -> String {
+        let daily = "\(PlanFormat.duration(minutesBack)) a day back"
+        guard let finish else { return daily + " from tomorrow." }
+        return daily + " by \(finish.formatted(.dateTime.month(.wide).day())), if you step down each week."
     }
 }
 

@@ -17,15 +17,15 @@ struct OnboardingContainerView: View {
                 case .permission: PermissionRequestView(viewModel: viewModel)
                 // One branch keeps the same report mounted across both steps.
                 case .reveal, .goal: RevealView(viewModel: viewModel)
-                case .planApps: PlanAppsView(viewModel: viewModel)
-                case .planBaselines: PlanBaselinesView(viewModel: viewModel)
+                case .planApps: PlanAppsView(draft: viewModel.planDraft, chrome: viewModel.planChrome)
+                case .planBaselines: PlanBaselinesView(draft: viewModel.planDraft, chrome: viewModel.planChrome)
                 case .plan: PlanView(viewModel: viewModel)
                 case .paywall:
                     PaywallView(headline: viewModel.paywallHeadline) { purchased in
                         // Without Pro the plan stays a draft the user can start later.
                         if purchased {
-                            if viewModel.buildsPlan && viewModel.planIsReady {
-                                viewModel.startPlan(with: blocking)
+                            if viewModel.buildsPlan && viewModel.planDraft.isReady {
+                                viewModel.planDraft.start(with: blocking)
                             } else {
                                 AppGroupManager.shared.pendingBlockingSetup = true
                             }

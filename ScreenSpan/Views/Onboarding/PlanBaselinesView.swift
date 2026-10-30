@@ -5,21 +5,23 @@ import SwiftUI
 /// the user dials in their own starting point beside it, since measured
 /// numbers can't leave the report.
 struct PlanBaselinesView: View {
-    @Bindable var viewModel: OnboardingViewModel
+    @Bindable var draft: PlanDraftModel
+    let chrome: PlanStepChrome
 
     var body: some View {
         OnboardingScaffold(
-            viewModel: viewModel,
             title: "Where are you starting?",
-            subtitle: "Set each app to about what it takes now. Your plan steps down from here."
+            subtitle: "Set each app to about what it takes now. Your plan steps down from here.",
+            progress: chrome.progress,
+            onBack: chrome.back
         ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     PlanSectionLabel("YOUR LAST 7 DAYS")
-                    PlanAppAveragesReport(filter: .screenSpanAppAverages(viewModel.planItems.combinedSelection))
+                    PlanAppAveragesReport(filter: .screenSpanAppAverages(draft.items.combinedSelection))
                     PlanSectionLabel("YOUR STARTING POINT")
                         .padding(.top, 12)
-                    ForEach($viewModel.planItems) { $item in
+                    ForEach($draft.items) { $item in
                         BaselineCard(item: $item)
                     }
                 }
@@ -27,9 +29,9 @@ struct PlanBaselinesView: View {
                 .padding(.vertical, 24)
             }
         } footer: {
-            OnboardingPrimaryButton(title: "See my plan", isEnabled: viewModel.planIsReady) {
-                viewModel.savePlanDraft()
-                viewModel.advance()
+            OnboardingPrimaryButton(title: "See my plan", isEnabled: draft.isReady) {
+                draft.save()
+                chrome.next()
             }
         }
     }

@@ -142,8 +142,9 @@ struct PlanCheckInView: View {
 }
 
 /// The plan in Blocking: each app's limit today, any change due at midnight,
-/// and ways to adjust between check-ins.
+/// and ways to adjust between check-ins, add an app, or start a plan.
 struct PlanBlockingSection: View {
+    @Binding var showsSetup: Bool
     @EnvironmentObject private var blocking: BlockingService
     @State private var removing: PlannedApp?
     @State private var easing: PlannedApp?
@@ -151,13 +152,23 @@ struct PlanBlockingSection: View {
     private var apps: [PlannedApp] { blocking.configuration.plan.apps }
 
     var body: some View {
-        if !apps.isEmpty {
-            VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
                 Text("YOUR PLAN")
                     .font(.geist(size: 12, weight: .bold))
                     .tracking(0.8)
                     .foregroundStyle(OnboardingStyle.muted)
                     .accessibilityAddTraits(.isHeader)
+                Spacer()
+                if !apps.isEmpty && blocking.canAddToPlan {
+                    Button("Add") { showsSetup = true }
+                        .font(.geist(size: 14, weight: .semibold))
+                        .foregroundStyle(Color(hex: "#0063D6"))
+                }
+            }
+            if apps.isEmpty {
+                setupCard
+            } else {
                 TimelineView(.everyMinute) { context in
                     VStack(spacing: 10) {
                         ForEach(apps) { app in row(app, now: context.date) }
@@ -167,27 +178,57 @@ struct PlanBlockingSection: View {
                     .font(.geist(size: 12))
                     .foregroundStyle(OnboardingStyle.muted)
             }
-            .confirmationDialog("Remove this app from your plan?", isPresented: Binding(
-                get: { removing != nil }, set: { if !$0 { removing = nil } }
-            ), titleVisibility: .visible, presenting: removing) { app in
-                Button(blocking.configuration.isStrict() ? "Remove at midnight" : "Remove", role: .destructive) {
-                    blocking.removeFromPlan(app)
-                }
-            } message: { _ in
-                Text(blocking.configuration.isStrict()
-                     ? "Strict mode is on, so its limit stays until midnight."
-                     : "Its daily limit ends now. You can add it again later.")
-            }
-            .confirmationDialog("Ease back from tomorrow?", isPresented: Binding(
-                get: { easing != nil }, set: { if !$0 { easing = nil } }
-            ), titleVisibility: .visible, presenting: easing) { app in
-                if let eased = app.course.easedBackMinutes {
-                    Button("\(PlanFormat.duration(eased)) a day from tomorrow") { blocking.easeBack(app) }
-                }
-            } message: { _ in
-                Text("Today’s limit stays. The new one starts at midnight, and its week starts over.")
-            }
         }
+        .sheet(isPresented: $showsSetup) {
+            PlanSetupView(existing: apps)
+        }
+        .confirmationDialog("Remove this app from your plan?", isPresented: Binding(
+            get: { removing != nil }, set: { if !$0 { removing = nil } }
+        ), titleVisibility: .visible, presenting: removing) { app in
+            Button(blocking.configuration.isStrict() ? "Remove at midnight" : "Remove", role: .destructive) {
+                blocking.removeFromPlan(app)
+            }
+        } message: { _ in
+            Text(blocking.configuration.isStrict()
+                 ? "Strict mode is on, so its limit stays until midnight."
+                 : "Its daily limit ends now. You can add it again later.")
+        }
+        .confirmationDialog("Ease back from tomorrow?", isPresented: Binding(
+            get: { easing != nil }, set: { if !$0 { easing = nil } }
+        ), titleVisibility: .visible, presenting: easing) { app in
+            if let eased = app.course.easedBackMinutes {
+                Button("\(PlanFormat.duration(eased)) a day from tomorrow") { blocking.easeBack(app) }
+            }
+        } message: { _ in
+            Text("Today’s limit stays. The new one starts at midnight, and its week starts over.")
+        }
+    }
+
+    private var setupCard: some View {
+        let hasDraft = !PlanDraftItem.load().isEmpty
+        return Button { showsSetup = true } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "chart.line.downtrend.xyaxis")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(OnboardingStyle.red)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(hasDraft ? "Finish setting up your plan" : "Set up your plan")
+                        .font(.geist(size: 15, weight: .semibold))
+                        .foregroundStyle(OnboardingStyle.navy)
+                    Text("Daily limits for your top apps that get a little lower each week.")
+                        .font(.geist(size: 13))
+                        .foregroundStyle(OnboardingStyle.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Color(hex: "#9AA3AE"))
+            }
+            .padding(16)
+            .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 
     private func row(_ app: PlannedApp, now: Date) -> some View {

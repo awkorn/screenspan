@@ -41,8 +41,8 @@ final class OnboardingViewModel {
     /// True once Screen Time access is allowed. Blocking needs it, so only
     /// then is there a plan to build; otherwise the user sets a daily goal.
     var buildsPlan = false
-    /// The apps picked for the plan, one item per app.
-    var planItems: [PlanDraftItem] = PlanDraftItem.load()
+    /// The apps picked for the plan and where each starts.
+    let planDraft = PlanDraftModel()
 
     private var steps: [OnboardingStep] {
         OnboardingStep.allCases.filter { step in
@@ -82,41 +82,19 @@ final class OnboardingViewModel {
 
     // MARK: - Plan
 
-    /// Every picked app has a starting point the plan can step down from.
-    var planIsReady: Bool {
-        !planItems.isEmpty && planItems.allSatisfy { $0.course(start: Date()) != nil }
-    }
-
-    func setPlanSelection(_ selection: FamilyActivitySelection) {
-        planItems = PlanDraftItem.items(from: selection, keeping: planItems)
-        savePlanDraft()
-    }
-
-    func savePlanDraft() {
-        PlanDraftItem.save(planItems)
-    }
-
     /// "Start your plan. Get 3.1 years back." Nil without a plan.
     var paywallHeadline: String? {
-        guard buildsPlan else { return nil }
-        let courses = planItems.compactMap { $0.course(start: Date()) }
-        guard !courses.isEmpty else { return nil }
-        let years = courses.regainedAtTarget(currentAge: selectedAge, targetAge: SharedConstants.DefaultValues.targetAge).yearsReclaimed
-        return "Start your plan. Get \(PlanFormat.years(years)) back."
+        guard buildsPlan, planDraft.isReady else { return nil }
+        return "Start your plan. Get \(PlanFormat.years(planDraft.yearsBackAtTarget)) back."
     }
 
-    /// Starts the plan's limits at the next midnight and clears the draft.
-    @MainActor
-    func startPlan(with blocking: BlockingService) {
-        for item in planItems {
-            guard let baseline = item.baselineMinutes else { continue }
-            blocking.addToPlan(item.selection, baselineMinutes: baseline, targetMinutes: item.targetMinutes)
-        }
-        planItems = []
-        PlanDraftItem.save([])
+    /// Back, progress, and continue for the plan steps inside onboarding.
+    var planChrome: PlanStepChrome {
+        PlanStepChrome(progress: progress, back: { self.goBack() }, next: { self.advance() })
     }
 
     func saveAge(_ age: Int) {
+        planDraft.currentAge = age
         selectedAge = age
         AppGroupManager.shared.currentAge = age
         AppGroupManager.shared.targetAge = SharedConstants.DefaultValues.targetAge

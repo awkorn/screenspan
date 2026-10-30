@@ -54,7 +54,7 @@ With a plan, the dashboard opens on the third tab, renamed Plan, and leads it wi
 
 The daily goal's streak and chart line are hidden for plan users; the life grid's marker becomes "Plan": the starting pace less every app's cut at target.
 
-**Check-ins** are host UI, because the report can't take actions or tell the host anything. The plan's dates are the user's own, so the host knows when a step's seventh day arrives and shows a check-in banner above the blocking status. Its sheet embeds a `.planCheckIn` report with each due app's week and advice (hold if the limit was reached on most reported days, otherwise step down), followed by the choices: step down, not yet, or ease back. Blocking lists the plan with today's limit, a change due at midnight (cancelable), and a menu to ease back, move the target, or remove the app. The report reads the plan when it loads, so the dashboard reloads once when the plan has changed, after any sheet closes.
+**Check-ins** are host UI, because the report can't take actions or tell the host anything. The plan's dates are the user's own, so the host knows when a step's seventh day arrives and shows a check-in banner above the blocking status. Its sheet embeds a `.planCheckIn` report with each due app's week and advice (hold if the limit was reached on most reported days, otherwise step down), followed by the choices: step down, not yet, or ease back. Blocking lists the plan with today's limit, a change due at midnight (cancelable), and a menu to ease back, move the target, or remove the app. Its "Set up your plan" card (or "Add", while the plan has room) runs the onboarding plan steps in a sheet (`PlanSetupView`), picking up a draft left by declining Pro and leaving out apps already planned. The report reads the plan when it loads, so the dashboard reloads once when the plan has changed, after any sheet closes.
 
 ### Stats and Life Grid
 
@@ -100,7 +100,7 @@ Shields are applied only with a verified entitlement. `StoreKitService` checks `
 
 ### Paywall
 
-Shown after the plan step at the end of onboarding (skipped for existing subscribers), from the dashboard's Block button, and from Settings. After a plan, its title names the plan's time back. It has a visible close button. Prices, trial length, and the per-month equivalent come from StoreKit. The renewal terms sit beside the purchase button. Restore Purchases, Terms of Use (Apple's standard EULA), and the Privacy Policy are linked from the paywall and Settings. Settings shows the plan, trial or renewal date, and Apple's manage-subscriptions sheet. After a purchase in onboarding the plan starts; without a plan, Blocking opens with the app picker.
+Shown after the plan step at the end of onboarding (skipped for existing subscribers), from the dashboard's Block button, and from Settings. After a plan, its title names the plan's time back. It has a visible close button. Prices, trial length, and the per-month equivalent come from StoreKit. The renewal terms sit beside the purchase button. Restore Purchases, Terms of Use (Apple's standard EULA), and the Privacy Policy are linked from the paywall and Settings. Settings shows the plan, trial or renewal date, and Apple's manage-subscriptions sheet. After a purchase in onboarding the plan starts. After one from the dashboard, Blocking opens plan setup if there's no plan, otherwise the distraction-list picker if that's empty.
 
 ### Before App Review
 

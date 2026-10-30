@@ -2,29 +2,42 @@ import DeviceActivity
 import FamilyControls
 import SwiftUI
 
+/// Back, progress, and continue for a plan step, so the same screens work in
+/// onboarding and in the setup sheet.
+struct PlanStepChrome {
+    /// Nil hides the progress bar.
+    var progress: Double?
+    var back: (() -> Void)?
+    var next: () -> Void
+}
+
 /// Pick the apps the plan will cut back on. The report lists the user's top
 /// apps so they know which to choose; the host only learns what they pick.
 struct PlanAppsView: View {
-    @Bindable var viewModel: OnboardingViewModel
+    @Bindable var draft: PlanDraftModel
+    let chrome: PlanStepChrome
     @State private var selection = FamilyActivitySelection()
     @State private var showsPicker = false
     @State private var pickedTooMany = false
 
     var body: some View {
         OnboardingScaffold(
-            viewModel: viewModel,
-            title: "Start with your top apps",
-            subtitle: "A little less time on the two or three apps that take the most is the change most likely to stick."
+            title: draft.isAdding ? "Add to your plan" : "Start with your top apps",
+            subtitle: draft.isAdding
+                ? "Pick an app that takes a lot of your time, like one that took over from the others."
+                : "A little less time on the two or three apps that take the most is the change most likely to stick.",
+            progress: chrome.progress,
+            onBack: chrome.back
         ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     PlanSectionLabel("YOUR TOP APPS · LAST 7 DAYS")
                     PlanAppAveragesReport(filter: .screenSpanProjectionAverage)
-                    if !viewModel.planItems.isEmpty {
-                        PlanSectionLabel("IN YOUR PLAN")
+                    if !draft.items.isEmpty {
+                        PlanSectionLabel(draft.isAdding ? "ADDING" : "IN YOUR PLAN")
                             .padding(.top, 12)
                         VStack(spacing: 0) {
-                            ForEach(Array(viewModel.planItems.enumerated()), id: \.element.id) { index, item in
+                            ForEach(Array(draft.items.enumerated()), id: \.element.id) { index, item in
                                 if index > 0 { Divider().padding(.leading, 16) }
                                 PlanItemLabel(selection: item.selection)
                                     .padding(.horizontal, 16)
@@ -34,7 +47,9 @@ struct PlanAppsView: View {
                         .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                     }
                     if pickedTooMany {
-                        Text("Pick up to \(ReductionPlan.maximumApps). Fewer changes at once are easier to keep.")
+                        Text(draft.isAdding
+                             ? "Your plan has room for \(draft.room) more. Fewer changes at once are easier to keep."
+                             : "Pick up to \(ReductionPlan.maximumApps). Fewer changes at once are easier to keep.")
                             .font(.geist(size: 13, weight: .medium))
                             .foregroundStyle(OnboardingStyle.red)
                     }
@@ -43,24 +58,22 @@ struct PlanAppsView: View {
                 .padding(.vertical, 24)
             }
         } footer: {
-            if viewModel.planItems.isEmpty {
-                OnboardingPrimaryButton(title: "Choose apps") { showsPicker = true }
+            if draft.items.isEmpty {
+                OnboardingPrimaryButton(title: draft.room == 1 ? "Choose an app" : "Choose apps") { showsPicker = true }
             } else {
-                OnboardingPrimaryButton(title: "Continue") { viewModel.advance() }
+                OnboardingPrimaryButton(title: "Continue", action: chrome.next)
                 OnboardingSecondaryButton(title: "Change apps") { showsPicker = true }
             }
         }
-        .familyActivityPicker(headerText: "Choose up to \(ReductionPlan.maximumApps) of your top apps.",
+        .familyActivityPicker(headerText: draft.room == 1 ? "Choose one app." : "Choose up to \(draft.room) of your top apps.",
                               isPresented: $showsPicker, selection: $selection)
-        .onAppear { selection = viewModel.planItems.combinedSelection }
+        .onAppear { selection = draft.items.combinedSelection }
         .onChange(of: showsPicker) { _, isShowing in
             guard !isShowing else { return }
-            pickedTooMany = selection.tokenCount > ReductionPlan.maximumApps
-            if pickedTooMany {
-                selection = viewModel.planItems.combinedSelection
-            } else {
-                withAnimation { viewModel.setPlanSelection(selection) }
-            }
+            var accepted = false
+            withAnimation { accepted = draft.setSelection(selection) }
+            pickedTooMany = !accepted
+            if !accepted { selection = draft.items.combinedSelection }
         }
     }
 }
