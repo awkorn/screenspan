@@ -237,49 +237,16 @@ final class BlockingService: ObservableObject {
     /// Changes where an app starts or ends up before its first limit starts.
     /// Nothing is in force yet, so this loosens nothing.
     func revise(_ app: PlannedApp, baselineMinutes: Int, targetMinutes: Int) {
-        let now = Date()
-        guard let current = plannedApp(app.id), current.course.steps.count == 1,
-              current.course.hasScheduledChange(at: now)
-        else { return }
+        guard let current = plannedApp(app.id), !current.course.hasStarted(at: Date()) else { return }
         update(app.id) {
             $0.course = ReductionCourse(baselineMinutes: baselineMinutes, targetMinutes: targetMinutes,
-                                        start: current.course.latest.startedAt)
+                                        start: current.course.steps[0].startedAt)
         }
     }
 
-    /// Takes the next limit at midnight, once the current one has had its week.
-    func stepDown(_ app: PlannedApp) {
-        let now = Date()
-        guard let current = plannedApp(app.id), current.isEnforced(at: now),
-              current.course.isReadyForNextStep(at: now)
-        else { return }
-        update(app.id) { $0.course.stepDown(effective: BlockingConfiguration.nextMidnight(after: now)) }
-    }
-
-    /// "Not yet": keeps the current limit and asks again in a week.
-    func hold(_ app: PlannedApp) {
-        guard plannedApp(app.id)?.course.isReadyForNextStep() == true else { return }
-        update(app.id, restartsMonitoring: false) { $0.course.hold() }
-    }
-
-    /// Goes back to a looser limit from midnight. Like every plan change it
-    /// waits for the next day, so it can't lift a block that's on now.
-    func easeBack(_ app: PlannedApp) {
-        let now = Date()
-        guard let current = plannedApp(app.id), current.isEnforced(at: now),
-              !current.course.hasScheduledChange(at: now)
-        else { return }
-        update(app.id) { $0.course.easeBack(effective: BlockingConfiguration.nextMidnight(after: now)) }
-    }
-
-    /// Keeps today's limit instead of the one due at midnight.
-    func cancelScheduledChange(_ app: PlannedApp) {
-        update(app.id) { $0.course.cancelScheduledChange(at: Date()) }
-    }
-
-    /// Moves the target. Today's limit doesn't change either way.
-    func retarget(_ app: PlannedApp, minutes: Int) {
-        update(app.id, restartsMonitoring: false) { $0.course.retarget(minutes) }
+    /// Moves the goal down. Today's limit stays; the plan never loosens.
+    func lowerGoal(_ app: PlannedApp, minutes: Int) {
+        update(app.id) { $0.course.lowerGoal(to: minutes, at: Date()) }
     }
 
     /// Takes an app out of the plan, at midnight under strict mode.
@@ -310,8 +277,8 @@ final class BlockingService: ObservableObject {
         if restartsMonitoring { restart(configuration.plan.apps[index]) }
     }
 
-    /// Watches a threshold for every limit in force today or scheduled, so a
-    /// limit due at midnight applies without the app. Today's limit never
+    /// Watches a threshold for every limit in force today or still ahead, so
+    /// each week's limit applies at midnight without the app. Today's limit never
     /// changes mid-day, so an existing shield is left in place.
     private func restart(_ app: PlannedApp, now: Date = Date()) {
         let rule = BlockingRule.plan(app.id)
@@ -408,10 +375,11 @@ final class BlockingService: ObservableObject {
         }
         for app in configuration.plan.apps {
             let rule = BlockingRule.plan(app.id)
-            // Restart only when the watched thresholds are out of date: a
-            // restart before iOS 17.4 forgets time already used today.
+            // Restart only when a limit isn't watched: a restart before iOS
+            // 17.4 forgets time already used today. Thresholds left from past
+            // weeks are harmless, since each checks the day's limit.
             let expected = Set(app.course.limitsInForce(from: now).map(BlockingRule.planEvent))
-            if !monitored.contains(rule.rawValue) || Set(center.events(for: rule.activityName).keys) != expected {
+            if !monitored.contains(rule.rawValue) || !expected.isSubset(of: Set(center.events(for: rule.activityName).keys)) {
                 restart(app, now: now)
             }
         }

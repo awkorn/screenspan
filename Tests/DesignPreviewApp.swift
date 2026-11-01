@@ -36,9 +36,6 @@ struct PreviewApp: App {
                         Text("Goal setting reached").foregroundStyle(ScreenSpanAppearance.text)
                         Spacer()
                     }
-                } else if CommandLine.arguments.contains("--checkin") {
-                    PlanCheckInReportView(payload: planFixture).frame(height: 2 * 208).padding(.horizontal, 20)
-                    Spacer()
                 } else {
                     DashboardReportView(payload: CommandLine.arguments.contains("--plan") ? planFixture : fixture)
                 }
@@ -63,15 +60,14 @@ struct PreviewApp: App {
                                        topApps: apps, pickupsPerDay: 84)
     }
 
-    /// Two planned apps (no real tokens, so no names) started nine days ago.
-    /// The first stepped down two days ago; the second is due a check-in.
+    /// Two planned apps (no real tokens, so no names). The first started nine
+    /// days ago and is in its second week; the second started four days ago.
     var planFixture: ScreenTimeReportPayload {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         func day(_ offset: Int) -> Date { calendar.date(byAdding: .day, value: offset, to: today)! }
-        var heavy = ReductionCourse(baselineMinutes: 180, start: day(-9))
-        heavy.stepDown(effective: day(-2))
-        let light = ReductionCourse(baselineMinutes: 60, start: day(-9))
+        let heavy = ReductionCourse(baselineMinutes: 180, start: day(-9))
+        let light = ReductionCourse(baselineMinutes: 60, start: day(-4))
         let heavyApp = PlannedApp(selection: .init(), course: heavy)
         let lightApp = PlannedApp(selection: .init(), course: light)
         let heavyHours = [3.1, 2.8, 3.3, 2.9, 3.0, 3.2, 2.7, 2.5, 2.2, 2.5, 1.9, 2.4, 2.1, 2.5, 1.8, 1.7]
@@ -82,6 +78,7 @@ struct PreviewApp: App {
         var payload = fixture
         payload.plan = ReductionPlan(apps: [heavyApp, lightApp])
         payload.planUsage = [heavyApp.id: usage(heavyHours), lightApp.id: usage(lightHours)]
+        payload.planToday = [heavyApp.id: 88, lightApp.id: 50]
         return payload
     }
 }

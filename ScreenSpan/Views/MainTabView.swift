@@ -21,7 +21,6 @@ struct MainTabView: View {
     @State private var showBlocking = false
     @State private var blockingOpensPicker = false
     @State private var showPaywall = false
-    @State private var checkInApps: [PlannedApp] = []
     /// The plan the mounted report read when it loaded.
     @State private var reportPlan = BlockingConfiguration.load().plan
 
@@ -47,17 +46,11 @@ struct MainTabView: View {
             .padding(.vertical, 12)
 
             TimelineView(.periodic(from: .now, by: 15)) { context in
-                VStack(spacing: 8) {
-                    let due = store.isPro ? blocking.configuration.plan.appsReadyForNextStep(at: context.date) : []
-                    if !due.isEmpty {
-                        PlanCheckInBanner(apps: due) { checkInApps = due }
-                    }
-                    BlockingStatusBanner(
-                        block: store.isPro ? blocking.currentBlock(at: context.date) : nil,
-                        now: context.date,
-                        action: openBlocking
-                    )
-                }
+                BlockingStatusBanner(
+                    block: store.isPro ? blocking.currentBlock(at: context.date) : nil,
+                    now: context.date,
+                    action: openBlocking
+                )
             }
             .padding(.horizontal, 24)
             .padding(.top, 4)
@@ -123,14 +116,10 @@ struct MainTabView: View {
         }) {
             BlockingView(opensPickerOnAppear: blockingOpensPicker)
         }
-        .sheet(isPresented: Binding(get: { !checkInApps.isEmpty }, set: { if !$0 { checkInApps = [] } }),
-               onDismiss: refreshIfPlanChanged) {
-            PlanCheckInView(apps: checkInApps)
-        }
         // The report reads the plan when it loads. Changes made in a sheet
         // reload it once the sheet closes rather than after every tap.
         .onChange(of: blocking.configuration.plan) { _, _ in
-            if !showBlocking && checkInApps.isEmpty { refreshIfPlanChanged() }
+            if !showBlocking { refreshIfPlanChanged() }
         }
         .fullScreenCover(isPresented: $showPaywall) {
             PaywallView { purchased in

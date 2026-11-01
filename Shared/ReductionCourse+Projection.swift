@@ -14,11 +14,6 @@ extension ReductionCourse {
 }
 
 extension Collection where Element == ReductionCourse {
-    /// Lifetime time back across the plan at today's limits.
-    func regained(currentAge: Int, targetAge: Int) -> ReclaimResult {
-        Self.regained(minutesBack: minutesBack, currentAge: currentAge, targetAge: targetAge)
-    }
-
     /// Lifetime time back across the plan once every app reaches its target.
     func regainedAtTarget(currentAge: Int, targetAge: Int) -> ReclaimResult {
         Self.regained(minutesBack: minutesBackAtTarget, currentAge: currentAge, targetAge: targetAge)

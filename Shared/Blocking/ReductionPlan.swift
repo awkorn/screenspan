@@ -2,7 +2,7 @@ import FamilyControls
 import Foundation
 
 /// The user's plan to take back time from the few apps that take the most,
-/// one week-long step at a time. It holds the apps the user picked, as opaque
+/// one week-long limit at a time. It holds the apps the user picked, as opaque
 /// tokens, and their courses; like the rest of `BlockingConfiguration`, never usage.
 struct ReductionPlan: Codable, Equatable {
     var apps: [PlannedApp] = []
@@ -12,16 +12,10 @@ struct ReductionPlan: Codable, Equatable {
     static let maximumApps = 3
 
     var courses: [ReductionCourse] { apps.map(\.course) }
-    var isComplete: Bool { !apps.isEmpty && apps.allSatisfy(\.course.isAtTarget) }
 
     /// Apps whose limits iOS should be watching at `date`.
     func enforcedApps(at date: Date = Date()) -> [PlannedApp] {
         apps.filter { $0.isEnforced(at: date) }
-    }
-
-    /// Apps due a check-in at `date`.
-    func appsReadyForNextStep(at date: Date = Date(), calendar: Calendar = .current) -> [PlannedApp] {
-        apps.filter { $0.isEnforced(at: date) && $0.course.isReadyForNextStep(at: date, calendar: calendar) }
     }
 }
 

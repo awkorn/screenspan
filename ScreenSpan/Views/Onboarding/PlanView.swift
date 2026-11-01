@@ -112,8 +112,8 @@ struct PlanPreviewView: View {
 
     var body: some View {
         OnboardingScaffold(
-            title: draft.isAdding ? "Your new step-down" : "Your plan",
-            subtitle: "Small cuts, a week at a time. Each week you choose: step down, hold, or ease back.",
+            title: draft.isAdding ? "Your new limits" : "Your plan",
+            subtitle: "Your daily limit drops a little each week until you reach your goal. When it’s used up, the app is blocked until midnight.",
             progress: chrome.progress,
             onBack: chrome.back
         ) {
@@ -144,13 +144,13 @@ struct PlanPreviewView: View {
 
     private var hero: some View {
         let courses = draft.courses(start: start)
-        let finish = courses.compactMap { $0.projectedTargetDate() }.max()
+        let finish = courses.map { $0.goalDate() }.max()
         return VStack(alignment: .leading, spacing: 6) {
             Text("+\(PlanFormat.years(draft.yearsBackAtTarget))")
                 .font(.geist(size: 44, weight: .heavy))
                 .foregroundStyle(Color(hex: "#1F7A4D"))
                 .monospacedDigit()
-            Text("of your life back by age \(targetAge) once you reach \(courses.count == 1 ? "your target" : "your targets").")
+            Text("of your life back by age \(targetAge) once you reach \(courses.count == 1 ? "your goal" : "your goals").")
                 .font(.geist(size: 15, weight: .semibold))
                 .foregroundStyle(OnboardingStyle.navy)
                 .fixedSize(horizontal: false, vertical: true)
@@ -167,8 +167,8 @@ struct PlanPreviewView: View {
 
     private func finishLine(minutesBack: Int, finish: Date?) -> String {
         let daily = "\(PlanFormat.duration(minutesBack)) a day back"
-        guard let finish else { return daily + " from tomorrow." }
-        return daily + " by \(finish.formatted(.dateTime.month(.wide).day())), if you step down each week."
+        guard let finish, finish > start else { return daily + " from tomorrow." }
+        return daily + " by \(finish.formatted(.dateTime.month(.wide).day()))."
     }
 }
 
@@ -180,7 +180,7 @@ private struct PlanCourseCard: View {
     let currentAge: Int
     let targetAge: Int
 
-    private var limits: [Int] { [course.latestMinutes] + course.remainingLimits }
+    private var limits: [Int] { course.plannedSteps().map(\.dailyMinutes) }
     private var lowestTarget: Int { ReductionCourse.minimumTargetMinutes }
     private var highestTarget: Int { course.baselineMinutes - ReductionCourse.minimumCut }
 
@@ -216,7 +216,7 @@ private struct PlanCourseCard: View {
             }
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Target")
+                    Text("Goal")
                         .font(.geist(size: 13, weight: .medium))
                         .foregroundStyle(OnboardingStyle.muted)
                     Text("+\(PlanFormat.years(course.regained(atLimit: course.targetMinutes, currentAge: currentAge, targetAge: targetAge).yearsReclaimed)) by \(targetAge)")
@@ -261,6 +261,6 @@ private struct PlanCourseCard: View {
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
-        .accessibilityLabel(icon == "plus" ? "Raise target" : "Lower target")
+        .accessibilityLabel(icon == "plus" ? "Raise goal" : "Lower goal")
     }
 }

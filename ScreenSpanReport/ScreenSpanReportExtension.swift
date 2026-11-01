@@ -10,7 +10,6 @@ struct ScreenSpanReportExtension: DeviceActivityReportExtension {
         DashboardReportScene { DashboardReportView(payload: $0) }
         OnboardingOverviewReportScene { OnboardingOverviewReportView(payload: $0) }
         AppAveragesReportScene { AppAveragesReportView(payload: $0) }
-        PlanCheckInReportScene { PlanCheckInReportView(payload: $0) }
         StatsReportScene { payload in
             StatsReportView(payload: payload)
         }
@@ -71,10 +70,29 @@ func extractDailyAverage(
     var pickups = 0
     let plan = BlockingConfiguration.load().plan
     var planned = PlannedUsage(plan: plan)
+    var plannedToday = PlannedUsage(plan: plan)
     for await activityData in results {
         for await segment in activityData.activitySegments {
             guard !Task.isCancelled else { return .unavailable }
             let day = segment.dateInterval.start
+            // The dashboard asks for today only for the time left on plan
+            // limits; every other number here covers completed days.
+            if day >= recentInterval.end {
+                guard !plan.apps.isEmpty else { continue }
+                plannedToday.markReported(day)
+                for await category in segment.categories {
+                    plannedToday.add(category: category.category.token, duration: category.totalActivityDuration, on: day)
+                    for await app in category.applications {
+                        plannedToday.add(application: app.application.token, duration: app.totalActivityDuration, on: day)
+                    }
+                    if plannedToday.watchesWebDomains {
+                        for await site in category.webDomains {
+                            plannedToday.add(webDomain: site.webDomain.token, duration: site.totalActivityDuration, on: day)
+                        }
+                    }
+                }
+                continue
+            }
             summary.add(date: day, duration: segment.totalActivityDuration)
             // Per-app detail only for the seven days Stats describes and, with
             // a plan, its apps from the week before it; other days need just
@@ -121,7 +139,8 @@ func extractDailyAverage(
         topApps: Array(topApps.prefix(5)),
         pickupsPerDay: recent.isEmpty ? nil : Double(pickups) / dayCount,
         plan: plan,
-        planUsage: planned.days
+        planUsage: planned.days,
+        planToday: plannedToday.days.compactMapValues { $0.last.map { $0.hours * 60 } }
     )
 }
 
@@ -230,6 +249,9 @@ struct ScreenTimeReportPayload {
     var plan = ReductionPlan()
     /// Daily hours for each planned app, keyed by `PlannedApp.id`.
     var planUsage: [UUID: [ActivityDay]] = [:]
+    /// Minutes each planned app has been used so far today, for the time
+    /// left on its limit. Missing when Screen Time hasn't reported today.
+    var planToday: [UUID: Double] = [:]
 
     static func available(_ dailyAverageHours: Double) -> ScreenTimeReportPayload {
         ScreenTimeReportPayload(dailyAverageHours: dailyAverageHours)

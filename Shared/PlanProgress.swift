@@ -11,15 +11,15 @@ struct PlanAppProgress: Equatable {
         let limitMinutes: Int
         var id: Date { date }
 
-        /// Within a minute of the limit counts as reaching it: the block
-        /// stops usage right at the limit.
-        var reachedLimit: Bool { hours.map { $0 * 60 >= Double(limitMinutes) - 1 } ?? false }
-        var stayedUnder: Bool { hours != nil && !reachedLimit }
+        /// At or under the limit, with a little slack: the block lands right
+        /// at the limit, and Screen Time can count a minute or two past it.
+        var stayedWithin: Bool { hours.map { $0 * 60 <= Double(limitMinutes) + 2 } ?? false }
     }
 
     let course: ReductionCourse
-    /// Index into `course.steps` of the limit in force now; nil before the first starts.
+    /// Index into `course.plannedSteps()` of the limit in force now; nil before the first starts.
     let stepIndex: Int?
+    let currentLimit: Int?
     /// Completed days of the limit in force now, oldest first.
     let stepDays: [Day]
     /// Reported completed days since the first limit started.
@@ -30,10 +30,12 @@ struct PlanAppProgress: Equatable {
     init(course: ReductionCourse, usage: [ActivityDay], now: Date = Date(), calendar: Calendar = .current) {
         self.course = course
         let today = calendar.startOfDay(for: now)
-        stepIndex = course.steps.lastIndex { $0.startedAt <= now }
+        let planned = course.plannedSteps(calendar: calendar)
+        stepIndex = planned.lastIndex { $0.startedAt <= now }
+        currentLimit = stepIndex.map { planned[$0].dailyMinutes }
         let byDay = Dictionary(usage.map { (calendar.startOfDay(for: $0.date), $0.hours) }, uniquingKeysWith: +)
         if let stepIndex {
-            let step = course.steps[stepIndex]
+            let step = planned[stepIndex]
             var days: [Day] = []
             var day = calendar.startOfDay(for: step.startedAt)
             while day < today {
@@ -48,21 +50,11 @@ struct PlanAppProgress: Equatable {
         planDays = usage.within(DateInterval(start: planStart, end: max(today, planStart)))
     }
 
-    var currentLimit: Int? { stepIndex.map { course.steps[$0].dailyMinutes } }
-    /// "Step 2 of 4", counting limits taken so far and those still ahead.
-    var stepNumber: Int { (stepIndex ?? 0) + 1 }
-    var stepCount: Int { stepNumber + ReductionCourse.ladder(from: currentLimit ?? course.latestMinutes, to: course.targetMinutes).count }
-    /// The last week of the step: what the strip shows and check-ins judge,
-    /// even when the user held past the check-in.
+    /// The last week of the limit, what the strip shows. The goal limit
+    /// lasts past a week.
     var recentDays: ArraySlice<Day> { stepDays.suffix(ReductionCourse.stepDays) }
     var daysReported: Int { recentDays.filter { $0.hours != nil }.count }
-    var daysUnder: Int { recentDays.filter(\.stayedUnder).count }
-    var daysAtLimit: Int { recentDays.filter(\.reachedLimit).count }
-    var yesterday: Day? { stepDays.last }
-
-    /// Reaching the limit on most days means the next cut would bite before
-    /// this one has settled, so holding a week is the better call.
-    var suggestsHolding: Bool { daysReported >= 4 && daysAtLimit * 2 > daysReported }
+    var daysWithin: Int { recentDays.filter(\.stayedWithin).count }
 
     var averageMinutesSinceStart: Double? {
         ActivityDay.averageHours(of: planDays).map { $0 * 60 }

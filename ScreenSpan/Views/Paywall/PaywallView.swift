@@ -40,7 +40,7 @@ struct PaywallView: View {
                     .padding(.top, 8)
 
                 VStack(alignment: .leading, spacing: 14) {
-                    feature("chart.line.downtrend.xyaxis", "Your step-down plan", "Daily limits for your top apps that get a little lower each week.")
+                    feature("chart.line.downtrend.xyaxis", "Your screen time plan", "Daily limits for your top apps that get a little lower each week.")
                     feature("hourglass", "Focus blocks", "Lock distracting apps for 15 minutes or the whole afternoon.")
                     feature("moon.zzz", "Schedules", "Bedtime and work hours turn on by themselves.")
                     feature("timer", "Daily limits", "Give an app 30 minutes a day. Then it waits until tomorrow.")
