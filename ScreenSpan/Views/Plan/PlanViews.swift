@@ -69,7 +69,7 @@ struct PlanCheckInView: View {
                         ProgressView()
                         DeviceActivityReport(.planCheckIn, filter: filter)
                     }
-                    .frame(height: CGFloat(apps.count) * 188)
+                    .frame(height: CGFloat(apps.count) * 208)
                     ForEach(apps) { app in
                         choices(for: app)
                     }
@@ -174,9 +174,10 @@ struct PlanBlockingSection: View {
                         ForEach(apps) { app in row(app, now: context.date) }
                     }
                 }
-                Text("Plan limits change at midnight, so each one covers whole days.")
+                Text("When an app’s limit is used up, it’s blocked until midnight. After each week you check in to step down, hold, or ease back, and the new limit starts at midnight.")
                     .font(.geist(size: 12))
                     .foregroundStyle(OnboardingStyle.muted)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .sheet(isPresented: $showsSetup) {
@@ -239,9 +240,19 @@ struct PlanBlockingSection: View {
                 Spacer(minLength: 8)
                 menu(app, now: now)
             }
-            Text(summary(course, now: now))
-                .font(.geist(size: 13))
-                .foregroundStyle(OnboardingStyle.muted)
+            HStack(spacing: 8) {
+                stat("Started", PlanFormat.duration(course.baselineMinutes))
+                stat(course.limit(at: now) == nil ? "From tonight" : "Today’s limit",
+                     PlanFormat.duration(course.limit(at: now) ?? course.latestMinutes), isCurrent: true)
+                stat("Target", PlanFormat.duration(course.targetMinutes))
+            }
+            .accessibilityElement(children: .combine)
+            if let next = nextLine(app, now: now) {
+                Text(next)
+                    .font(.geist(size: 12))
+                    .foregroundStyle(OnboardingStyle.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if app.removesAt != nil {
                 pending("Leaves your plan at midnight", action: "Keep it") { blocking.cancelRemoval(app) }
             } else if course.hasScheduledChange(at: now), course.steps.count > 1 {
@@ -254,9 +265,34 @@ struct PlanBlockingSection: View {
         .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    private func summary(_ course: ReductionCourse, now: Date) -> String {
-        let today = course.limit(at: now).map { "\(PlanFormat.duration($0)) a day" } ?? "Starts at midnight"
-        return "\(today) · target \(PlanFormat.duration(course.targetMinutes)) · started at \(PlanFormat.duration(course.baselineMinutes))"
+    private func stat(_ label: String, _ value: String, isCurrent: Bool = false) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.geist(size: 11, weight: .medium))
+                .foregroundStyle(isCurrent ? Color.white.opacity(0.8) : OnboardingStyle.muted)
+            Text(value)
+                .font(.geist(size: 16, weight: .bold))
+                .foregroundStyle(isCurrent ? .white : OnboardingStyle.navy)
+                .monospacedDigit()
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(isCurrent ? OnboardingStyle.navy : Color.white,
+                    in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    /// What happens next, when nothing is already waiting for midnight.
+    private func nextLine(_ app: PlannedApp, now: Date) -> String? {
+        let course = app.course
+        guard app.removesAt == nil, !course.hasScheduledChange(at: now) || course.steps.count == 1 else { return nil }
+        if course.isAtTarget { return "You’ve reached your target. This limit stays until you change it." }
+        guard let next = course.nextMinutes, let checkIn = course.checkInDate() else { return nil }
+        if course.isReadyForNextStep(at: now) {
+            return "Your weekly check-in is ready on the dashboard: step down to \(PlanFormat.duration(next)), or hold."
+        }
+        let day = checkIn.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())
+        return "Check-in \(day): step down to \(PlanFormat.duration(next)) a day, or hold another week."
     }
 
     private func pending(_ text: String, action: String, perform: @escaping () -> Void) -> some View {

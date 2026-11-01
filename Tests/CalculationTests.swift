@@ -199,9 +199,8 @@ struct CalculationTests {
         expect(!BlockSchedule(name: "Short", startMinute: 600, endMinute: 610).isValid, "Under 15 minutes rejected")
         expect(!BlockSchedule(name: "Always", startMinute: 600, endMinute: 600).isValid, "All-day rejected")
         expect(!BlockSchedule(name: "None", startMinute: 600, endMinute: 700, weekdays: []).isValid, "No days rejected")
-        expect(BlockSchedule.presets.allSatisfy(\.isValid), "Presets are valid")
-        let copy = BlockSchedule.presets[0].duplicated()
-        expect(copy.id != BlockSchedule.presets[0].id && copy.startMinute == BlockSchedule.presets[0].startMinute, "Preset copies get new IDs")
+        expect(BlockSchedule.newSchedule().isValid, "New schedule default is valid")
+        expect(BlockSchedule.newSchedule().id != BlockSchedule.newSchedule().id, "New schedules get their own IDs")
         // US DST ends Sunday, November 1, 2026 at 2:00.
         let overnightDST = BlockSchedule(name: "Bed", startMinute: 22 * 60, endMinute: 7 * 60)
         expect(overnightDST.end(after: at(31, 23, month: 10), calendar: calendar) == at(1, 7, month: 11), "Overnight end across DST")

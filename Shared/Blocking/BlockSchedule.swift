@@ -17,17 +17,9 @@ struct BlockSchedule: Codable, Identifiable, Equatable, Sendable {
     static let weekdaysOnly: Set<Int> = Set(2...6)
     static let weekendsOnly: Set<Int> = [1, 7]
 
-    static let presets: [BlockSchedule] = [
-        BlockSchedule(name: "Bedtime", startMinute: 22 * 60, endMinute: 7 * 60),
-        BlockSchedule(name: "Work hours", startMinute: 9 * 60, endMinute: 17 * 60, weekdays: weekdaysOnly),
-        BlockSchedule(name: "Slow mornings", startMinute: 6 * 60, endMinute: 9 * 60),
-    ]
-
-    /// A copy with its own identity, for starting a new schedule from a preset.
-    func duplicated() -> BlockSchedule {
-        var copy = self
-        copy.id = UUID()
-        return copy
+    /// Where a new schedule starts: overnight, every day.
+    static func newSchedule() -> BlockSchedule {
+        BlockSchedule(name: "", startMinute: 22 * 60, endMinute: 7 * 60)
     }
 
     var isOvernight: Bool { endMinute <= startMinute }

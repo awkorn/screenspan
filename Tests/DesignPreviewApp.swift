@@ -37,7 +37,7 @@ struct PreviewApp: App {
                         Spacer()
                     }
                 } else if CommandLine.arguments.contains("--checkin") {
-                    PlanCheckInReportView(payload: planFixture).frame(height: 2 * 188).padding(.horizontal, 20)
+                    PlanCheckInReportView(payload: planFixture).frame(height: 2 * 208).padding(.horizontal, 20)
                     Spacer()
                 } else {
                     DashboardReportView(payload: CommandLine.arguments.contains("--plan") ? planFixture : fixture)

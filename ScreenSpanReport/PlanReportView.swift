@@ -20,9 +20,10 @@ struct PlanReportSection: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Your plan")
                     .font(.geist(size: 20, weight: .semibold))
-                Text("A little less each week, on the apps that take the most.")
+                Text("Each app gets a daily limit. Use it up and the app is blocked until midnight. After each week, you choose whether to step down.")
                     .font(.geist(size: 13))
                     .foregroundStyle(ScreenSpanAppearance.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             summary(progress.map(\.progress))
             ForEach(progress, id: \.app.id) { item in
@@ -121,7 +122,10 @@ private struct PlanAppCard: View {
                         .monospacedDigit()
                 }
             }
-            PlanWeekStrip(days: progress.stepDays)
+            VStack(alignment: .leading, spacing: 8) {
+                PlanWeekStrip(days: progress.stepDays)
+                PlanWeekLegend()
+            }
             Text(statusLine)
                 .font(.geist(size: 13))
                 .foregroundStyle(ScreenSpanAppearance.secondaryText)
@@ -192,6 +196,25 @@ struct PlanWeekStrip: View {
     }
 }
 
+/// What the strip's colors mean. There's no red: the block stops the app
+/// at its limit, so a day can only reach it.
+struct PlanWeekLegend: View {
+    var body: some View {
+        HStack(spacing: 14) {
+            swatch(Color(hex: "#2BB673"), "Under limit")
+            swatch(Color(hex: "#F2A93B"), "Hit limit, blocked")
+        }
+        .accessibilityHidden(true)
+    }
+
+    private func swatch(_ color: Color, _ title: String) -> some View {
+        HStack(spacing: 5) {
+            RoundedRectangle(cornerRadius: 2, style: .continuous).fill(color).frame(width: 10, height: 10)
+            Text(title).font(.geist(size: 11)).foregroundStyle(ScreenSpanAppearance.secondaryText)
+        }
+    }
+}
+
 /// The evidence for a weekly check-in, one card per app that's due. The host
 /// shows the choices below it; nothing here tells the host what it found.
 struct PlanCheckInReportView: View {
@@ -213,6 +236,7 @@ struct PlanCheckInReportView: View {
                         }
                     }
                     PlanWeekStrip(days: progress.stepDays)
+                    PlanWeekLegend()
                     Text(advice(progress, next: app.course.nextMinutes))
                         .font(.geist(size: 13, weight: .medium))
                         .fixedSize(horizontal: false, vertical: true)
@@ -229,7 +253,7 @@ struct PlanCheckInReportView: View {
         .screenSpanLightSurface()
     }
 
-    static let cardHeight: CGFloat = 176
+    static let cardHeight: CGFloat = 196
 
     private func advice(_ progress: PlanAppProgress, next: Int?) -> String {
         let record = progress.daysReported > 0

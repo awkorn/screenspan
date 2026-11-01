@@ -254,36 +254,29 @@ struct BlockingView: View {
         VStack(alignment: .leading, spacing: 10) {
             SectionHeader(title: "Schedules",
                           action: configuration.schedules.count < BlockingConfiguration.maximumSchedules
-                            ? ("Add", { editingSchedule = ScheduleDraft(schedule: BlockSchedule.presets[0].duplicated(), isNew: true) })
+                            ? ("Add", addSchedule)
                             : nil)
             if configuration.schedules.isEmpty {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Blocks that turn on by themselves. Start with one of these:")
-                        .font(.geist(size: 14))
-                        .foregroundStyle(OnboardingStyle.muted)
-                    ForEach(BlockSchedule.presets) { preset in
-                        Button {
-                            editingSchedule = ScheduleDraft(schedule: preset.duplicated(), isNew: true)
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(preset.name).font(.geist(size: 15, weight: .semibold))
-                                    Text(Self.describe(preset)).font(.geist(size: 13)).foregroundStyle(OnboardingStyle.muted)
-                                }
-                                Spacer()
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 22))
-                                    .foregroundStyle(OnboardingStyle.navy)
-                            }
-                            .foregroundStyle(OnboardingStyle.navy)
-                            .padding(14)
-                            .background(Color.white, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                Button(action: addSchedule) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "calendar.badge.clock")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(OnboardingStyle.red)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Add a schedule")
+                                .font(.geist(size: 15, weight: .semibold))
+                                .foregroundStyle(OnboardingStyle.navy)
+                            Text("Block your distracting apps at set times, like bedtime or work hours.")
+                                .font(.geist(size: 13))
+                                .foregroundStyle(OnboardingStyle.muted)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                        .buttonStyle(.plain)
+                        Spacer(minLength: 0)
                     }
+                    .padding(16)
+                    .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
-                .padding(14)
-                .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .buttonStyle(.plain)
             } else {
                 TimelineView(.periodic(from: .now, by: 30)) { context in
                     VStack(spacing: 8) {
@@ -294,6 +287,10 @@ struct BlockingView: View {
                 }
             }
         }
+    }
+
+    private func addSchedule() {
+        editingSchedule = ScheduleDraft(schedule: .newSchedule(), isNew: true)
     }
 
     private func scheduleRow(_ schedule: BlockSchedule, now: Date) -> some View {

@@ -216,8 +216,8 @@ struct HistoryReportView: View {
                 }
                 .chartXScale(domain: domain.start...domain.end)
                 .chartXAxis {
-                    AxisMarks(values: .stride(by: .day, count: domain.duration > 15 * 86_400 ? 7 : 2)) {
-                        AxisValueLabel(format: .dateTime.month(.abbreviated).day())
+                    AxisMarks(values: .stride(by: .day, count: axisStride(domain))) {
+                        AxisValueLabel(format: .dateTime.month(.abbreviated).day(), collisionResolution: .greedy)
                             .foregroundStyle(ScreenSpanAppearance.secondaryText)
                     }
                 }
@@ -245,6 +245,18 @@ struct HistoryReportView: View {
             }
             .padding(18)
             .background(cardColor, in: RoundedRectangle(cornerRadius: 18))
+        }
+    }
+
+    /// Days between date labels, keeping to about four across the chart so
+    /// "Oct 24"-style labels never crowd, from one week up to five.
+    private func axisStride(_ domain: DateInterval) -> Int {
+        let days = Int((domain.duration / 86_400).rounded())
+        switch days {
+        case ...10: return 3
+        case ...21: return 5
+        case ...28: return 7
+        default: return 10
         }
     }
 

@@ -2,7 +2,7 @@ import DeviceActivity
 import SwiftUI
 
 /// Where each app starts. The report shows the picked apps' last seven days;
-/// the user dials in their own starting point beside it, since measured
+/// the user copies each average into its starting point, since measured
 /// numbers can't leave the report.
 struct PlanBaselinesView: View {
     @Bindable var draft: PlanDraftModel
@@ -11,15 +11,20 @@ struct PlanBaselinesView: View {
     var body: some View {
         OnboardingScaffold(
             title: "Where are you starting?",
-            subtitle: "Set each app to about what it takes now. Your plan steps down from here.",
+            subtitle: "Copy each app’s daily average into its starting point. Your plan steps down from there.",
             progress: chrome.progress,
             onBack: chrome.back
         ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    PlanSectionLabel("YOUR LAST 7 DAYS")
+                    PlanSectionLabel("1 · YOUR DAILY AVERAGE, LAST 7 DAYS")
                     PlanAppAveragesReport(filter: .screenSpanAppAverages(draft.items.combinedSelection))
-                    PlanSectionLabel("YOUR STARTING POINT")
+                    Label("Screen Time keeps these numbers private, so ScreenSpan can’t fill them in for you.",
+                          systemImage: "lock")
+                        .font(.geist(size: 12))
+                        .foregroundStyle(OnboardingStyle.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                    PlanSectionLabel("2 · SET EACH APP TO MATCH")
                         .padding(.top, 12)
                     ForEach($draft.items) { $item in
                         BaselineCard(item: $item)
@@ -48,7 +53,7 @@ private struct BaselineCard: View {
             HStack {
                 PlanItemLabel(selection: item.selection)
                 Spacer(minLength: 8)
-                Text(item.baselineMinutes == nil ? "Not set" : "\(PlanFormat.duration(minutes)) a day")
+                Text(item.baselineMinutes == nil ? "Set to match above" : "\(PlanFormat.duration(minutes)) a day")
                     .font(.geist(size: 15, weight: .semibold))
                     .foregroundStyle(item.baselineMinutes == nil ? OnboardingStyle.muted : OnboardingStyle.navy)
                     .monospacedDigit()

@@ -39,24 +39,8 @@ struct ScheduleEditor: View {
                     }
                 }
                 Section {
-                    TextField("Name", text: $schedule.name)
+                    TextField("Name, like Bedtime", text: $schedule.name)
                         .font(.geist(size: 17, weight: .semibold))
-                    if draft.isNew {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(BlockSchedule.presets) { preset in
-                                    Button(preset.name) {
-                                        schedule.name = preset.name
-                                        schedule.startMinute = preset.startMinute
-                                        schedule.endMinute = preset.endMinute
-                                        schedule.weekdays = preset.weekdays
-                                    }
-                                    .font(.geist(size: 13, weight: .semibold))
-                                    .buttonStyle(.bordered)
-                                }
-                            }
-                        }
-                    }
                 }
                 Section {
                     DatePicker("Starts", selection: time(\.startMinute), displayedComponents: .hourAndMinute)
