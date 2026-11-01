@@ -46,6 +46,9 @@ enum SharedConstants {
         /// The host's bottom safe-area inset in points, a layout value, so the
         /// report can keep its tab bar above the home indicator.
         case dashboardBottomInset
+        /// Whether to notify shortly before a plan limit runs out. A setting;
+        /// missing means on.
+        case planLimitWarnings
     }
 
     enum DefaultValues {

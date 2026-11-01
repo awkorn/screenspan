@@ -1,5 +1,6 @@
 import FamilyControls
 import SwiftUI
+import UserNotifications
 
 /// The plan in Blocking: each app's limit today and when it drops next, and
 /// ways to lower a goal, add an app, or start a plan.
@@ -7,6 +8,8 @@ struct PlanBlockingSection: View {
     @Binding var showsSetup: Bool
     @EnvironmentObject private var blocking: BlockingService
     @State private var editing: PlannedApp?
+    @State private var notificationsDenied = false
+    @Environment(\.scenePhase) private var scenePhase
 
     private var apps: [PlannedApp] { blocking.configuration.plan.apps }
 
@@ -37,14 +40,61 @@ struct PlanBlockingSection: View {
                     .font(.geist(size: 12))
                     .foregroundStyle(OnboardingStyle.muted)
                     .fixedSize(horizontal: false, vertical: true)
+                warningToggle
             }
         }
+        .task(id: scenePhase) { await checkNotifications() }
         .sheet(isPresented: $showsSetup) {
             PlanSetupView(existing: apps)
         }
         .sheet(item: $editing) { app in
             PlanEditSheet(app: app)
         }
+    }
+
+    private var warningToggle: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Toggle(isOn: Binding(
+                get: { blocking.warnsBeforePlanLimits },
+                set: { on in
+                    blocking.warnsBeforePlanLimits = on
+                    Task { await checkNotifications() }
+                }
+            )) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Label("\(BlockingRule.planWarningLead)-minute heads-up", systemImage: "bell.badge")
+                        .font(.geist(size: 16, weight: .semibold))
+                        .foregroundStyle(OnboardingStyle.navy)
+                    Text("Get a notification when an app is \(BlockingRule.planWarningLead) minutes from its limit.")
+                        .font(.geist(size: 13))
+                        .foregroundStyle(OnboardingStyle.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .tint(Color(hex: "#2BB673"))
+            .padding(16)
+            .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            if blocking.warnsBeforePlanLimits && notificationsDenied {
+                HStack(spacing: 8) {
+                    Text("Notifications are off for ScreenSpan.")
+                        .font(.geist(size: 12))
+                        .foregroundStyle(OnboardingStyle.muted)
+                    Spacer(minLength: 0)
+                    Button("Turn on") {
+                        if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                    .font(.geist(size: 13, weight: .semibold))
+                    .foregroundStyle(Color(hex: "#0063D6"))
+                }
+            }
+        }
+        .padding(.top, 6)
+    }
+
+    private func checkNotifications() async {
+        notificationsDenied = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus == .denied
     }
 
     private var setupCard: some View {

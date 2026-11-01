@@ -1,5 +1,6 @@
 import DeviceActivity
 import Foundation
+import UserNotifications
 
 /// Turns shields on and off at schedule boundaries, daily limits, and plan limits while
 /// ScreenSpan isn't running. It reads the user's blocking choices from the App
@@ -35,6 +36,7 @@ final class ScreenSpanMonitorExtension: DeviceActivityMonitor {
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         super.eventDidReachThreshold(event, activity: activity)
         if case .plan(let id) = BlockingRule(activity: activity) {
+            if let limit = BlockingRule.planWarningLimit(event) { return planWarningReached(limit: limit, id: id) }
             return planThresholdReached(event, id: id)
         }
         guard event == BlockingRule.limitEvent, case .limit(let id) = BlockingRule(activity: activity),
@@ -58,5 +60,31 @@ final class ScreenSpanMonitorExtension: DeviceActivityMonitor {
               app.isEnforced(at: now), app.course.isOverLimit(atThreshold: minutes, at: now)
         else { return }
         BlockingRule.plan(id).shield(app.selection)
+    }
+
+    /// Usage is a few minutes short of a plan limit. Warnings for other
+    /// days' limits fire too and are skipped, as is one arriving after the
+    /// block, which a restart mid-day can cause. The notification can't name
+    /// the app: the monitor only ever sees its token.
+    private func planWarningReached(limit: Int, id: UUID) {
+        let now = Date()
+        let defaults = UserDefaults.appGroup
+        guard BlockingEntitlement.isActive,
+              defaults.object(forKey: SharedConstants.UserDefaultsKey.planLimitWarnings.rawValue) as? Bool ?? true,
+              let app = BlockingConfiguration.load().plan.apps.first(where: { $0.id == id }),
+              app.isEnforced(at: now), app.course.limit(at: now) == limit, !BlockingRule.plan(id).isShielding
+        else { return }
+        let content = UNMutableNotificationContent()
+        content.title = "\(BlockingRule.planWarningLead) minutes left"
+        content.body = "An app in your plan is almost at today’s \(Self.duration(limit)) limit. Then it’s blocked until midnight."
+        content.sound = .default
+        let day = Calendar.current.startOfDay(for: now).timeIntervalSince1970
+        let request = UNNotificationRequest(identifier: "planWarning.\(id.uuidString).\(Int(day))", content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    private static func duration(_ minutes: Int) -> String {
+        if minutes < 60 { return "\(minutes)m" }
+        return minutes % 60 == 0 ? "\(minutes / 60)h" : "\(minutes / 60)h \(minutes % 60)m"
     }
 }

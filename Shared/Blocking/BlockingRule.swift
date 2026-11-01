@@ -22,8 +22,25 @@ enum BlockingRule: Hashable {
     }
 
     static func planEventMinutes(_ event: DeviceActivityEvent.Name) -> Int? {
+        minutes(in: event, prefix: "planLimit")
+    }
+
+    /// How long before a plan limit runs out the user hears about it.
+    static let planWarningLead = 15
+
+    /// A threshold `planWarningLead` minutes before a plan limit, named for
+    /// the limit. Limits too short for a useful warning get none.
+    static func planWarningEvent(limit minutes: Int) -> DeviceActivityEvent.Name? {
+        minutes - planWarningLead >= 5 ? DeviceActivityEvent.Name("planWarning.\(minutes)") : nil
+    }
+
+    static func planWarningLimit(_ event: DeviceActivityEvent.Name) -> Int? {
+        minutes(in: event, prefix: "planWarning")
+    }
+
+    private static func minutes(in event: DeviceActivityEvent.Name, prefix: Substring) -> Int? {
         let parts = event.rawValue.split(separator: ".", maxSplits: 1)
-        guard parts.count == 2, parts[0] == "planLimit" else { return nil }
+        guard parts.count == 2, parts[0] == prefix else { return nil }
         return Int(parts[1])
     }
 
@@ -66,6 +83,12 @@ enum BlockingRule: Hashable {
 
     func clear() {
         store.clearAllSettings()
+    }
+
+    /// Whether this rule's store is shielding anything now.
+    var isShielding: Bool {
+        let shield = store.shield
+        return shield.applications != nil || shield.applicationCategories != nil || shield.webDomains != nil
     }
 
     /// Every rule the configuration can have shields in.

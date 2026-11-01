@@ -2,6 +2,7 @@ import DeviceActivity
 import FamilyControls
 import Foundation
 import ManagedSettings
+import UserNotifications
 
 /// Focus blocks, schedules, daily limits, and the reduction plan. The app
 /// applies shields right away; DeviceActivity monitoring lets the monitor
@@ -232,6 +233,23 @@ final class BlockingService: ObservableObject {
         configuration.plan.apps.append(app)
         save()
         restart(app)
+        if warnsBeforePlanLimits { Task { await requestNotificationPermission() } }
+    }
+
+    /// The heads-up before a plan limit runs out. Only the monitor posts it.
+    var warnsBeforePlanLimits: Bool {
+        get { UserDefaults.appGroup.object(forKey: SharedConstants.UserDefaultsKey.planLimitWarnings.rawValue) as? Bool ?? true }
+        set {
+            objectWillChange.send()
+            UserDefaults.appGroup.set(newValue, forKey: SharedConstants.UserDefaultsKey.planLimitWarnings.rawValue)
+            if newValue { Task { await requestNotificationPermission() } }
+        }
+    }
+
+    /// Asks once; later calls return what the user chose.
+    @discardableResult
+    func requestNotificationPermission() async -> Bool {
+        (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])) ?? false
     }
 
     /// Changes where an app starts or ends up before its first limit starts.
@@ -284,14 +302,23 @@ final class BlockingService: ObservableObject {
         let rule = BlockingRule.plan(app.id)
         center.stopMonitoring([rule.activityName])
         guard isEntitled, app.isEnforced(at: now) else { return rule.clear() }
-        let events = Dictionary(uniqueKeysWithValues: app.course.limitsInForce(from: now).map {
-            (BlockingRule.planEvent(minutes: $0), Self.event(for: app.selection, minutes: $0))
-        })
         do {
-            try center.startMonitoring(rule.activityName, during: Self.wholeDay, events: events)
+            try center.startMonitoring(rule.activityName, during: Self.wholeDay, events: Self.planEvents(for: app, now: now))
         } catch {
             errorMessage = Self.message(for: error)
         }
+    }
+
+    /// Each limit's threshold, and one a few minutes before it for the warning.
+    private static func planEvents(for app: PlannedApp, now: Date) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
+        var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
+        for minutes in app.course.limitsInForce(from: now) {
+            events[BlockingRule.planEvent(minutes: minutes)] = event(for: app.selection, minutes: minutes)
+            if let warning = BlockingRule.planWarningEvent(limit: minutes) {
+                events[warning] = event(for: app.selection, minutes: minutes - BlockingRule.planWarningLead)
+            }
+        }
+        return events
     }
 
     private static let wholeDay = DeviceActivitySchedule(intervalStart: DateComponents(hour: 0, minute: 0),
@@ -378,7 +405,7 @@ final class BlockingService: ObservableObject {
             // Restart only when a limit isn't watched: a restart before iOS
             // 17.4 forgets time already used today. Thresholds left from past
             // weeks are harmless, since each checks the day's limit.
-            let expected = Set(app.course.limitsInForce(from: now).map(BlockingRule.planEvent))
+            let expected = Set(Self.planEvents(for: app, now: now).keys)
             if !monitored.contains(rule.rawValue) || !expected.isSubset(of: Set(center.events(for: rule.activityName).keys)) {
                 restart(app, now: now)
             }
