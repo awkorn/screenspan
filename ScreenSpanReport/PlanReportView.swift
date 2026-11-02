@@ -98,8 +98,8 @@ enum PlanReportStyle {
     static let line = Color(hex: "#D5DBE3")
 }
 
-/// One planned app: where it started, today's limit and what's left of it,
-/// its goal, this week's days, and every week from start to goal.
+/// One planned app: what's left of today's limit, this week's days, and
+/// every week from where it started to its goal.
 private struct PlanAppCard: View {
     let app: PlannedApp
     let progress: PlanAppProgress
@@ -119,14 +119,14 @@ private struct PlanAppCard: View {
                 Spacer(minLength: 8)
                 pill(now: now)
             }
-            HStack(spacing: 8) {
-                stat("Started", course.baselineMinutes)
-                stat(progress.currentLimit == nil ? "From tonight" : "Today’s limit",
-                     progress.currentLimit ?? course.firstMinutes, isCurrent: true)
-                stat("Goal", course.targetMinutes)
-            }
             if let limit = progress.currentLimit, let used = todayMinutes {
                 today(used: used, limit: limit)
+            } else {
+                // Before the first limit starts, or before Screen Time reports today.
+                Text(progress.currentLimit.map { "\(PlanReportFormat.duration(Double($0))) limit today" }
+                     ?? "Starts tonight at \(PlanReportFormat.duration(Double(course.firstMinutes))) a day")
+                    .font(.geist(size: 14, weight: .semibold))
+                    .monospacedDigit()
             }
             if progress.stepIndex != nil {
                 VStack(alignment: .leading, spacing: 8) {
@@ -223,23 +223,6 @@ private struct PlanAppCard: View {
             .padding(.horizontal, 9)
             .padding(.vertical, 4)
             .background(weeks == nil ? Color(hex: "#E3F5EB") : Color.white, in: Capsule())
-    }
-
-    private func stat(_ label: String, _ minutes: Int, isCurrent: Bool = false) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label)
-                .font(.geist(size: 11, weight: .medium))
-                .foregroundStyle(isCurrent ? Color.white.opacity(0.8) : ScreenSpanAppearance.secondaryText)
-            Text(PlanReportFormat.duration(Double(minutes)))
-                .font(.geist(size: 17, weight: .bold))
-                .foregroundStyle(isCurrent ? Color.white : ScreenSpanAppearance.text)
-                .monospacedDigit()
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(isCurrent ? ScreenSpanAppearance.text : Color.white,
-                    in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     private func sectionLabel(_ text: String) -> some View {

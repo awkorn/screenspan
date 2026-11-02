@@ -40,10 +40,15 @@ struct HistoryReportView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
                 if hasPlan {
+                    // The plan leads; the whole-phone projection follows the
+                    // chart it's drawn from, so it doesn't read as the plan's.
                     PlanReportSection(payload: payload, currentAge: currentAge, targetAge: targetAge)
+                    chartSection(progress)
+                    regainSection(progress)
+                } else {
+                    regainSection(progress)
+                    chartSection(progress)
                 }
-                regainSection(progress)
-                chartSection(progress)
                 if !hasPlan { goalSection(progress) }
                 currentSection(progress)
                 Text("Projections compare your daily average since starting with your starting pace, from now until age \(targetAge). Days Screen Time did not report are left out, not counted as zero.")
