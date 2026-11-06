@@ -221,7 +221,7 @@ struct CalculationTests {
                 let limits = ReductionCourse.ladder(from: baseline, to: target)
                 let cuts = zip([baseline] + limits, limits).map { $0 - $1 }
                 everyLadderSteps = everyLadderSteps && limits.last == target && limits.allSatisfy { $0 % 5 == 0 }
-                    && cuts.allSatisfy { (ReductionCourse.minimumCut...ReductionCourse.maximumCut).contains($0) }
+                    && cuts.allSatisfy { (ReductionCourse.Pace.steady.minimumCut...ReductionCourse.Pace.steady.maximumCut).contains($0) }
             }
         }
         expect(everyLadderSteps, "Every ladder ends at its target in 10–30 minute cuts of whole 5 minutes")
@@ -264,6 +264,63 @@ struct CalculationTests {
         expect(early == ReductionCourse(baselineMinutes: 180, targetMinutes: 60, start: planStart), "Before it starts, a new goal redraws the plan")
         early.lowerGoal(to: 3, at: at(19, 22), calendar: calendar)
         expect(early.targetMinutes == ReductionCourse.minimumTargetMinutes, "Goal floor")
+
+        // Paces: how big each week's cut is.
+        expect(ReductionCourse(baselineMinutes: 180, pace: .gentle, start: planStart).plannedSteps(calendar: calendar).map({ $0.dailyMinutes })
+               == [165, 150, 135, 120, 110, 100, 90], "Gentle cuts 5–15 minutes a week")
+        expect(ReductionCourse(baselineMinutes: 180, pace: .faster, start: planStart).plannedSteps(calendar: calendar).map({ $0.dailyMinutes })
+               == [135, 90], "Faster cuts up to 45 minutes a week")
+        var everyPaceSteps = true
+        for pace in ReductionCourse.Pace.allCases {
+            for baseline in stride(from: ReductionCourse.minimumBaselineMinutes, through: 600, by: 5) {
+                for target in stride(from: ReductionCourse.minimumTargetMinutes, through: baseline - ReductionCourse.minimumCut, by: 5) {
+                    let limits = ReductionCourse.ladder(from: baseline, to: target, pace: pace)
+                    let cuts = zip([baseline] + limits, limits).map { $0 - $1 }
+                    everyPaceSteps = everyPaceSteps && limits.last == target && cuts.allSatisfy { $0 > 0 && $0 <= pace.maximumCut && $0 % 5 == 0 }
+                }
+            }
+        }
+        expect(everyPaceSteps, "Every pace reaches its target in whole 5-minute cuts within its largest cut")
+        var paced = ReductionCourse(baselineMinutes: 180, start: planStart)
+        paced.setPace(.faster, at: at(19, 22))
+        expect(paced.pace == .faster && paced.plannedSteps(calendar: calendar).count == 2, "Pace changes before the plan starts")
+        paced.setPace(.gentle, at: at(28, 12))
+        expect(paced.pace == .faster, "Pace is fixed once the plan starts")
+
+        // Weeks set by hand.
+        var custom = ReductionCourse(baselineMinutes: 180, start: planStart)
+        custom.setLimit(at: 1, to: 150, at: at(19, 22), calendar: calendar)
+        expect(custom.plannedSteps(calendar: calendar).map({ $0.dailyMinutes }) == [150, 150, 90]
+               && custom.plannedSteps(calendar: calendar).map({ $0.startedAt }) == [planStart, at(27, 0), at(3, 0, month: 11)],
+               "A week can hold the limit before it, on the same dates")
+        custom.setLimit(at: 2, to: 100, at: at(19, 22), calendar: calendar)
+        expect(custom.targetMinutes == 100 && custom.plannedSteps(calendar: calendar).map({ $0.dailyMinutes }) == [150, 150, 100], "The last week is the goal")
+        custom.setLimit(at: 1, to: 95, at: at(19, 22), calendar: calendar)
+        expect(custom.plannedSteps(calendar: calendar).map({ $0.dailyMinutes }) == [150, 95], "Later weeks come down with it; a repeated goal is dropped")
+        custom.setLimit(at: 1, to: 170, at: at(19, 22), calendar: calendar)
+        expect(custom.plannedSteps(calendar: calendar).map({ $0.dailyMinutes }) == [170], "Earlier weeks go up with it before the plan starts")
+        custom.setLimit(at: 0, to: 400, at: at(19, 22), calendar: calendar)
+        expect(custom.firstMinutes == 180, "No week above the starting point")
+
+        var tightened = ReductionCourse(baselineMinutes: 180, start: planStart)
+        let original = tightened
+        tightened.setLimit(at: 1, to: 60, at: at(28, 12), calendar: calendar)
+        expect(tightened == original, "Weeks that started stay")
+        tightened.setLimit(at: 2, to: 100, at: at(28, 12), calendar: calendar)
+        expect(tightened == original, "Once started, weeks can't go up")
+        tightened.setLimit(at: 2, to: 70, at: at(28, 12), calendar: calendar)
+        expect(tightened.plannedSteps(calendar: calendar).map({ $0.dailyMinutes }) == [150, 120, 70] && tightened.targetMinutes == 70
+               && tightened.limit(at: at(28, 12), calendar: calendar) == 120, "Once started, weeks ahead can go lower")
+        expect(tightened.isNoLooser(than: original, from: at(28, 12), calendar: calendar)
+               && !original.isNoLooser(than: tightened, from: at(28, 12), calendar: calendar), "Looser plans are caught")
+        var undone = tightened
+        undone.setLimit(at: 2, to: 90, at: at(28, 12), ceiling: 90, calendar: calendar)
+        expect(undone.plannedSteps(calendar: calendar).map({ $0.dailyMinutes }) == [150, 120, 90], "A week goes back up to the saved plan's limit")
+        tightened.lowerGoal(to: 50, at: at(28, 12), calendar: calendar)
+        expect(tightened.plannedSteps(calendar: calendar).map({ $0.dailyMinutes }) == [150, 120, 70, 50], "A lower goal keeps weeks set by hand")
+
+        let typed = ReductionCourse(baselineMinutes: 180, limits: [160, 170, 120, 120], start: planStart, calendar: calendar)
+        expect(typed.plannedSteps(calendar: calendar).map({ $0.dailyMinutes }) == [160, 160, 120] && typed.targetMinutes == 120, "Typed limits never go up")
 
         // The week-by-week schedule shown on the Plan tab.
         let weekly = ReductionCourse(baselineMinutes: 180, start: planStart)
@@ -325,6 +382,9 @@ struct CalculationTests {
         expect((try? JSONDecoder().decode(ReductionCourse.self, from: encoded)) == course, "Course round-trips")
         let checkInEra = #"{"baselineMinutes":180,"targetMinutes":90,"steps":[{"dailyMinutes":150,"startedAt":0}],"heldUntil":0}"#.data(using: .utf8)!
         expect((try? JSONDecoder().decode(ReductionCourse.self, from: checkInEra))?.firstMinutes == 150, "Courses from check-in builds still load")
+        expect((try? JSONDecoder().decode(ReductionCourse.self, from: checkInEra))?.pace == .steady, "Courses from before paces are steady")
+        let encodedCustom = try! JSONEncoder().encode(typed)
+        expect((try? JSONDecoder().decode(ReductionCourse.self, from: encodedCustom)) == typed, "Courses set by hand round-trip")
         let empty = #"{"baselineMinutes":180,"targetMinutes":90,"steps":[]}"#.data(using: .utf8)!
         expect((try? JSONDecoder().decode(ReductionCourse.self, from: empty)) == nil, "A course without steps is rejected")
 

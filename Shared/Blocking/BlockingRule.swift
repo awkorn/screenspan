@@ -26,12 +26,21 @@ enum BlockingRule: Hashable {
     }
 
     /// How long before a plan limit runs out the user hears about it.
-    static let planWarningLead = 15
+    static let planWarningLead = 30
+    /// The heads-up for limits too short for `planWarningLead`.
+    static let shortPlanWarningLead = 15
 
-    /// A threshold `planWarningLead` minutes before a plan limit, named for
-    /// the limit. Limits too short for a useful warning get none.
+    /// Minutes of warning before `limit` runs out: `planWarningLead` when the
+    /// limit leaves room for it, a shorter one when not, and none for limits
+    /// too short for a useful warning.
+    static func planWarningLead(limit minutes: Int) -> Int? {
+        [planWarningLead, shortPlanWarningLead].first { minutes - $0 >= 5 }
+    }
+
+    /// A threshold `planWarningLead(limit:)` minutes before a plan limit,
+    /// named for the limit.
     static func planWarningEvent(limit minutes: Int) -> DeviceActivityEvent.Name? {
-        minutes - planWarningLead >= 5 ? DeviceActivityEvent.Name("planWarning.\(minutes)") : nil
+        planWarningLead(limit: minutes) == nil ? nil : DeviceActivityEvent.Name("planWarning.\(minutes)")
     }
 
     static func planWarningLimit(_ event: DeviceActivityEvent.Name) -> Int? {

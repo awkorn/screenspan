@@ -62,21 +62,28 @@ final class ScreenSpanMonitorExtension: DeviceActivityMonitor {
         BlockingRule.plan(id).shield(app.selection)
     }
 
-    /// Usage is a few minutes short of a plan limit. Warnings for other
-    /// days' limits fire too and are skipped, as is one arriving after the
-    /// block, which a restart mid-day can cause. The notification can't name
-    /// the app: the monitor only ever sees its token.
+    /// Usage is `planWarningLead(limit:)` minutes short of a plan limit.
+    /// Warnings for other days' limits fire too and are skipped, as is one
+    /// arriving after the block, which a restart mid-day can cause. The
+    /// monitor only ever sees the app's token, so the notification names it
+    /// only when the user gave it a name in their plan.
     private func planWarningReached(limit: Int, id: UUID) {
         let now = Date()
         let defaults = UserDefaults.appGroup
         guard BlockingEntitlement.isActive,
               defaults.object(forKey: SharedConstants.UserDefaultsKey.planLimitWarnings.rawValue) as? Bool ?? true,
+              let lead = BlockingRule.planWarningLead(limit: limit),
               let app = BlockingConfiguration.load().plan.apps.first(where: { $0.id == id }),
               app.isEnforced(at: now), app.course.limit(at: now) == limit, !BlockingRule.plan(id).isShielding
         else { return }
         let content = UNMutableNotificationContent()
-        content.title = "\(BlockingRule.planWarningLead) minutes left"
-        content.body = "An app in your plan is almost at today’s \(Self.duration(limit)) limit. Then it’s blocked until midnight."
+        if let name = app.displayName {
+            content.title = "\(lead) minutes left on \(name)"
+            content.body = "\(name) is almost at today’s \(Self.duration(limit)) limit. Then it’s blocked until midnight."
+        } else {
+            content.title = "\(lead) minutes left"
+            content.body = "An app in your plan is almost at today’s \(Self.duration(limit)) limit. Then it’s blocked until midnight."
+        }
         content.sound = .default
         let day = Calendar.current.startOfDay(for: now).timeIntervalSince1970
         let request = UNNotificationRequest(identifier: "planWarning.\(id.uuidString).\(Int(day))", content: content, trigger: nil)

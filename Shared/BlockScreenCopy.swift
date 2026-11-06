@@ -68,6 +68,7 @@ struct BlockScreenCopy: Equatable {
         "Take back your time.",
         "20 minutes less a day frees up over 5 days a year.",
         "The next few minutes are yours to choose.",
+        "You can never get your time back.",
     ]
 
     private static func durationLabel(minutes: Int) -> String {

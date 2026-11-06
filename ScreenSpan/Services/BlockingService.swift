@@ -225,11 +225,10 @@ final class BlockingService: ObservableObject {
 
     /// Adds an app to the plan. Its first limit starts at the next midnight,
     /// a fresh day, rather than blocking time the user has already spent today.
-    func addToPlan(_ selection: FamilyActivitySelection, baselineMinutes: Int, targetMinutes: Int? = nil) {
+    /// `course` is expected to start then.
+    func addToPlan(_ selection: FamilyActivitySelection, course: ReductionCourse, name: String? = nil) {
         guard !selection.isEmpty, canAddToPlan else { return }
-        let course = ReductionCourse(baselineMinutes: baselineMinutes, targetMinutes: targetMinutes,
-                                     start: BlockingConfiguration.nextMidnight())
-        let app = PlannedApp(selection: selection, course: course)
+        let app = PlannedApp(selection: selection, course: course, name: PlannedApp.cleaned(name))
         configuration.plan.apps.append(app)
         save()
         restart(app)
@@ -252,19 +251,22 @@ final class BlockingService: ObservableObject {
         (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])) ?? false
     }
 
-    /// Changes where an app starts or ends up before its first limit starts.
-    /// Nothing is in force yet, so this loosens nothing.
-    func revise(_ app: PlannedApp, baselineMinutes: Int, targetMinutes: Int) {
-        guard let current = plannedApp(app.id), !current.course.hasStarted(at: Date()) else { return }
-        update(app.id) {
-            $0.course = ReductionCourse(baselineMinutes: baselineMinutes, targetMinutes: targetMinutes,
-                                        start: current.course.steps[0].startedAt)
-        }
+    /// Replaces an app's limits. Before its first limit starts nothing is in
+    /// force, so anything goes; after, the change is kept only if no day's
+    /// limit goes up and today's stays, so the plan never loosens.
+    func setCourse(_ app: PlannedApp, to course: ReductionCourse) {
+        let now = Date()
+        guard let current = plannedApp(app.id), course != current.course,
+              course.steps[0].startedAt == current.course.steps[0].startedAt,
+              course.baselineMinutes == current.course.baselineMinutes,
+              !current.course.hasStarted(at: now) || course.isNoLooser(than: current.course, from: now)
+        else { return }
+        update(app.id) { $0.course = course }
     }
 
-    /// Moves the goal down. Today's limit stays; the plan never loosens.
-    func lowerGoal(_ app: PlannedApp, minutes: Int) {
-        update(app.id) { $0.course.lowerGoal(to: minutes, at: Date()) }
+    /// What notifications call the app.
+    func rename(_ app: PlannedApp, to name: String?) {
+        update(app.id, restartsMonitoring: false) { $0.name = PlannedApp.cleaned(name) }
     }
 
     /// Takes an app out of the plan, at midnight under strict mode.
@@ -314,11 +316,15 @@ final class BlockingService: ObservableObject {
         var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
         for minutes in app.course.limitsInForce(from: now) {
             events[BlockingRule.planEvent(minutes: minutes)] = event(for: app.selection, minutes: minutes)
-            if let warning = BlockingRule.planWarningEvent(limit: minutes) {
-                events[warning] = event(for: app.selection, minutes: minutes - BlockingRule.planWarningLead)
+            if let warning = BlockingRule.planWarningEvent(limit: minutes), let lead = BlockingRule.planWarningLead(limit: minutes) {
+                events[warning] = event(for: app.selection, minutes: minutes - lead)
             }
         }
         return events
+    }
+
+    private static func minutes(_ threshold: DateComponents) -> Int {
+        (threshold.hour ?? 0) * 60 + (threshold.minute ?? 0)
     }
 
     private static let wholeDay = DeviceActivitySchedule(intervalStart: DateComponents(hour: 0, minute: 0),
@@ -405,8 +411,12 @@ final class BlockingService: ObservableObject {
             // Restart only when a limit isn't watched: a restart before iOS
             // 17.4 forgets time already used today. Thresholds left from past
             // weeks are harmless, since each checks the day's limit.
-            let expected = Set(Self.planEvents(for: app, now: now).keys)
-            if !monitored.contains(rule.rawValue) || !expected.isSubset(of: Set(center.events(for: rule.activityName).keys)) {
+            // Thresholds are compared too, so a changed heads-up lead takes effect.
+            let registered = center.events(for: rule.activityName)
+            let isCurrent = Self.planEvents(for: app, now: now).allSatisfy { name, event in
+                registered[name].map { Self.minutes($0.threshold) == Self.minutes(event.threshold) } ?? false
+            }
+            if !monitored.contains(rule.rawValue) || !isCurrent {
                 restart(app, now: now)
             }
         }

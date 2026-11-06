@@ -75,6 +75,8 @@ private struct BaselineCard: View {
             .frame(height: 110)
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Starting daily time")
+            PlanNameField(name: Binding(get: { item.name ?? "" }, set: { item.name = $0 }), background: .white)
+                .padding(.top, 6)
             if isTooLow {
                 Text("Under \(ReductionCourse.minimumBaselineMinutes) minutes a day is already low. Pick an app that takes more.")
                     .font(.geist(size: 12, weight: .medium))
@@ -92,8 +94,9 @@ private struct BaselineCard: View {
         } set: { value in
             let total = hours ? value * 60 + minutes % 60 : (minutes / 60) * 60 + value
             item.baselineMinutes = total
-            // A target picked for an older starting point may no longer fit.
+            // A target or weeks picked for an older starting point may no longer fit.
             item.targetMinutes = nil
+            item.limits = nil
         }
     }
 }

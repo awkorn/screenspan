@@ -113,7 +113,7 @@ struct PlanPreviewView: View {
     var body: some View {
         OnboardingScaffold(
             title: draft.isAdding ? "Your new limits" : "Your plan",
-            subtitle: "Your daily limit drops a little each week until you reach your goal. When it’s used up, the app is blocked until midnight.",
+            subtitle: "Your daily limit drops each week until you reach your goal. Pick a pace, or set each week yourself. When a limit is used up, the app is blocked until midnight.",
             progress: chrome.progress,
             onBack: chrome.back
         ) {
@@ -172,13 +172,15 @@ struct PlanPreviewView: View {
     }
 }
 
-/// One app's steps from where it starts to its target, which the user can move.
+/// One app's steps from where it starts to its target. The user can move
+/// the target, pick a pace, and set any week's limit by hand.
 private struct PlanCourseCard: View {
     @Binding var item: PlanDraftItem
     let course: ReductionCourse
     let start: Date
     let currentAge: Int
     let targetAge: Int
+    @State private var showsWeeks = false
 
     private var limits: [Int] { course.plannedSteps().map(\.dailyMinutes) }
     private var lowestTarget: Int { ReductionCourse.minimumTargetMinutes }
@@ -233,6 +235,38 @@ private struct PlanCourseCard: View {
                 stepButton("plus", enabled: course.targetMinutes < highestTarget) { moveTarget(by: 15) }
             }
             .accessibilityElement(children: .contain)
+            PlanPacePicker(pace: course.pace) { pace in
+                withAnimation(.snappy) {
+                    item.pace = pace
+                    item.limits = nil
+                }
+            }
+            Button {
+                withAnimation(.snappy) { showsWeeks.toggle() }
+            } label: {
+                HStack {
+                    Text(item.limits == nil ? "Adjust each week" : "Adjust each week · edited")
+                        .font(.geist(size: 14, weight: .semibold))
+                        .foregroundStyle(Color(hex: "#0063D6"))
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Color(hex: "#0063D6"))
+                        .rotationEffect(.degrees(showsWeeks ? 180 : 0))
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityValue(showsWeeks ? "Expanded" : "Collapsed")
+            if showsWeeks {
+                PlanWeekRows(course: course, now: Date(), background: .white) { changed in
+                    withAnimation(.snappy) { item.adopt(changed) }
+                }
+                Text("Lowering a week brings later weeks down with it; raising one lifts earlier weeks. Changing the pace or goal redraws the weeks.")
+                    .font(.geist(size: 12))
+                    .foregroundStyle(OnboardingStyle.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .padding(16)
         .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -248,7 +282,10 @@ private struct PlanCourseCard: View {
     private func moveTarget(by delta: Int) {
         let current = course.targetMinutes
         let moved = delta > 0 ? (current / 15 + 1) * 15 : ((current - 1) / 15) * 15
-        withAnimation(.snappy) { item.targetMinutes = min(max(moved, lowestTarget), highestTarget) }
+        withAnimation(.snappy) {
+            item.targetMinutes = min(max(moved, lowestTarget), highestTarget)
+            item.limits = nil
+        }
     }
 
     private func stepButton(_ icon: String, enabled: Bool, action: @escaping () -> Void) -> some View {

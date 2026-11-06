@@ -12,11 +12,29 @@ struct PlanDraftItem: Codable, Identifiable, Equatable {
     var baselineMinutes: Int?
     /// Nil for the default, half the starting point.
     var targetMinutes: Int?
+    /// Nil for the default, steady.
+    var pace: ReductionCourse.Pace?
+    /// Every week's limit, when the user set any by hand; nil to follow the pace.
+    var limits: [Int]?
+    /// What the user calls the app, for notifications.
+    var name: String?
 
     /// The course this item would start at `start`.
     func course(start: Date) -> ReductionCourse? {
         guard let baselineMinutes, baselineMinutes >= ReductionCourse.minimumBaselineMinutes else { return nil }
-        return ReductionCourse(baselineMinutes: baselineMinutes, targetMinutes: targetMinutes, start: start)
+        if let limits, !limits.isEmpty {
+            return ReductionCourse(baselineMinutes: baselineMinutes, limits: limits, pace: pace ?? .steady, start: start)
+        }
+        return ReductionCourse(baselineMinutes: baselineMinutes, targetMinutes: targetMinutes, pace: pace ?? .steady, start: start)
+    }
+
+    /// Takes the limits and goal of `course`, which the user changed.
+    mutating func adopt(_ course: ReductionCourse) {
+        pace = course.pace
+        targetMinutes = course.targetMinutes
+        let derived = ReductionCourse(baselineMinutes: course.baselineMinutes, targetMinutes: course.targetMinutes,
+                                      pace: course.pace, start: course.steps[0].startedAt)
+        limits = course == derived ? nil : course.plannedSteps().map(\.dailyMinutes)
     }
 
     /// One item per token in `selection`, keeping entries for tokens already in `existing`.
@@ -111,8 +129,8 @@ final class PlanDraftModel {
     @MainActor
     func start(with blocking: BlockingService) {
         for item in items {
-            guard let baseline = item.baselineMinutes else { continue }
-            blocking.addToPlan(item.selection, baselineMinutes: baseline, targetMinutes: item.targetMinutes)
+            guard let course = item.course(start: BlockingConfiguration.nextMidnight()) else { continue }
+            blocking.addToPlan(item.selection, course: course, name: item.name)
         }
         items = []
         PlanDraftItem.save([])

@@ -81,6 +81,7 @@ preference for direct language about reclaiming time sets the voice.
 | Take back your time. | User-selected emphasis on ownership of time, without implying a specific session length. |
 | 20 minutes less a day frees up over 5 days a year. | Arithmetic: 20 × 365 = 7,300 minutes, or about 5.07 full 24-hour days. This is time available for other things, not measured usage reduction or a health threshold. |
 | The next few minutes are yours to choose. | An immediate, concrete choice; editorial language. |
+| You can never get your time back. | User-selected; loss framing about time itself, not a judgment of the user. Editorial language. |
 
 The exact wording is an editorial decision informed by the research and user
 preferences; these sentences have not been experimentally validated. The

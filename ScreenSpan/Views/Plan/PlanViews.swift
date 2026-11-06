@@ -36,7 +36,7 @@ struct PlanBlockingSection: View {
                         ForEach(apps) { app in row(app, now: context.date) }
                     }
                 }
-                Text("When an app’s limit is used up, it’s blocked until midnight. Each week the limit drops on its own until you reach your goal.")
+                Text("When an app’s limit is used up, it’s blocked until midnight. Each week the limit drops on its own until you reach your goal. Tap Edit to change any week ahead or name the app.")
                     .font(.geist(size: 12))
                     .foregroundStyle(OnboardingStyle.muted)
                     .fixedSize(horizontal: false, vertical: true)
@@ -65,7 +65,7 @@ struct PlanBlockingSection: View {
                     Label("\(BlockingRule.planWarningLead)-minute heads-up", systemImage: "bell.badge")
                         .font(.geist(size: 16, weight: .semibold))
                         .foregroundStyle(OnboardingStyle.navy)
-                    Text("Get a notification when an app is \(BlockingRule.planWarningLead) minutes from its limit.")
+                    Text("Get a notification \(BlockingRule.planWarningLead) minutes before an app’s limit runs out (\(BlockingRule.shortPlanWarningLead) for short limits).")
                         .font(.geist(size: 13))
                         .foregroundStyle(OnboardingStyle.muted)
                         .fixedSize(horizontal: false, vertical: true)
@@ -213,52 +213,61 @@ struct PlanStats: View {
     }
 }
 
-/// Changes a planned app's goal with a slider, showing the weeks it makes.
-/// Once the app's limits start, the goal can only go lower, so the plan only
-/// gets stricter; before then, it can go either way.
+/// Changes a planned app's goal, pace, and week-by-week limits, and the
+/// name its notifications use. Once the app's limits start, the plan only
+/// gets stricter: the goal and weeks ahead can go lower, not higher, and the
+/// pace is fixed. Before then, anything goes.
 struct PlanEditSheet: View {
     let app: PlannedApp
 
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var blocking: BlockingService
-    @State private var goal: Double
+    @State private var course: ReductionCourse
+    @State private var name: String
     @State private var confirmsRemove = false
     private let now = Date()
 
     init(app: PlannedApp) {
         self.app = app
-        _goal = State(initialValue: Double(app.course.targetMinutes))
+        _course = State(initialValue: app.course)
+        _name = State(initialValue: app.name ?? "")
     }
 
-    private var course: ReductionCourse { app.course }
-    private var hasStarted: Bool { course.hasStarted(at: now) }
+    private var saved: ReductionCourse { app.course }
+    private var hasStarted: Bool { saved.hasStarted(at: now) }
     private var lowest: Int { ReductionCourse.minimumTargetMinutes }
-    private var highest: Int { hasStarted ? course.targetMinutes : course.baselineMinutes - ReductionCourse.minimumCut }
-    private var goalMinutes: Int { Int(goal) }
-    private var isChanged: Bool { goalMinutes != course.targetMinutes }
+    private var highest: Int { hasStarted ? saved.targetMinutes : saved.baselineMinutes - ReductionCourse.minimumCut }
+    private var isChanged: Bool { course != saved || PlannedApp.cleaned(name) != app.displayName }
 
-    /// The course as it would be with the slider's goal.
-    private var preview: ReductionCourse {
-        guard isChanged else { return course }
+    /// The saved course with a different goal, at the edited pace. Weeks set
+    /// by hand in this sheet give way to the new goal.
+    private func withGoal(_ minutes: Int) -> ReductionCourse {
+        guard minutes != course.targetMinutes else { return course }
         guard hasStarted else {
-            return ReductionCourse(baselineMinutes: course.baselineMinutes, targetMinutes: goalMinutes, start: course.steps[0].startedAt)
+            return ReductionCourse(baselineMinutes: saved.baselineMinutes, targetMinutes: minutes, pace: course.pace,
+                                   start: saved.steps[0].startedAt)
         }
-        var lowered = course
-        lowered.lowerGoal(to: goalMinutes, at: now)
+        var lowered = saved
+        lowered.lowerGoal(to: minutes, at: now)
         return lowered
     }
 
     var body: some View {
-        let preview = preview
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     VStack(alignment: .leading, spacing: 12) {
                         PlanItemLabel(selection: app.selection)
-                        PlanStats(course: course, now: now, goalMinutes: preview.targetMinutes, boxColor: OnboardingStyle.card)
+                        PlanStats(course: saved, now: now, goalMinutes: course.targetMinutes, boxColor: OnboardingStyle.card)
                     }
-                    goalCard(preview)
-                    weeks(preview)
+                    goalCard
+                    if !hasStarted {
+                        PlanPacePicker(pace: course.pace) { pace in
+                            withAnimation(.snappy) { course.setPace(pace, at: now) }
+                        }
+                    }
+                    weeks
+                    PlanNameField(name: $name, background: OnboardingStyle.card)
                     Button("Remove from plan", role: .destructive) { confirmsRemove = true }
                         .font(.geist(size: 15, weight: .semibold))
                         .foregroundStyle(OnboardingStyle.red)
@@ -268,6 +277,7 @@ struct PlanEditSheet: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
             }
+            .scrollDismissesKeyboard(.interactively)
             .background(Color.white.ignoresSafeArea())
             .navigationTitle("Edit plan")
             .navigationBarTitleDisplayMode(.inline)
@@ -292,9 +302,10 @@ struct PlanEditSheet: View {
         .screenSpanLightSurface()
     }
 
-    private func goalCard(_ preview: ReductionCourse) -> some View {
-        let years = preview.regained(atLimit: preview.targetMinutes, currentAge: AppGroupManager.shared.currentAge,
-                                     targetAge: SharedConstants.DefaultValues.targetAge).yearsReclaimed
+    private var goalCard: some View {
+        let goalMinutes = course.targetMinutes
+        let years = course.regained(atLimit: goalMinutes, currentAge: AppGroupManager.shared.currentAge,
+                                    targetAge: SharedConstants.DefaultValues.targetAge).yearsReclaimed
         return VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -317,7 +328,8 @@ struct PlanEditSheet: View {
             }
             if highest > lowest {
                 // Rounded by hand: a stepped slider draws a tick for every 5 minutes.
-                Slider(value: Binding(get: { goal }, set: { goal = Double(ReductionCourse.rounded($0)) }),
+                Slider(value: Binding(get: { Double(min(max(goalMinutes, lowest), highest)) },
+                                      set: { course = withGoal(ReductionCourse.rounded($0)) }),
                        in: Double(lowest)...Double(highest)) {
                     Text("Goal")
                 } minimumValueLabel: {
@@ -329,7 +341,7 @@ struct PlanEditSheet: View {
                 .sensoryFeedback(.selection, trigger: goalMinutes)
                 .accessibilityValue("\(PlanFormat.duration(goalMinutes)) a day")
             }
-            Text(caption(preview))
+            Text(caption)
                 .font(.geist(size: 13))
                 .foregroundStyle(OnboardingStyle.muted)
                 .fixedSize(horizontal: false, vertical: true)
@@ -339,35 +351,69 @@ struct PlanEditSheet: View {
         .animation(.snappy, value: goalMinutes)
     }
 
-    private func caption(_ preview: ReductionCourse) -> String {
-        let reach = preview.goalDate() > now
-            ? "You’ll reach it \(preview.goalDate().formatted(.dateTime.month(.abbreviated).day()))."
+    private var caption: String {
+        let reach = course.goalDate() > now
+            ? "You’ll reach it \(course.goalDate().formatted(.dateTime.month(.abbreviated).day()))."
             : "You’re at this goal now."
         guard hasStarted else { return reach }
         guard highest > lowest else { return "Your goal is as low as it goes." }
         return reach + " Once a plan starts, goals can go lower but not higher."
     }
 
-    private func weeks(_ preview: ReductionCourse) -> some View {
+    private var weeks: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("WEEK BY WEEK")
                 .font(.geist(size: 11, weight: .bold))
                 .tracking(0.8)
                 .foregroundStyle(OnboardingStyle.muted)
-            VStack(spacing: 0) {
-                ForEach(Array(preview.schedule(at: now).enumerated()), id: \.offset) { index, entry in
-                    if index > 0 { Divider().padding(.leading, 40) }
-                    weekRow(entry)
-                }
+            PlanWeekRows(course: course, now: now, background: OnboardingStyle.card,
+                         ceiling: { date in hasStarted ? saved.limit(at: date) : nil }) { changed in
+                withAnimation(.snappy) { course = changed }
             }
-            .padding(.horizontal, 14)
-            .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            Text(hasStarted
+                 ? "Tap − to make any week ahead stricter. Weeks that have started stay as they are."
+                 : "Use − and + to set any week’s limit. Later weeks follow it down; earlier weeks follow it up.")
+                .font(.geist(size: 12))
+                .foregroundStyle(OnboardingStyle.muted)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
-    private func weekRow(_ entry: ReductionCourse.ScheduleEntry) -> some View {
+    private func save() {
+        if course != saved { blocking.setCourse(app, to: course) }
+        if PlannedApp.cleaned(name) != app.displayName { blocking.rename(app, to: name) }
+        dismiss()
+    }
+}
+
+/// Every limit from the first to the goal, each week ahead with − and + to
+/// set it by hand. Used when setting up a plan and when editing one.
+struct PlanWeekRows: View {
+    let course: ReductionCourse
+    let now: Date
+    var background = OnboardingStyle.card
+    /// The most a week starting at the given date may be raised to, once the
+    /// plan has started; nil for no limit beyond the course's own rules.
+    var ceiling: (Date) -> Int? = { _ in nil }
+    let onChange: (ReductionCourse) -> Void
+
+    var body: some View {
+        let entries = course.schedule(at: now)
+        VStack(spacing: 0) {
+            ForEach(Array(entries.enumerated()), id: \.offset) { index, entry in
+                if index > 0 { Divider().padding(.leading, 40) }
+                row(entry, index: index)
+            }
+        }
+        .padding(.horizontal, 14)
+        .background(background, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func row(_ entry: ReductionCourse.ScheduleEntry, index: Int) -> some View {
         let isCurrent = entry.kind == .current
-        return HStack(spacing: 12) {
+        let lower = changed(index, to: entry.dailyMinutes - ReductionCourse.increment, start: entry.start)
+        let higher = changed(index, to: entry.dailyMinutes + ReductionCourse.increment, start: entry.start)
+        return HStack(spacing: 10) {
             Image(systemName: entry.isGoal ? "flag.circle.fill"
                   : entry.kind == .past ? "checkmark.circle.fill" : isCurrent ? "largecircle.fill.circle" : "circle")
                 .font(.system(size: 18))
@@ -377,13 +423,45 @@ struct PlanEditSheet: View {
             Text(title(entry))
                 .font(.geist(size: 14, weight: isCurrent || entry.isGoal ? .semibold : .regular))
                 .foregroundStyle(entry.kind == .past ? OnboardingStyle.muted : OnboardingStyle.navy)
-            Spacer()
-            Text("\(PlanFormat.duration(entry.dailyMinutes)) a day")
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+            Spacer(minLength: 4)
+            if entry.kind == .upcoming {
+                stepButton("minus", course: lower, label: "Lower \(title(entry))")
+            }
+            Text(PlanFormat.duration(entry.dailyMinutes))
                 .font(.geist(size: 14, weight: isCurrent || entry.isGoal ? .bold : .medium))
                 .foregroundStyle(entry.isGoal ? Color(hex: "#1F7A4D") : entry.kind == .past ? OnboardingStyle.muted : OnboardingStyle.navy)
                 .monospacedDigit()
+                .contentTransition(.numericText())
+                .frame(minWidth: entry.kind == .upcoming ? 52 : nil, alignment: .trailing)
+            if entry.kind == .upcoming {
+                stepButton("plus", course: higher, label: "Raise \(title(entry))")
+            }
         }
-        .padding(.vertical, 11)
+        .padding(.vertical, 9)
+        .accessibilityElement(children: .contain)
+    }
+
+    /// The course with week `index` moved to `minutes`; nil when that changes nothing.
+    private func changed(_ index: Int, to minutes: Int, start: Date) -> ReductionCourse? {
+        var trial = course
+        trial.setLimit(at: index, to: minutes, at: now, ceiling: ceiling(start))
+        return trial == course ? nil : trial
+    }
+
+    private func stepButton(_ icon: String, course: ReductionCourse?, label: String) -> some View {
+        Button { if let course { onChange(course) } } label: {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(course != nil ? OnboardingStyle.navy : OnboardingStyle.muted.opacity(0.35))
+                .frame(width: 30, height: 30)
+                .background(background == .white ? OnboardingStyle.card : .white, in: Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(course == nil)
+        .sensoryFeedback(.selection, trigger: course == nil)
+        .accessibilityLabel(label)
     }
 
     private func title(_ entry: ReductionCourse.ScheduleEntry) -> String {
@@ -395,13 +473,83 @@ struct PlanEditSheet: View {
         case .upcoming: return Calendar.current.isDateInTomorrow(entry.start) ? "From tomorrow" : "Week of \(date)"
         }
     }
+}
 
-    private func save() {
-        if hasStarted {
-            blocking.lowerGoal(app, minutes: goalMinutes)
-        } else {
-            blocking.revise(app, baselineMinutes: course.baselineMinutes, targetMinutes: goalMinutes)
+/// How big each week's cut is, before a plan starts.
+struct PlanPacePicker: View {
+    let pace: ReductionCourse.Pace
+    let onChange: (ReductionCourse.Pace) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("PACE")
+                .font(.geist(size: 11, weight: .bold))
+                .tracking(0.8)
+                .foregroundStyle(OnboardingStyle.muted)
+            HStack(spacing: 6) {
+                ForEach(ReductionCourse.Pace.allCases) { option in
+                    Button { onChange(option) } label: {
+                        Text(option.title)
+                            .font(.geist(size: 14, weight: .semibold))
+                            .foregroundStyle(option == pace ? .white : OnboardingStyle.navy)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 9)
+                            .background(option == pace ? OnboardingStyle.navy : Color.white,
+                                        in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(option == pace ? .isSelected : [])
+                }
+            }
+            Text(pace.detail)
+                .font(.geist(size: 12))
+                .foregroundStyle(OnboardingStyle.muted)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        dismiss()
+    }
+}
+
+extension ReductionCourse.Pace {
+    var title: String {
+        switch self {
+        case .gentle: "Gentle"
+        case .steady: "Steady"
+        case .faster: "Faster"
+        }
+    }
+
+    var detail: String {
+        switch self {
+        case .gentle: "About 10% less each week (5–15 min). Takes longer, but each week barely feels different."
+        case .steady: "About 20% less each week (10–30 min). Big enough to notice, small enough to stick."
+        case .faster: "About 30% less each week (15–45 min). Gets you there in fewer weeks."
+        }
+    }
+}
+
+/// What the user calls an app, so its heads-up can name it.
+struct PlanNameField: View {
+    @Binding var name: String
+    var background = OnboardingStyle.card
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            TextField("App name, like Instagram", text: $name)
+                .font(.geist(size: 15))
+                .foregroundStyle(OnboardingStyle.navy)
+                .textInputAutocapitalization(.words)
+                .autocorrectionDisabled()
+                .submitLabel(.done)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(background, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .onChange(of: name) { _, new in
+                    if new.count > PlannedApp.maximumNameLength { name = String(new.prefix(PlannedApp.maximumNameLength)) }
+                }
+            Text("Optional. Your heads-up uses it, since iOS doesn’t tell ScreenSpan app names.")
+                .font(.geist(size: 12))
+                .foregroundStyle(OnboardingStyle.muted)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
