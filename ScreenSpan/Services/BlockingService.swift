@@ -213,7 +213,7 @@ final class BlockingService: ObservableObject {
         guard isEntitled, limit.isEnabled else { return }
         let event = Self.event(for: limit.selection, minutes: limit.dailyMinutes)
         do {
-            try center.startMonitoring(rule.activityName, during: Self.wholeDay, events: [BlockingRule.limitEvent: event])
+            try center.startMonitoring(rule.activityName, during: PlanMonitoring.wholeDay, events: [BlockingRule.limitEvent: event])
         } catch {
             errorMessage = Self.message(for: error)
         }
@@ -232,6 +232,7 @@ final class BlockingService: ObservableObject {
         configuration.plan.apps.append(app)
         save()
         restart(app)
+        watchPlanParts()
         if warnsBeforePlanLimits { Task { await requestNotificationPermission() } }
     }
 
@@ -269,21 +270,131 @@ final class BlockingService: ObservableObject {
         update(app.id, restartsMonitoring: false) { $0.name = PlannedApp.cleaned(name) }
     }
 
-    /// Takes an app out of the plan, at midnight under strict mode.
+    /// Whether any planned app's limits are running.
+    private func planHasStarted(at date: Date) -> Bool {
+        configuration.plan.apps.contains { $0.course.hasStarted(at: date) }
+    }
+
+    /// How the day's time is shared out. Once limits are running the change
+    /// waits for midnight, so it can't open up more time today.
+    func setSpread(_ spread: DaySpread) {
+        let now = Date()
+        if planHasStarted(at: now) {
+            configuration.plan.pendingSpread = spread == configuration.plan.spread
+                ? nil : .init(spread: spread, effective: BlockingConfiguration.nextMidnight(after: now))
+        } else {
+            configuration.plan.spread = spread
+            configuration.plan.pendingSpread = nil
+        }
+        save()
+        configuration.plan.apps.forEach { restart($0, now: now) }
+    }
+
+    /// Takes an app out of the plan. Once its limits are running that waits
+    /// for midnight: leaving the plan is not a way around a block.
     func removeFromPlan(_ app: PlannedApp) {
-        guard plannedApp(app.id) != nil else { return }
-        if configuration.isStrict() {
+        guard let current = plannedApp(app.id) else { return }
+        if current.course.hasStarted(at: Date()) {
             update(app.id, restartsMonitoring: false) { $0.removesAt = BlockingConfiguration.nextMidnight() }
             return
         }
         configuration.plan.apps.removeAll { $0.id == app.id }
         save()
         stop(.plan(app.id))
+        PlanMonitoring.setShieldedAt(nil, for: app.id)
+        watchPlanParts()
     }
 
-    /// Keeps an app in the plan after asking to remove it under strict mode.
+    /// Keeps an app in the plan after asking to remove it.
     func cancelRemoval(_ app: PlannedApp) {
         update(app.id, restartsMonitoring: false) { $0.removesAt = nil }
+    }
+
+    // MARK: Early unlock
+
+    /// Whether the app's plan block is on now.
+    func isPlanBlocked(_ app: PlannedApp) -> Bool {
+        BlockingRule.plan(app.id).isShielding
+    }
+
+    /// Why an early unlock isn't on offer, or nil when it is.
+    func unlockUnavailableReason(_ app: PlannedApp, at date: Date = Date()) -> String? {
+        if configuration.isStrict(at: date) { return "Strict mode is on, so this block can’t be unlocked early." }
+        if configuration.plan.apps.contains(where: { $0.isUnlocked(at: date) }) { return "Another app is unlocked right now." }
+        return nil
+    }
+
+    /// Seconds to wait before unlocking `app` early: longer once today has
+    /// already been unlocked.
+    func unlockWaitSeconds(_ app: PlannedApp, at date: Date = Date()) -> Int {
+        (plannedApp(app.id)?.course.isMissed(date) ?? false)
+            ? ReductionPlan.repeatUnlockWaitSeconds : ReductionPlan.unlockWaitSeconds
+    }
+
+    /// Lifts the app's block for `ReductionPlan.unlockMinutes` and marks the
+    /// day missed. Returns whether that made the week's limit repeat.
+    @discardableResult
+    func unlockEarly(_ app: PlannedApp) -> Bool {
+        let now = Date()
+        guard isEntitled, let current = plannedApp(app.id), current.isEnforced(at: now),
+              isPlanBlocked(current), unlockUnavailableReason(current, at: now) == nil
+        else { return false }
+        let end = now.addingTimeInterval(TimeInterval(ReductionPlan.unlockMinutes * 60))
+        let components: Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
+        do {
+            try center.startMonitoring(BlockingRule.planUnlock.activityName, during: DeviceActivitySchedule(
+                intervalStart: Calendar.current.dateComponents(components, from: now),
+                intervalEnd: Calendar.current.dateComponents(components, from: end),
+                repeats: false))
+        } catch {
+            errorMessage = Self.message(for: error)
+            return false
+        }
+        var held = false
+        update(app.id, restartsMonitoring: false) {
+            held = $0.course.recordMiss(at: now)
+            $0.unlockedUntil = end
+        }
+        PlanMonitoring.lift(app.id)
+        // A week that repeats moves the limits ahead; watch the new dates.
+        if held, let updated = plannedApp(app.id) { restart(updated, now: now) }
+        return held
+    }
+
+    /// Ends an early unlock: blocks again in the same part of the day, and
+    /// clears the marker either way. The monitor normally does the blocking;
+    /// this covers the times iOS doesn't call it.
+    private func finishUnlocks(now: Date) {
+        for app in configuration.plan.apps {
+            guard let until = app.unlockedUntil, until <= now else { continue }
+            let started = until.addingTimeInterval(-TimeInterval(ReductionPlan.unlockMinutes * 60))
+            if app.isEnforced(at: now), !isPlanBlocked(app), Calendar.current.isDate(started, inSameDayAs: now),
+               configuration.plan.cap(for: app, at: started) == configuration.plan.cap(for: app, at: now) {
+                PlanMonitoring.shield(app, at: until)
+            }
+            update(app.id, restartsMonitoring: false) { $0.unlockedUntil = nil }
+        }
+    }
+
+    /// Lifts plan blocks the monitor should have lifted: ones from a
+    /// previous day, or from before a part of the day that opened more time.
+    /// Days with an early unlock are left to the monitor, which recounts them.
+    private func liftLapsedPlanBlocks(now: Date) {
+        for app in configuration.plan.apps where isPlanBlocked(app) && !app.course.isMissed(now) {
+            guard let shieldedAt = PlanMonitoring.shieldedAt(app.id),
+                  PlanMonitoring.blockHasLapsed(for: app, in: configuration.plan, shieldedAt: shieldedAt, now: now)
+            else { continue }
+            PlanMonitoring.lift(app.id)
+        }
+    }
+
+    /// With Screen Time access switched off nothing is blocked, so the day
+    /// counts as missed for every app whose limits are running.
+    private func recordAccessLoss(now: Date) {
+        guard AuthorizationCenter.shared.authorizationStatus == .denied else { return }
+        for app in configuration.plan.apps where app.course.hasStarted(at: now) && !app.course.isMissed(now) {
+            update(app.id, restartsMonitoring: false) { _ = $0.course.recordMiss(at: now) }
+        }
     }
 
     private func plannedApp(_ id: UUID) -> PlannedApp? {
@@ -297,53 +408,45 @@ final class BlockingService: ObservableObject {
         if restartsMonitoring { restart(configuration.plan.apps[index]) }
     }
 
-    /// Watches a threshold for every limit in force today or still ahead, so
-    /// each week's limit applies at midnight without the app. Today's limit never
-    /// changes mid-day, so an existing shield is left in place.
+    /// Watches a threshold for every cap in force today or coming up, so
+    /// each part of the day and each week's limit applies without the app.
+    /// Today's limit never changes mid-day, so an existing shield is left in place.
     private func restart(_ app: PlannedApp, now: Date = Date()) {
         let rule = BlockingRule.plan(app.id)
         center.stopMonitoring([rule.activityName])
-        guard isEntitled, app.isEnforced(at: now) else { return rule.clear() }
+        guard isEntitled, app.isEnforced(at: now) else { return PlanMonitoring.lift(app.id) }
         do {
-            try center.startMonitoring(rule.activityName, during: Self.wholeDay, events: Self.planEvents(for: app, now: now))
+            try PlanMonitoring.start(app, in: configuration.plan, center: center, now: now)
         } catch {
             errorMessage = Self.message(for: error)
         }
     }
 
-    /// Each limit's threshold, and one a few minutes before it for the warning.
-    private static func planEvents(for app: PlannedApp, now: Date) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
-        var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
-        for minutes in app.course.limitsInForce(from: now) {
-            events[BlockingRule.planEvent(minutes: minutes)] = event(for: app.selection, minutes: minutes)
-            if let warning = BlockingRule.planWarningEvent(limit: minutes), let lead = BlockingRule.planWarningLead(limit: minutes) {
-                events[warning] = event(for: app.selection, minutes: minutes - lead)
+    /// Watches the start of the afternoon and the evening while the plan has
+    /// apps, so the monitor can lift blocks when more time opens up.
+    private func watchPlanParts(monitored: Set<String>? = nil) {
+        let monitored = monitored ?? Set(center.activities.map(\.rawValue))
+        let wanted = isEntitled && !configuration.plan.apps.isEmpty
+        for part in PlanMonitoring.laterParts {
+            let rule = BlockingRule.planPart(part)
+            if wanted, !monitored.contains(rule.rawValue) {
+                do {
+                    try center.startMonitoring(rule.activityName, during: PlanMonitoring.schedule(for: part))
+                } catch {
+                    errorMessage = Self.message(for: error)
+                }
+            } else if !wanted, monitored.contains(rule.rawValue) {
+                center.stopMonitoring([rule.activityName])
             }
         }
-        return events
     }
 
     private static func minutes(_ threshold: DateComponents) -> Int {
         (threshold.hour ?? 0) * 60 + (threshold.minute ?? 0)
     }
 
-    private static let wholeDay = DeviceActivitySchedule(intervalStart: DateComponents(hour: 0, minute: 0),
-                                                         intervalEnd: DateComponents(hour: 23, minute: 59),
-                                                         repeats: true)
-
     private static func event(for selection: FamilyActivitySelection, minutes: Int) -> DeviceActivityEvent {
-        let threshold = DateComponents(minute: minutes)
-        if #available(iOS 17.4, *) {
-            // Count time already used today, so a new limit applies right away.
-            return DeviceActivityEvent(applications: selection.applicationTokens,
-                                       categories: selection.categoryTokens,
-                                       webDomains: selection.webDomainTokens,
-                                       threshold: threshold, includesPastActivity: true)
-        }
-        return DeviceActivityEvent(applications: selection.applicationTokens,
-                                   categories: selection.categoryTokens,
-                                   webDomains: selection.webDomainTokens,
-                                   threshold: threshold)
+        PlanMonitoring.event(for: selection, minutes: minutes)
     }
 
     // MARK: - Strict mode
@@ -413,15 +516,23 @@ final class BlockingService: ObservableObject {
             // weeks are harmless, since each checks the day's limit.
             // Thresholds are compared too, so a changed heads-up lead takes effect.
             let registered = center.events(for: rule.activityName)
-            let isCurrent = Self.planEvents(for: app, now: now).allSatisfy { name, event in
+            let isCurrent = PlanMonitoring.events(for: app, in: configuration.plan, now: now).allSatisfy { name, event in
                 registered[name].map { Self.minutes($0.threshold) == Self.minutes(event.threshold) } ?? false
             }
             if !monitored.contains(rule.rawValue) || !isCurrent {
                 restart(app, now: now)
             }
         }
+        watchPlanParts(monitored: monitored)
+        finishUnlocks(now: now)
+        liftLapsedPlanBlocks(now: now)
+        recordAccessLoss(now: now)
         // Monitoring left behind by deleted rules.
-        let known = Set(BlockingRule.all(in: configuration).map(\.rawValue))
+        var known = Set(BlockingRule.all(in: configuration).map(\.rawValue))
+        if !configuration.plan.apps.isEmpty {
+            known.formUnion(PlanMonitoring.laterParts.map { BlockingRule.planPart($0).rawValue })
+            known.insert(BlockingRule.planUnlock.rawValue)
+        }
         for name in monitored.subtracting(known) {
             if let rule = BlockingRule(rawValue: name) { stop(rule) }
         }
@@ -451,6 +562,12 @@ final class BlockingService: ObservableObject {
             changed = true
             configuration.plan.apps.removeAll { $0.id == app.id }
             stop(.plan(app.id))
+            PlanMonitoring.setShieldedAt(nil, for: app.id)
+        }
+        if let pending = configuration.plan.pendingSpread, now >= pending.effective {
+            configuration.plan.spread = pending.spread
+            configuration.plan.pendingSpread = nil
+            changed = true
         }
         if changed { save() }
     }

@@ -113,19 +113,25 @@ struct PlanPreviewView: View {
     var body: some View {
         OnboardingScaffold(
             title: draft.isAdding ? "Your new limits" : "Your plan",
-            subtitle: "Your daily limit drops each week until you reach your goal. Pick a pace, or set each week yourself. When a limit is used up, the app is blocked until midnight.",
+            subtitle: "Each limit opens up through the day, so there’s always some left for the evening. Keep it at least 5 days a week and it drops until you reach your goal.",
             progress: chrome.progress,
             onBack: chrome.back
         ) {
             ScrollView {
                 VStack(spacing: 12) {
                     hero
+                    if !draft.isAdding {
+                        PlanSpreadPicker(spread: draft.spread) { spread in
+                            withAnimation(.snappy) { draft.spread = spread }
+                        }
+                    }
                     ForEach($draft.items) { $item in
                         if let course = item.course(start: start) {
-                            PlanCourseCard(item: $item, course: course, start: start,
+                            PlanCourseCard(item: $item, course: course, start: start, spread: draft.spread,
                                            currentAge: draft.currentAge, targetAge: targetAge)
                         }
                     }
+                    rules
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 24)
@@ -165,6 +171,31 @@ struct PlanPreviewView: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// What happens at a limit, and what a missed day costs, before it starts.
+    private var rules: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            rule("lock", "When a part of the day’s time is used up, the app is blocked until the next part. Unused time carries over.")
+            rule("checkmark.circle", "Keep your limit at least 5 days in a week and it steps down. Miss 3 and that week repeats.")
+            rule("lock.open", "You can unlock a blocked app for \(ReductionPlan.unlockMinutes) minutes after a short wait. That day counts as missed.")
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func rule(_ icon: String, _ text: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(Color(hex: "#235187"))
+                .frame(width: 22)
+            Text(text)
+                .font(.geist(size: 13))
+                .foregroundStyle(OnboardingStyle.navy)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
     private func finishLine(minutesBack: Int, finish: Date?) -> String {
         let daily = "\(PlanFormat.duration(minutesBack)) a day back"
         guard let finish, finish > start else { return daily + " from tomorrow." }
@@ -178,6 +209,7 @@ private struct PlanCourseCard: View {
     @Binding var item: PlanDraftItem
     let course: ReductionCourse
     let start: Date
+    let spread: DaySpread
     let currentAge: Int
     let targetAge: Int
     @State private var showsWeeks = false
@@ -216,6 +248,7 @@ private struct PlanCourseCard: View {
                     }
                 }
             }
+            PlanDayParts(limit: course.firstMinutes, spread: spread)
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Goal")

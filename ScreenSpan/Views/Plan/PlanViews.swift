@@ -2,12 +2,14 @@ import FamilyControls
 import SwiftUI
 import UserNotifications
 
-/// The plan in Blocking: each app's limit today and when it drops next, and
-/// ways to lower a goal, add an app, or start a plan.
+/// The plan in Blocking: each app's time today and how it opens up through
+/// the day, the week so far, a way to unlock a block early at a cost, and
+/// ways to change the plan, add an app, or start one.
 struct PlanBlockingSection: View {
     @Binding var showsSetup: Bool
     @EnvironmentObject private var blocking: BlockingService
     @State private var editing: PlannedApp?
+    @State private var unlocking: PlannedApp?
     @State private var notificationsDenied = false
     @Environment(\.scenePhase) private var scenePhase
 
@@ -31,12 +33,16 @@ struct PlanBlockingSection: View {
             if apps.isEmpty {
                 setupCard
             } else {
-                TimelineView(.everyMinute) { context in
+                TimelineView(.periodic(from: .now, by: 20)) { context in
                     VStack(spacing: 10) {
                         ForEach(apps) { app in row(app, now: context.date) }
                     }
                 }
-                Text("When an app’s limit is used up, it’s blocked until midnight. Each week the limit drops on its own until you reach your goal. Tap Edit to change any week ahead or name the app.")
+                PlanSpreadPicker(spread: blocking.configuration.plan.pendingSpread?.spread ?? blocking.configuration.plan.spread,
+                                 startsTomorrow: blocking.configuration.plan.pendingSpread != nil) { spread in
+                    withAnimation(.snappy) { blocking.setSpread(spread) }
+                }
+                Text("When a part of the day’s time is used up, the app is blocked until the next part. Time you don’t use carries over to later that day. Keep your limit at least 5 days in a week and it steps down; miss 3 and the week repeats.")
                     .font(.geist(size: 12))
                     .foregroundStyle(OnboardingStyle.muted)
                     .fixedSize(horizontal: false, vertical: true)
@@ -49,6 +55,9 @@ struct PlanBlockingSection: View {
         }
         .sheet(item: $editing) { app in
             PlanEditSheet(app: app)
+        }
+        .sheet(item: $unlocking) { app in
+            PlanUnlockSheet(app: app)
         }
     }
 
@@ -65,7 +74,7 @@ struct PlanBlockingSection: View {
                     Label("\(BlockingRule.planWarningLead)-minute heads-up", systemImage: "bell.badge")
                         .font(.geist(size: 16, weight: .semibold))
                         .foregroundStyle(OnboardingStyle.navy)
-                    Text("Get a notification \(BlockingRule.planWarningLead) minutes before an app’s limit runs out (\(BlockingRule.shortPlanWarningLead) for short limits).")
+                    Text("Get a notification \(BlockingRule.planWarningLead) minutes before an app’s time runs out, with when more opens up.")
                         .font(.geist(size: 13))
                         .foregroundStyle(OnboardingStyle.muted)
                         .fixedSize(horizontal: false, vertical: true)
@@ -108,7 +117,7 @@ struct PlanBlockingSection: View {
                     Text(hasDraft ? "Finish setting up your plan" : "Set up your plan")
                         .font(.geist(size: 15, weight: .semibold))
                         .foregroundStyle(OnboardingStyle.navy)
-                    Text("Daily limits for your top apps that get a little lower each week.")
+                    Text("Daily limits for your top apps, spread through the day, that get a little lower each week you keep them.")
                         .font(.geist(size: 13))
                         .foregroundStyle(OnboardingStyle.muted)
                         .fixedSize(horizontal: false, vertical: true)
@@ -126,7 +135,8 @@ struct PlanBlockingSection: View {
 
     private func row(_ app: PlannedApp, now: Date) -> some View {
         let course = app.course
-        return VStack(alignment: .leading, spacing: 8) {
+        let plan = blocking.configuration.plan
+        return VStack(alignment: .leading, spacing: 12) {
             HStack {
                 PlanItemLabel(selection: app.selection)
                 Spacer(minLength: 8)
@@ -136,7 +146,15 @@ struct PlanBlockingSection: View {
                         .foregroundStyle(Color(hex: "#0063D6"))
                 }
             }
+            blockStatus(app, now: now)
             PlanStats(course: course, now: now)
+            if app.removesAt == nil {
+                PlanDayParts(limit: course.limit(at: now) ?? course.firstMinutes, spread: plan.spread(at: course.hasStarted(at: now) ? now : course.steps[0].startedAt),
+                             current: course.hasStarted(at: now) ? DayPart.at(now) : nil)
+            }
+            if course.hasStarted(at: now) {
+                PlanWeekDots(course: course, now: now)
+            }
             if let next = nextLine(app, now: now) {
                 Text(next)
                     .font(.geist(size: 12))
@@ -152,14 +170,56 @@ struct PlanBlockingSection: View {
         .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    /// When the limit drops next, or that the goal is reached.
+    /// Blocked now and until when, with the way to unlock early; or how long
+    /// an early unlock has left.
+    @ViewBuilder
+    private func blockStatus(_ app: PlannedApp, now: Date) -> some View {
+        if let until = app.unlockedUntil, now < until {
+            Label("Unlocked until \(until.formatted(date: .omitted, time: .shortened)). Today counts as missed.",
+                  systemImage: "lock.open")
+                .font(.geist(size: 13, weight: .medium))
+                .foregroundStyle(Color(hex: "#8A5A00"))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(hex: "#FFF6E5"), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        } else if blocking.isPlanBlocked(app) {
+            let end = blocking.configuration.plan.blockEnd(for: app, at: now)
+            HStack(spacing: 8) {
+                Label(Calendar.current.isDate(end, inSameDayAs: now)
+                      ? "Blocked until \(end.formatted(date: .omitted, time: .shortened))" : "Blocked until midnight",
+                      systemImage: "lock.fill")
+                    .font(.geist(size: 13, weight: .semibold))
+                    .foregroundStyle(OnboardingStyle.navy)
+                Spacer(minLength: 0)
+                if blocking.unlockUnavailableReason(app, at: now) == nil {
+                    Button("Unlock early") { unlocking = app }
+                        .font(.geist(size: 13, weight: .medium))
+                        .foregroundStyle(OnboardingStyle.muted)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            .background(Color.white, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+    }
+
+    /// When the limit drops next, that it's repeating, or that the goal is reached.
     private func nextLine(_ app: PlannedApp, now: Date) -> String? {
         let course = app.course
         guard app.removesAt == nil else { return nil }
         guard let next = course.nextChange(after: now) else { return "You’ve reached your goal. This limit stays." }
         let day = Calendar.current.isDateInTomorrow(next.startedAt)
             ? "tomorrow" : next.startedAt.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())
-        return "Drops to \(PlanFormat.duration(next.dailyMinutes)) a day \(day)."
+        guard course.hasStarted(at: now) else { return "Starts at midnight." }
+        let drop = "Drops to \(PlanFormat.duration(next.dailyMinutes)) a day \(day)"
+        if course.isHolding(at: now) {
+            return "This limit is repeating a week after 3 missed days. \(drop) if you keep 5 days."
+        }
+        let left = ReductionCourse.allowedMisses - course.misses(at: now)
+        return left == ReductionCourse.allowedMisses ? drop + "."
+            : left > 0 ? "\(drop). One more missed day and this week repeats."
+            : "\(drop). Another missed day and this week repeats."
     }
 
     private func pending(_ text: String, action: String, perform: @escaping () -> Void) -> some View {
@@ -172,6 +232,266 @@ struct PlanBlockingSection: View {
                 .font(.geist(size: 13, weight: .semibold))
                 .foregroundStyle(Color(hex: "#0063D6"))
         }
+    }
+}
+
+/// A day's limit as its three parts: what each adds, with the part that's
+/// on now highlighted. Hidden when the limit isn't split.
+struct PlanDayParts: View {
+    let limit: Int
+    let spread: DaySpread
+    /// The part of the day it is now; nil to highlight none.
+    var current: DayPart?
+    var boxColor = Color.white
+
+    var body: some View {
+        let allowances = spread.allowances(limit: limit)
+        if allowances[0] < limit {
+            HStack(spacing: 8) {
+                ForEach(DayPart.allCases, id: \.self) { part in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(part.title)
+                            .font(.geist(size: 11, weight: .medium))
+                            .foregroundStyle(OnboardingStyle.muted)
+                        Text((part == .morning ? "" : "+") + PlanFormat.duration(allowances[part.rawValue]))
+                            .font(.geist(size: 14, weight: .semibold))
+                            .foregroundStyle(OnboardingStyle.navy)
+                            .monospacedDigit()
+                            .contentTransition(.numericText())
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 7)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(boxColor, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(part == current ? OnboardingStyle.navy : .clear, lineWidth: 1.5))
+                }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(DayPart.allCases.map { "\($0.title): \(PlanFormat.duration(allowances[$0.rawValue]))" }.joined(separator: ", "))
+        }
+    }
+}
+
+extension DayPart {
+    /// "Until noon", "Noon – 6 PM", "After 6 PM", in the user's clock style.
+    var title: String {
+        func hour(_ part: DayPart) -> String {
+            part.start(onDayOf: Date()).formatted(.dateTime.hour())
+        }
+        switch self {
+        case .morning: return "Until \(hour(.afternoon))"
+        case .afternoon: return "\(hour(.afternoon)) – \(hour(.evening))"
+        case .evening: return "After \(hour(.evening))"
+        }
+    }
+}
+
+/// The week that decides the next step down, a circle a day: a green check
+/// for a day the limit held, an amber mark for one unlocked early.
+struct PlanWeekDots: View {
+    let course: ReductionCourse
+    let now: Date
+
+    var body: some View {
+        let calendar = Calendar.current
+        let week = course.currentWeek(at: now)
+        let today = calendar.startOfDay(for: now)
+        let start = calendar.startOfDay(for: course.steps[0].startedAt)
+        let days = (0..<ReductionCourse.stepDays).compactMap { calendar.date(byAdding: .day, value: $0, to: week.start) }
+        let kept = days.filter { $0 >= start && $0 < today && !course.isMissed($0) }.count
+        HStack(spacing: 6) {
+            ForEach(days, id: \.self) { day in
+                VStack(spacing: 3) {
+                    mark(day: day, today: today, start: start)
+                        .frame(width: 24, height: 24)
+                    Text(day.formatted(.dateTime.weekday(.narrow)))
+                        .font(.geist(size: 10, weight: day == today ? .bold : .regular))
+                        .foregroundStyle(day == today ? OnboardingStyle.navy : OnboardingStyle.muted)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("This week: \(kept) days kept, \(course.misses(at: now)) missed")
+    }
+
+    @ViewBuilder
+    private func mark(day: Date, today: Date, start: Date) -> some View {
+        if day >= start, day <= today, course.isMissed(day) {
+            Image(systemName: "lock.open.fill")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(Color(hex: "#8A5A00"))
+                .frame(width: 24, height: 24)
+                .background(Color(hex: "#FFE9BF"), in: Circle())
+        } else if day >= start, day < today {
+            Image(systemName: "checkmark")
+                .font(.system(size: 11, weight: .heavy))
+                .foregroundStyle(.white)
+                .frame(width: 24, height: 24)
+                .background(Color(hex: "#2BB673"), in: Circle())
+        } else if day == today {
+            Circle().strokeBorder(OnboardingStyle.navy, lineWidth: 2)
+                .overlay(Circle().fill(OnboardingStyle.navy).frame(width: 6, height: 6))
+        } else {
+            Circle().strokeBorder(Color(hex: "#C5CCD6"), lineWidth: 1.5)
+        }
+    }
+}
+
+/// How the day's time is shared out. A change waits for midnight once limits run.
+struct PlanSpreadPicker: View {
+    let spread: DaySpread
+    var startsTomorrow = false
+    var background = OnboardingStyle.card
+    let onChange: (DaySpread) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("THROUGH THE DAY")
+                .font(.geist(size: 11, weight: .bold))
+                .tracking(0.8)
+                .foregroundStyle(OnboardingStyle.muted)
+            HStack(spacing: 6) {
+                ForEach(DaySpread.allCases) { option in
+                    Button { onChange(option) } label: {
+                        Text(option.title)
+                            .font(.geist(size: 13, weight: .semibold))
+                            .foregroundStyle(option == spread ? .white : OnboardingStyle.navy)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 9)
+                            .background(option == spread ? OnboardingStyle.navy : (background == .white ? OnboardingStyle.card : Color.white),
+                                        in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(option == spread ? .isSelected : [])
+                }
+            }
+            Text(spread.detail + (startsTomorrow ? " Starts tomorrow." : ""))
+                .font(.geist(size: 12))
+                .foregroundStyle(OnboardingStyle.muted)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .background(background, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+extension DaySpread {
+    var title: String {
+        switch self {
+        case .evening: "Save for evening"
+        case .even: "Even"
+        case .anytime: "Any time"
+        }
+    }
+
+    var detail: String {
+        switch self {
+        case .evening: "A quarter of each limit by noon, another quarter by 6 PM, and half kept for the evening."
+        case .even: "A third of each limit in the morning, a third in the afternoon, a third in the evening."
+        case .anytime: "The whole limit from midnight. Easy to use up early and have nothing left at night."
+        }
+    }
+}
+
+/// Unlocking a blocked app early. The wait, the cost, and the easy way out
+/// are the point: an urge usually passes inside a minute, and being asked
+/// before the app opens is when people most often decide not to.
+struct PlanUnlockSheet: View {
+    let app: PlannedApp
+
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var blocking: BlockingService
+    @State private var startedAt = Date()
+
+    private var course: ReductionCourse { app.course }
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { context in
+            let now = context.date
+            let wait = blocking.unlockWaitSeconds(app, at: now)
+            let remaining = max(wait - Int(now.timeIntervalSince(startedAt)), 0)
+            let end = blocking.configuration.plan.blockEnd(for: app, at: now)
+            VStack(alignment: .leading, spacing: 18) {
+                PlanItemLabel(selection: app.selection)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Unlock for \(ReductionPlan.unlockMinutes) minutes?")
+                        .font(.geist(size: 26, weight: .bold))
+                        .foregroundStyle(OnboardingStyle.navy)
+                    Text(waitLine(end: end, now: now))
+                        .font(.geist(size: 15))
+                        .foregroundStyle(OnboardingStyle.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("Today becomes a missed day", systemImage: "lock.open.fill")
+                        .font(.geist(size: 15, weight: .semibold))
+                        .foregroundStyle(Color(hex: "#8A5A00"))
+                    Text(cost(now: now))
+                        .font(.geist(size: 14))
+                        .foregroundStyle(OnboardingStyle.navy)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(hex: "#FFF6E5"), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                Spacer(minLength: 0)
+                VStack(spacing: 10) {
+                    OnboardingPrimaryButton(title: Calendar.current.isDate(end, inSameDayAs: now)
+                                            ? "I’ll wait until \(end.formatted(date: .omitted, time: .shortened))"
+                                            : "I’ll wait until tomorrow") { dismiss() }
+                    Button {
+                        blocking.unlockEarly(app)
+                        dismiss()
+                    } label: {
+                        Text(remaining > 0
+                             ? "Unlock in \(remaining / 60):\(String(format: "%02d", remaining % 60))"
+                             : "Unlock \(ReductionPlan.unlockMinutes) minutes")
+                            .font(.geist(size: 15, weight: .semibold))
+                            .monospacedDigit()
+                            .foregroundStyle(remaining > 0 ? OnboardingStyle.muted : OnboardingStyle.navy)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 46)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(remaining > 0)
+                    .accessibilityLabel(remaining > 0 ? "Unlock available in \(remaining) seconds" : "Unlock \(ReductionPlan.unlockMinutes) minutes")
+                }
+            }
+            .padding(24)
+        }
+        .background(Color.white.ignoresSafeArea())
+        .screenSpanLightSurface()
+        .presentationDetents([.medium, .large])
+        // Leaving and coming back starts the wait again.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { startedAt = Date() }
+        }
+    }
+
+    private func waitLine(end: Date, now: Date) -> String {
+        guard Calendar.current.isDate(end, inSameDayAs: now) else {
+            return "You’ve used today’s \(PlanFormat.duration(course.limit(at: now) ?? 0)). It’s back at midnight."
+        }
+        let minutes = max(Int((end.timeIntervalSince(now) / 60).rounded(.up)), 1)
+        return "More time opens up at \(end.formatted(date: .omitted, time: .shortened)), \(PlanFormat.duration(minutes)) from now."
+    }
+
+    private func cost(now: Date) -> String {
+        if course.isMissed(now) { return "You’ve already unlocked today, so this one waits longer. The \(ReductionPlan.unlockMinutes) minutes come out of the rest of today’s time." }
+        guard let next = course.nextChange(after: now), let limit = course.limit(at: now) else {
+            return "Your goal limit stays, but today won’t count as a day you kept it."
+        }
+        let misses = course.misses(at: now) + 1
+        if misses > ReductionCourse.allowedMisses {
+            return "That’s \(misses) this week, so \(PlanFormat.duration(limit)) a day repeats for another week instead of dropping to \(PlanFormat.duration(next.dailyMinutes))."
+        }
+        return "That’s \(misses) of the \(ReductionCourse.allowedMisses) missed days a week can take. One more than that and \(PlanFormat.duration(limit)) a day repeats instead of dropping to \(PlanFormat.duration(next.dailyMinutes))."
     }
 }
 
@@ -288,14 +608,14 @@ struct PlanEditSheet: View {
                 }
             }
             .confirmationDialog("Remove this app from your plan?", isPresented: $confirmsRemove, titleVisibility: .visible) {
-                Button(blocking.configuration.isStrict() ? "Remove at midnight" : "Remove", role: .destructive) {
+                Button(hasStarted ? "Remove at midnight" : "Remove", role: .destructive) {
                     blocking.removeFromPlan(app)
                     dismiss()
                 }
             } message: {
-                Text(blocking.configuration.isStrict()
-                     ? "Strict mode is on, so its limit stays until midnight."
-                     : "Its daily limit ends now. You can add it again later.")
+                Text(hasStarted
+                     ? "Its limit stays until midnight, so leaving the plan isn’t a way around today’s block. You can change your mind before then."
+                     : "Its limits haven’t started. You can add it again later.")
             }
         }
         .tint(OnboardingStyle.navy)

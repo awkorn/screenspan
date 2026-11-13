@@ -6,8 +6,9 @@ enum BlockReason: Equatable {
     case focus(until: Date)
     case schedule(name: String, until: Date)
     case limit(minutes: Int)
-    /// Today's limit in the user's reduction plan.
-    case plan(minutes: Int)
+    /// Today's limit in the user's reduction plan, and when more of it opens
+    /// up today; nil when the day's time is used and it resets at midnight.
+    case plan(minutes: Int, more: Date? = nil)
     case unknown
 }
 
@@ -41,8 +42,13 @@ struct BlockScreenCopy: Equatable {
             status = "\(label.isEmpty ? "Scheduled break" : label) · \(endLabel(end))"
         case .limit(let minutes):
             status = "\(Self.limitLabel(minutes: minutes)) limit · resets at midnight"
-        case .plan(let minutes):
-            status = "Your plan: \(Self.durationLabel(minutes: minutes)) a day · resets at midnight"
+        case .plan(let minutes, let more):
+            if let more {
+                // The next time is the useful part: "I can look again at 6."
+                status = "You’ve used \(DayPart.at(now, calendar: calendar).thisName)’s time · more at \(more.formatted(date: .omitted, time: .shortened))"
+            } else {
+                status = "Your plan: \(Self.durationLabel(minutes: minutes)) a day · resets at midnight"
+            }
         case .unknown:
             status = "App blocking is on"
         }

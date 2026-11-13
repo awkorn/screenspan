@@ -66,7 +66,9 @@ struct PreviewApp: App {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         func day(_ offset: Int) -> Date { calendar.date(byAdding: .day, value: offset, to: today)! }
-        let heavy = ReductionCourse(baselineMinutes: 180, start: day(-9))
+        var heavy = ReductionCourse(baselineMinutes: 180, start: day(-9))
+        // One early unlock three days ago.
+        heavy.recordMiss(at: day(-3).addingTimeInterval(20 * 3600))
         let light = ReductionCourse(baselineMinutes: 60, start: day(-4))
         let heavyApp = PlannedApp(selection: .init(), course: heavy)
         let lightApp = PlannedApp(selection: .init(), course: light)
@@ -78,7 +80,7 @@ struct PreviewApp: App {
         var payload = fixture
         payload.plan = ReductionPlan(apps: [heavyApp, lightApp])
         payload.planUsage = [heavyApp.id: usage(heavyHours), lightApp.id: usage(lightHours)]
-        payload.planToday = [heavyApp.id: 88, lightApp.id: 50]
+        payload.planToday = [heavyApp.id: 22, lightApp.id: 15]
         return payload
     }
 }
@@ -90,11 +92,13 @@ struct ShieldPreview: View {
     @State private var index = 0
 
     var body: some View {
-        let now = Date().addingTimeInterval(Double(index / 4) * 15 * 60)
+        let now = Date().addingTimeInterval(Double(index / 6) * 15 * 60)
         let reasons: [(String?, BlockReason)] = [
             ("LinkedIn", .focus(until: now.addingTimeInterval(14 * 60))),
             ("Instagram", .schedule(name: "Work hours", until: now.addingTimeInterval(3 * 60 * 60))),
             ("TikTok", .limit(minutes: 30)),
+            ("Instagram", .plan(minutes: 90, more: Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: now))),
+            ("YouTube", .plan(minutes: 60)),
             (nil, .unknown),
         ]
         let reason = reasons[index % reasons.count]

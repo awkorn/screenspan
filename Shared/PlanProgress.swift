@@ -9,7 +9,12 @@ struct PlanAppProgress: Equatable {
         /// Nil when Screen Time didn't report the day.
         let hours: Double?
         let limitMinutes: Int
+        /// The user unlocked the app early that day.
+        var missed = false
         var id: Date { date }
+
+        /// The limit held: usage stayed within it and it wasn't unlocked early.
+        var kept: Bool { stayedWithin && !missed }
 
         /// At or under the limit, with a little slack: the block lands right
         /// at the limit, and Screen Time can count a minute or two past it.
@@ -39,7 +44,7 @@ struct PlanAppProgress: Equatable {
             var days: [Day] = []
             var day = calendar.startOfDay(for: step.startedAt)
             while day < today {
-                days.append(Day(date: day, hours: byDay[day], limitMinutes: step.dailyMinutes))
+                days.append(Day(date: day, hours: byDay[day], limitMinutes: step.dailyMinutes, missed: course.isMissed(day, calendar: calendar)))
                 day = calendar.date(byAdding: .day, value: 1, to: day)!
             }
             stepDays = days
@@ -54,7 +59,7 @@ struct PlanAppProgress: Equatable {
     /// lasts past a week.
     var recentDays: ArraySlice<Day> { stepDays.suffix(ReductionCourse.stepDays) }
     var daysReported: Int { recentDays.filter { $0.hours != nil }.count }
-    var daysWithin: Int { recentDays.filter(\.stayedWithin).count }
+    var daysWithin: Int { recentDays.filter(\.kept).count }
 
     var averageMinutesSinceStart: Double? {
         ActivityDay.averageHours(of: planDays).map { $0 * 60 }
@@ -66,7 +71,53 @@ struct PlanAppProgress: Equatable {
     }
 }
 
+/// One day of the whole plan: kept when every app with a limit that day
+/// stayed within it.
+struct PlanDay: Equatable, Identifiable {
+    enum State: Equatable { case kept, over, unreported, notStarted, today }
+
+    let date: Date
+    let state: State
+    var id: Date { date }
+}
+
 enum PlanProgress {
+    /// The last `count` days ending today, oldest first, across every app.
+    /// `apps` pairs each course with the app's reported daily hours.
+    static func recentDays(
+        apps: [(course: ReductionCourse, usage: [ActivityDay])],
+        count: Int = 7,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> [PlanDay] {
+        let today = calendar.startOfDay(for: now)
+        let usage = apps.map { Dictionary($0.usage.map { (calendar.startOfDay(for: $0.date), $0.hours) }, uniquingKeysWith: +) }
+        return (0..<count).reversed().map { offset in
+            let day = calendar.date(byAdding: .day, value: -offset, to: today)!
+            guard day < today else { return PlanDay(date: day, state: .today) }
+            var state = PlanDay.State.notStarted
+            for (index, app) in apps.enumerated() {
+                guard let limit = app.course.limit(at: day, calendar: calendar) else { continue }
+                let appDay = PlanAppProgress.Day(date: day, hours: usage[index][day], limitMinutes: limit,
+                                                 missed: app.course.isMissed(day, calendar: calendar))
+                if appDay.hours == nil, !appDay.missed {
+                    if state != .over { state = .unreported }
+                } else if !appDay.kept {
+                    state = .over
+                } else if state == .notStarted {
+                    state = .kept
+                }
+            }
+            return PlanDay(date: day, state: state)
+        }
+    }
+
+    /// Kept days in a row ending yesterday. A day that wasn't reported ends
+    /// the streak, since it can't be confirmed.
+    static func streak(_ days: [PlanDay]) -> Int {
+        days.filter { $0.state != .today }.reversed().prefix { $0.state == .kept }.count
+    }
+
     /// Change in daily minutes on everything outside the plan, comparing the
     /// week before the plan with the time since. Positive when other apps
     /// took up some of the time. Nil without three reported days on each side.

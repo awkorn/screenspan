@@ -20,6 +20,12 @@ struct ReductionCourse: Codable, Equatable {
     private(set) var steps: [Step]
     /// How big each step down is.
     private(set) var pace: Pace
+    /// Days the limit didn't hold, as starts of days: the user unlocked the
+    /// app early, or switched Screen Time access off. These are the user's
+    /// own actions in ScreenSpan, not measured usage.
+    private(set) var missedDays: [Date] = []
+    /// The day a third miss made the current limit repeat for another week.
+    private(set) var heldOn: Date?
 
     /// How much of the current limit each week cuts.
     enum Pace: String, Codable, CaseIterable, Identifiable {
@@ -69,6 +75,10 @@ struct ReductionCourse: Codable, Equatable {
     static let minimumCut = 10
     /// Days each limit lasts before the next starts.
     static let stepDays = 7
+    /// Missed days a week can absorb and still step down. A plan that
+    /// demands a perfect week gets dropped after the first slip; one that
+    /// never notices slips changes nothing.
+    static let allowedMisses = 2
 
     /// Starts the course with its first limit, effective `start`.
     init(baselineMinutes: Int, targetMinutes: Int? = nil, pace: Pace = .steady, start: Date) {
@@ -102,6 +112,8 @@ struct ReductionCourse: Codable, Equatable {
         targetMinutes = try container.decode(Int.self, forKey: .targetMinutes)
         pace = try container.decodeIfPresent(Pace.self, forKey: .pace) ?? .steady
         steps = try container.decode([Step].self, forKey: .steps)
+        missedDays = try container.decodeIfPresent([Date].self, forKey: .missedDays) ?? []
+        heldOn = try container.decodeIfPresent(Date.self, forKey: .heldOn)
         guard !steps.isEmpty else {
             throw DecodingError.dataCorruptedError(forKey: .steps, in: container, debugDescription: "A course has at least one step")
         }
@@ -280,21 +292,80 @@ struct ReductionCourse: Codable, Equatable {
         }
     }
 
-    /// Replaces every limit from `first` on with `limits`, a week apart from
-    /// the limit before, and makes the last one the goal.
+    /// Replaces every limit from `first` on with `limits` and makes the last
+    /// one the goal. Each keeps the date its week already had, so a week
+    /// that was repeated stays repeated; weeks beyond the plan follow a week apart.
     private mutating func setLimits(_ limits: [Int], from first: Int, calendar: Calendar, keeping planned: [Step]? = nil) {
         let planned = planned ?? plannedSteps(calendar: calendar)
         var fixed = Array(planned.prefix(first))
-        let anchor = fixed.last.map { calendar.startOfDay(for: $0.startedAt) } ?? steps[0].startedAt
-        let weeksAfterAnchor = fixed.isEmpty ? 0 : 1
         for (offset, minutes) in limits.enumerated() {
-            let weeks = offset + weeksAfterAnchor
-            fixed.append(Step(dailyMinutes: minutes,
-                              startedAt: weeks == 0 ? anchor : calendar.date(byAdding: .day, value: Self.stepDays * weeks, to: anchor)!))
+            let index = first + offset
+            let start: Date
+            if index < planned.count {
+                start = planned[index].startedAt
+            } else if let last = fixed.last {
+                start = calendar.date(byAdding: .day, value: Self.stepDays, to: calendar.startOfDay(for: last.startedAt))!
+            } else {
+                start = steps[0].startedAt
+            }
+            fixed.append(Step(dailyMinutes: minutes, startedAt: start))
         }
         guard !fixed.isEmpty else { return }
         steps = fixed
         targetMinutes = fixed[fixed.count - 1].dailyMinutes
+    }
+}
+
+// MARK: - Keeping to it
+
+extension ReductionCourse {
+    /// The seven days that decide whether the limit steps down next: the
+    /// week before the next change, or the last seven days at the goal.
+    func currentWeek(at date: Date, calendar: Calendar = .current) -> DateInterval {
+        let end = nextChange(after: date, calendar: calendar)?.startedAt
+            ?? calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: date))!
+        return DateInterval(start: calendar.date(byAdding: .day, value: -Self.stepDays, to: end)!, end: end)
+    }
+
+    func isMissed(_ date: Date, calendar: Calendar = .current) -> Bool {
+        missedDays.contains(calendar.startOfDay(for: date))
+    }
+
+    /// Missed days in the week that decides the next step.
+    func misses(at date: Date, calendar: Calendar = .current) -> Int {
+        let week = currentWeek(at: date, calendar: calendar)
+        return missedDays.filter { $0 >= week.start && $0 < week.end }.count
+    }
+
+    /// Whether the limit in force is repeating a week because the last one
+    /// had too many missed days.
+    func isHolding(at date: Date, calendar: Calendar = .current) -> Bool {
+        guard let heldOn, nextChange(after: date, calendar: calendar) != nil else { return false }
+        let week = currentWeek(at: date, calendar: calendar)
+        return heldOn < week.start && heldOn >= calendar.date(byAdding: .day, value: -Self.stepDays, to: week.start)!
+    }
+
+    /// Marks today as a day the limit didn't hold. More than `allowedMisses`
+    /// in the week before the next step down moves that step, and every one
+    /// after it, a week later: the limit repeats rather than dropping onto a
+    /// week that wasn't kept. Today's limit never changes. Returns whether
+    /// this miss made the week repeat.
+    @discardableResult
+    mutating func recordMiss(at date: Date, calendar: Calendar = .current) -> Bool {
+        let day = calendar.startOfDay(for: date)
+        guard hasStarted(at: date), !missedDays.contains(day) else { return false }
+        let oldest = calendar.date(byAdding: .day, value: -60, to: day)!
+        missedDays = missedDays.filter { $0 >= oldest } + [day]
+        guard nextChange(after: date, calendar: calendar) != nil,
+              misses(at: date, calendar: calendar) > Self.allowedMisses
+        else { return false }
+        steps = plannedSteps(calendar: calendar).map { step in
+            guard step.startedAt > date else { return step }
+            return Step(dailyMinutes: step.dailyMinutes,
+                        startedAt: calendar.date(byAdding: .day, value: Self.stepDays, to: step.startedAt)!)
+        }
+        heldOn = day
+        return true
     }
 }
 

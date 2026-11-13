@@ -83,6 +83,8 @@ final class PlanDraftModel {
     /// Apps already in the plan, when adding to one.
     private(set) var existing: [PlannedApp]
     var currentAge: Int
+    /// How a new plan shares each day's time out. Adding to a plan keeps its own.
+    var spread = DaySpread.evening
 
     init(existing: [PlannedApp] = [], currentAge: Int = AppGroupManager.shared.currentAge) {
         self.existing = existing
@@ -128,6 +130,7 @@ final class PlanDraftModel {
     /// Starts the picked apps' limits at the next midnight and clears the draft.
     @MainActor
     func start(with blocking: BlockingService) {
+        if !isAdding { blocking.setSpread(spread) }
         for item in items {
             guard let course = item.course(start: BlockingConfiguration.nextMidnight()) else { continue }
             blocking.addToPlan(item.selection, course: course, name: item.name)

@@ -20,9 +20,10 @@ struct BlockingConfiguration: Codable, Equatable {
     var strictModeEndsAt: Date?
 
     /// DeviceActivity monitors at most 20 activities per app: the focus block,
-    /// these, and one per planned app (`ReductionPlan.maximumApps`).
-    static let maximumSchedules = 8
-    static let maximumLimits = 8
+    /// these, one per planned app (`ReductionPlan.maximumApps`), two for the
+    /// plan's day parts, and one for an early unlock.
+    static let maximumSchedules = 6
+    static let maximumLimits = 6
 
     init() {}
 

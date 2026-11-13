@@ -2,8 +2,9 @@ import DeviceActivity
 import FamilyControls
 import SwiftUI
 
-/// The plan at the top of the Plan tab: what reaching the goals is worth,
-/// then each app from where it started to its goal. Usage and comparisons
+/// The plan at the top of the Plan tab, kept to one message: the days the
+/// plan was kept, what that pace is worth in years, and what reaching the
+/// goals would be worth. Then each app's time today. Usage and comparisons
 /// stay in this extension; the plan itself is the user's choices, read from
 /// the App Group.
 struct PlanReportSection: View {
@@ -17,18 +18,12 @@ struct PlanReportSection: View {
 
     var body: some View {
         let progress = progress
+        let now = Date()
         VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Your plan")
-                    .font(.geist(size: 20, weight: .semibold))
-                Text("Your limits drop each week until you reach your goal.")
-                    .font(.geist(size: 13))
-                    .foregroundStyle(ScreenSpanAppearance.secondaryText)
-            }
-            goalCard(progress.map(\.progress))
+            summaryCard(progress.map(\.progress), now: now)
             ForEach(progress, id: \.app.id) { item in
-                PlanAppCard(app: item.app, progress: item.progress, todayMinutes: payload.planToday[item.app.id],
-                            currentAge: currentAge, targetAge: targetAge)
+                PlanAppCard(app: item.app, progress: item.progress, spread: payload.plan.spread(at: now),
+                            todayMinutes: payload.planToday[item.app.id], now: now)
             }
             if let shift = otherAppsShift, shift >= 20 {
                 Label("Other apps went up \(PlanReportFormat.duration(shift)) a day since your plan started. If one app took over, add it to your plan.",
@@ -42,43 +37,106 @@ struct PlanReportSection: View {
         }
     }
 
-    /// The payoff for reaching every goal, and how much of the daily time
-    /// is back so far.
-    private func goalCard(_ apps: [PlanAppProgress]) -> some View {
+    // MARK: - The week and the years
+
+    private func summaryCard(_ apps: [PlanAppProgress], now: Date) -> some View {
+        let days = PlanProgress.recentDays(apps: payload.plan.apps.map { ($0.course, payload.planUsage[$0.id] ?? []) }, now: now)
+        let streak = PlanProgress.streak(days)
         let courses = apps.map(\.course)
-        let atGoal = courses.minutesBackAtTarget
-        let years = courses.regainedAtTarget(currentAge: currentAge, targetAge: targetAge).yearsReclaimed
+        let goalYears = courses.regainedAtTarget(currentAge: currentAge, targetAge: targetAge).yearsReclaimed
         let measured = apps.compactMap(\.minutesBackSinceStart)
-        let back = measured.isEmpty ? nil : max(measured.reduce(0, +), 0)
-        return VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("+\(PlanReportFormat.years(years))")
-                    .font(.geist(size: 40, weight: .heavy))
-                    .foregroundStyle(PlanReportStyle.green)
-                    .monospacedDigit()
-                Text("of your life back by age \(targetAge) at your \(courses.count == 1 ? "goal" : "goals")")
-                    .font(.geist(size: 14, weight: .medium))
-                    .foregroundStyle(ScreenSpanAppearance.secondaryText)
-            }
-            VStack(alignment: .leading, spacing: 6) {
-                GeometryReader { proxy in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(Color.white)
-                        Capsule().fill(PlanReportStyle.brightGreen)
-                            .frame(width: proxy.size.width * min((back ?? 0) / Double(max(atGoal, 1)), 1))
+        let backMinutes = measured.isEmpty ? nil : max(measured.reduce(0, +), 0)
+        let soFarYears = backMinutes.map {
+            ProjectionCalculator.calculateRegained(startingDailyHours: $0 / 60, currentDailyHours: 0,
+                                                   currentAge: currentAge, targetAge: targetAge).yearsReclaimed
+        }
+        return VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Your plan")
+                        .font(.geist(size: 20, weight: .semibold))
+                    Spacer()
+                    if streak >= 2 {
+                        Label("\(streak) days in a row", systemImage: "flame.fill")
+                            .font(.geist(size: 12, weight: .semibold))
+                            .foregroundStyle(Color(hex: "#C25E00"))
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 5)
+                            .background(Color(hex: "#FFF1E0"), in: Capsule())
                     }
                 }
-                .frame(height: 10)
-                Text(back.map { "\(PlanReportFormat.duration($0)) of \(PlanReportFormat.duration(Double(atGoal))) a day back so far" }
-                     ?? "\(PlanReportFormat.duration(Double(atGoal))) a day back at your \(courses.count == 1 ? "goal" : "goals")")
-                    .font(.geist(size: 13, weight: .semibold))
-                    .monospacedDigit()
+                PlanDayCircles(days: days)
+                Text(weekLine(days))
+                    .font(.geist(size: 14, weight: .semibold))
+                    .foregroundStyle(days.contains { $0.state == .kept } ? PlanReportStyle.green : ScreenSpanAppearance.text)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            Rectangle().fill(Color(hex: "#D3EBDD")).frame(height: 1)
+            years(soFar: soFarYears, goal: goalYears, backMinutes: backMinutes, goalMinutes: courses.minutesBackAtTarget,
+                  goals: courses.count)
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(hex: "#EEF8F2"), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    /// What the plan is worth: at the pace kept so far, and at the goals.
+    private func years(soFar: Double?, goal: Double, backMinutes: Double?, goalMinutes: Int, goals: Int) -> some View {
+        let reach = goals == 1 ? "your goal" : "your goals"
+        return VStack(alignment: .leading, spacing: 12) {
+            if let soFar, let backMinutes {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("+\(PlanReportFormat.years(soFar))")
+                        .font(.geist(size: 40, weight: .heavy))
+                        .foregroundStyle(soFar > 0 ? PlanReportStyle.green : ScreenSpanAppearance.text)
+                        .monospacedDigit()
+                    Text(soFar > 0
+                         ? "of your life back by age \(targetAge), at the pace you’ve kept so far (\(PlanReportFormat.duration(backMinutes)) less a day)."
+                         : "So far you’re using these apps as much as when you started. Every day you keep your limits moves this number.")
+                        .font(.geist(size: 14, weight: .medium))
+                        .foregroundStyle(ScreenSpanAppearance.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    GeometryReader { proxy in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(Color.white)
+                            Capsule().fill(PlanReportStyle.brightGreen)
+                                .frame(width: proxy.size.width * min(soFar / max(goal, 0.0001), 1))
+                        }
+                    }
+                    .frame(height: 10)
+                    (Text("+\(PlanReportFormat.years(goal))").fontWeight(.bold)
+                     + Text(" if you reach \(reach): \(PlanReportFormat.duration(Double(goalMinutes))) less a day."))
+                        .font(.geist(size: 13))
+                        .monospacedDigit()
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("+\(PlanReportFormat.years(goal))")
+                        .font(.geist(size: 40, weight: .heavy))
+                        .foregroundStyle(PlanReportStyle.green)
+                        .monospacedDigit()
+                    Text("of your life back by age \(targetAge) if you reach \(reach). Your first full day shows here tomorrow.")
+                        .font(.geist(size: 14, weight: .medium))
+                        .foregroundStyle(ScreenSpanAppearance.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
         .accessibilityElement(children: .combine)
+    }
+
+    private func weekLine(_ days: [PlanDay]) -> String {
+        let finished = days.filter { $0.state == .kept || $0.state == .over }
+        let kept = finished.filter { $0.state == .kept }.count
+        guard !finished.isEmpty else { return "Your first day is under way. Keep today’s limits to earn your first check." }
+        let yesterday = days.last { $0.state != .today }?.state
+        let count = "\(kept) of the last \(finished.count == 1 ? "day" : "\(finished.count) days") kept"
+        if kept == finished.count { return finished.count == 1 ? "Yesterday kept. That’s how it starts." : "\(count). Every one." }
+        if yesterday == .kept { return "\(count). Yesterday was one of them." }
+        return "\(count). Today is a fresh one."
     }
 
     private var otherAppsShift: Double? {
@@ -98,284 +156,159 @@ enum PlanReportStyle {
     static let line = Color(hex: "#D5DBE3")
 }
 
-/// One planned app: what's left of today's limit, this week's days, and
-/// every week from where it started to its goal.
-private struct PlanAppCard: View {
-    let app: PlannedApp
-    let progress: PlanAppProgress
-    /// Minutes used so far today.
-    let todayMinutes: Double?
-    let currentAge: Int
-    let targetAge: Int
-    @State private var showsWeeks = false
-
-    private var course: ReductionCourse { progress.course }
+/// The last week, a circle a day: a green check for a kept day, amber for a
+/// day over a limit, dashed when Screen Time didn't report it, a ring for today.
+struct PlanDayCircles: View {
+    let days: [PlanDay]
 
     var body: some View {
-        let now = Date()
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                PlannedAppLabel(selection: app.selection)
-                Spacer(minLength: 8)
-                pill(now: now)
-            }
-            if let limit = progress.currentLimit, let used = todayMinutes {
-                today(used: used, limit: limit)
-            } else {
-                // Before the first limit starts, or before Screen Time reports today.
-                Text(progress.currentLimit.map { "\(PlanReportFormat.duration(Double($0))) limit today" }
-                     ?? "Starts tonight at \(PlanReportFormat.duration(Double(course.firstMinutes))) a day")
-                    .font(.geist(size: 14, weight: .semibold))
-                    .monospacedDigit()
-            }
-            if progress.stepIndex != nil {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(alignment: .firstTextBaseline) {
-                        sectionLabel("THIS WEEK")
-                        Spacer()
-                        if progress.daysReported > 0 {
-                            Text("\(progress.daysWithin) of \(progress.daysReported) days on plan")
-                                .font(.geist(size: 12, weight: .semibold))
-                                .foregroundStyle(progress.daysWithin > 0 ? PlanReportStyle.green : ScreenSpanAppearance.secondaryText)
-                        }
-                    }
-                    PlanWeekStrip(days: progress.stepDays)
-                }
-            }
-            VStack(alignment: .leading, spacing: 8) {
-                Button {
-                    withAnimation(.snappy) { showsWeeks.toggle() }
-                } label: {
-                    HStack(spacing: 8) {
-                        sectionLabel("WEEK BY WEEK")
-                        Spacer(minLength: 8)
-                        Text(goalSummary(now: now))
-                            .font(.geist(size: 12, weight: .medium))
-                            .foregroundStyle(ScreenSpanAppearance.secondaryText)
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(ScreenSpanAppearance.secondaryText)
-                            .rotationEffect(.degrees(showsWeeks ? 180 : 0))
-                    }
-                    .padding(.vertical, 4)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Week by week, \(goalSummary(now: now))")
-                .accessibilityValue(showsWeeks ? "Shown" : "Hidden")
-                if showsWeeks {
-                    PlanTimeline(course: course, now: now,
-                                 goalYears: course.regained(atLimit: course.targetMinutes, currentAge: currentAge, targetAge: targetAge).yearsReclaimed)
-                        .transition(.opacity)
-                }
-            }
-        }
-        .padding(18)
-        .background(PlanReportStyle.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .accessibilityElement(children: .contain)
-    }
-
-    /// Time left on today's limit. Using it all is still on plan.
-    private func today(used: Double, limit: Int) -> some View {
-        let left = Double(limit) - used
-        let isUsedUp = left < 1
-        return VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline) {
-                if isUsedUp {
-                    Label("Blocked until midnight", systemImage: "lock.fill")
-                        .font(.geist(size: 14, weight: .semibold))
-                } else {
-                    Text("\(PlanReportFormat.duration(left)) left today")
-                        .font(.geist(size: 14, weight: .semibold))
-                        .foregroundStyle(PlanReportStyle.green)
-                }
-                Spacer(minLength: 8)
-                Text("\(PlanReportFormat.duration(min(used, Double(limit)))) of \(PlanReportFormat.duration(Double(limit))) used")
-                    .font(.geist(size: 12))
-                    .foregroundStyle(ScreenSpanAppearance.secondaryText)
-            }
-            .monospacedDigit()
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(Color.white)
-                    Capsule().fill(isUsedUp ? ScreenSpanAppearance.text : PlanReportStyle.brightGreen)
-                        .frame(width: proxy.size.width * min(max(used / Double(max(limit, 1)), 0), 1))
-                }
-            }
-            .frame(height: 8)
-        }
-        .accessibilityElement(children: .combine)
-    }
-
-    /// The collapsed timeline's one line: where the plan ends up, and when.
-    private func goalSummary(now: Date) -> String {
-        let goal = "\(PlanReportFormat.duration(Double(course.targetMinutes))) a day"
-        let date = course.goalDate()
-        return date > now ? "\(goal) by \(date.formatted(.dateTime.month(.abbreviated).day()))" : "At \(goal)"
-    }
-
-    private func pill(now: Date) -> some View {
-        let weeks = course.weeksToGoal(at: now)
-        let text = weeks.map { $0 == 1 ? "1 week to goal" : "\($0) weeks to goal" } ?? "Goal reached"
-        return Text(text)
-            .font(.geist(size: 12, weight: .semibold))
-            .foregroundStyle(weeks == nil ? PlanReportStyle.green : ScreenSpanAppearance.secondaryText)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 4)
-            .background(weeks == nil ? Color(hex: "#E3F5EB") : Color.white, in: Capsule())
-    }
-
-    private func sectionLabel(_ text: String) -> some View {
-        Text(text)
-            .font(.geist(size: 11, weight: .bold))
-            .tracking(0.8)
-            .foregroundStyle(ScreenSpanAppearance.secondaryText)
-    }
-}
-
-/// Every limit from where the app started to its goal, as a vertical line:
-/// finished weeks checked off, this week highlighted, the rest ahead.
-private struct PlanTimeline: View {
-    let course: ReductionCourse
-    let now: Date
-    let goalYears: Double
-
-    var body: some View {
-        let entries = course.schedule(at: now)
-        VStack(spacing: 0) {
-            row(marker: AnyView(Circle().strokeBorder(PlanReportStyle.line, lineWidth: 2).frame(width: 12, height: 12)),
-                title: "Where you started", detail: nil,
-                minutes: course.baselineMinutes, isFirst: true, isLast: entries.isEmpty, muted: true)
-            ForEach(Array(entries.enumerated()), id: \.offset) { index, entry in
-                row(marker: marker(entry), title: title(entry), detail: detail(entry),
-                    minutes: entry.dailyMinutes, isFirst: false, isLast: index == entries.count - 1,
-                    isCurrent: entry.kind == .current, isGoal: entry.isGoal, muted: entry.kind == .past)
-            }
-        }
-    }
-
-    private func row(marker: AnyView, title: String, detail: String?, minutes: Int,
-                     isFirst: Bool, isLast: Bool, isCurrent: Bool = false, isGoal: Bool = false, muted: Bool = false) -> some View {
-        HStack(alignment: .center, spacing: 12) {
-            VStack(spacing: 0) {
-                Rectangle().fill(isFirst ? Color.clear : PlanReportStyle.line).frame(width: 2).frame(maxHeight: .infinity)
-                marker.frame(width: 20, height: 20)
-                Rectangle().fill(isLast ? Color.clear : PlanReportStyle.line).frame(width: 2).frame(maxHeight: .infinity)
-            }
-            .frame(width: 20)
-            HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(title)
-                        .font(.geist(size: 14, weight: isCurrent || isGoal ? .semibold : .regular))
-                        .foregroundStyle(muted ? ScreenSpanAppearance.secondaryText : ScreenSpanAppearance.text)
-                    if let detail {
-                        Text(detail)
-                            .font(.geist(size: 12))
-                            .foregroundStyle(isGoal ? PlanReportStyle.green : ScreenSpanAppearance.secondaryText)
-                    }
-                }
-                Spacer(minLength: 8)
-                Text("\(PlanReportFormat.duration(Double(minutes))) a day")
-                    .font(.geist(size: 14, weight: isCurrent || isGoal ? .bold : .medium))
-                    .foregroundStyle(isGoal ? PlanReportStyle.green : muted ? ScreenSpanAppearance.secondaryText : ScreenSpanAppearance.text)
-                    .monospacedDigit()
-            }
-            .padding(.vertical, 9)
-            .padding(.horizontal, isCurrent ? 10 : 0)
-            .background(isCurrent ? Color.white : Color.clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        }
-        .fixedSize(horizontal: false, vertical: true)
-        .accessibilityElement(children: .combine)
-    }
-
-    private func marker(_ entry: ReductionCourse.ScheduleEntry) -> AnyView {
-        if entry.isGoal {
-            return AnyView(Image(systemName: "flag.circle.fill")
-                .font(.system(size: 20))
-                .foregroundStyle(PlanReportStyle.brightGreen))
-        }
-        switch entry.kind {
-        case .past:
-            return AnyView(Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 18))
-                .foregroundStyle(PlanReportStyle.brightGreen))
-        case .current:
-            return AnyView(Circle().fill(ScreenSpanAppearance.text).frame(width: 14, height: 14)
-                .overlay(Circle().strokeBorder(Color.white, lineWidth: 3)))
-        case .upcoming:
-            return AnyView(Circle().fill(Color.white).frame(width: 12, height: 12)
-                .overlay(Circle().strokeBorder(PlanReportStyle.line, lineWidth: 2)))
-        }
-    }
-
-    private func title(_ entry: ReductionCourse.ScheduleEntry) -> String {
-        switch entry.kind {
-        case .current: return entry.isGoal ? "Goal reached" : "This week"
-        case .past: return range(entry)
-        case .upcoming:
-            if entry.isGoal { return "Goal" }
-            if Calendar.current.isDateInTomorrow(entry.start) || Calendar.current.isDate(entry.start, inSameDayAs: now) {
-                return "From tomorrow"
-            }
-            return "Week of \(entry.start.formatted(.dateTime.month(.abbreviated).day()))"
-        }
-    }
-
-    private func detail(_ entry: ReductionCourse.ScheduleEntry) -> String? {
-        if entry.isGoal {
-            let years = "+\(PlanReportFormat.years(goalYears)) of life back"
-            return entry.kind == .upcoming ? "From \(entry.start.formatted(.dateTime.month(.abbreviated).day()))\n\(years)" : years
-        }
-        return entry.kind == .current ? range(entry) : nil
-    }
-
-    /// "Oct 24 – 30", inclusive of the last day.
-    private func range(_ entry: ReductionCourse.ScheduleEntry) -> String {
-        let calendar = Calendar.current
-        guard let end = entry.end, let last = calendar.date(byAdding: .day, value: -1, to: end), last > entry.start else {
-            return entry.start.formatted(.dateTime.month(.abbreviated).day())
-        }
-        return (entry.start..<last).formatted(.interval.month(.abbreviated).day())
-    }
-}
-
-/// The week's days as bars against the limit: green at or under it, amber
-/// the rare day well past it, dashed when Screen Time didn't report the day,
-/// faint for days still ahead.
-struct PlanWeekStrip: View {
-    let days: [PlanAppProgress.Day]
-
-    var body: some View {
-        let shown = Array(days.suffix(ReductionCourse.stepDays))  // matches PlanAppProgress.recentDays
-        HStack(alignment: .bottom, spacing: 6) {
-            ForEach(0..<ReductionCourse.stepDays, id: \.self) { index in
+        HStack(spacing: 6) {
+            ForEach(days) { day in
                 VStack(spacing: 4) {
-                    bar(index < shown.count ? shown[index] : nil)
-                        .frame(height: 44, alignment: .bottom)
-                    Text(index < shown.count ? shown[index].date.formatted(.dateTime.weekday(.narrow)) : " ")
-                        .font(.geist(size: 10))
-                        .foregroundStyle(ScreenSpanAppearance.secondaryText)
+                    mark(day.state)
+                        .frame(width: 30, height: 30)
+                    Text(day.date.formatted(.dateTime.weekday(.narrow)))
+                        .font(.geist(size: 11, weight: day.state == .today ? .bold : .regular))
+                        .foregroundStyle(day.state == .today ? ScreenSpanAppearance.text : ScreenSpanAppearance.secondaryText)
                 }
                 .frame(maxWidth: .infinity)
             }
         }
-        .accessibilityHidden(true)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(days.filter { $0.state == .kept }.count) days kept and \(days.filter { $0.state == .over }.count) over in the last week")
     }
 
     @ViewBuilder
-    private func bar(_ day: PlanAppProgress.Day?) -> some View {
-        if let day, let hours = day.hours {
-            let share = min(max(hours * 60 / Double(max(day.limitMinutes, 1)), 0.06), 1)
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(day.stayedWithin ? PlanReportStyle.brightGreen : PlanReportStyle.amber)
-                .frame(height: 44 * share)
-        } else if day != nil {
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .strokeBorder(Color(hex: "#C5CCD6"), style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
-        } else {
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(Color(hex: "#E3E7EE"))
+    private func mark(_ state: PlanDay.State) -> some View {
+        switch state {
+        case .kept:
+            Image(systemName: "checkmark")
+                .font(.system(size: 14, weight: .heavy))
+                .foregroundStyle(.white)
+                .frame(width: 30, height: 30)
+                .background(PlanReportStyle.brightGreen, in: Circle())
+        case .over:
+            Image(systemName: "minus")
+                .font(.system(size: 14, weight: .heavy))
+                .foregroundStyle(Color(hex: "#8A5A00"))
+                .frame(width: 30, height: 30)
+                .background(Color(hex: "#FFE3AD"), in: Circle())
+        case .today:
+            Circle().strokeBorder(ScreenSpanAppearance.text, lineWidth: 2)
+                .overlay(Circle().fill(ScreenSpanAppearance.text).frame(width: 7, height: 7))
+        case .unreported:
+            Circle().strokeBorder(Color(hex: "#A9B4C2"), style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
+        case .notStarted:
+            Circle().fill(Color.white.opacity(0.7))
         }
+    }
+}
+
+/// One planned app today: how much time is open now, when more opens, and
+/// where its limit goes next.
+private struct PlanAppCard: View {
+    let app: PlannedApp
+    let progress: PlanAppProgress
+    let spread: DaySpread
+    /// Minutes used so far today.
+    let todayMinutes: Double?
+    let now: Date
+
+    private var course: ReductionCourse { progress.course }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                PlannedAppLabel(selection: app.selection)
+                Spacer(minLength: 8)
+                Text(progress.currentLimit.map { "\(PlanReportFormat.duration(Double($0))) today" }
+                     ?? "Starts tonight")
+                    .font(.geist(size: 13, weight: .semibold))
+                    .foregroundStyle(ScreenSpanAppearance.secondaryText)
+                    .monospacedDigit()
+            }
+            if let limit = progress.currentLimit {
+                today(limit: limit)
+            } else {
+                Text("\(PlanReportFormat.duration(Double(course.firstMinutes))) a day from midnight.")
+                    .font(.geist(size: 14, weight: .semibold))
+                    .monospacedDigit()
+            }
+            Text(nextLine)
+                .font(.geist(size: 12))
+                .foregroundStyle(course.isHolding(at: now) ? Color(hex: "#8A5A00") : ScreenSpanAppearance.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(18)
+        .background(PlanReportStyle.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+
+    /// Time open now against the cap for this part of the day, on a bar of
+    /// the whole day's limit with a tick where each later part opens.
+    private func today(limit: Int) -> some View {
+        let caps = spread.caps(limit: limit)
+        let cap = spread.cap(limit: limit, at: now)
+        let more = spread.moreTime(limit: limit, after: now)
+        let used = todayMinutes
+        let left = used.map { Double(cap) - $0 }
+        let isBlocked = left.map { $0 < 1 } ?? false
+        return VStack(alignment: .leading, spacing: 8) {
+            Group {
+                if app.isUnlocked(at: now) {
+                    Label("Unlocked early", systemImage: "lock.open.fill")
+                        .foregroundStyle(Color(hex: "#8A5A00"))
+                } else if isBlocked {
+                    Label(more.map { "Blocked until \($0.formatted(date: .omitted, time: .shortened))" } ?? "Done for today",
+                          systemImage: "lock.fill")
+                } else if let left {
+                    Text("\(PlanReportFormat.duration(left)) left \(more == nil ? "today" : DayPart.at(now).thisName)")
+                        .foregroundStyle(PlanReportStyle.green)
+                } else {
+                    Text("\(PlanReportFormat.duration(Double(cap))) open \(more == nil ? "today" : DayPart.at(now).thisName)")
+                }
+            }
+            .font(.geist(size: 16, weight: .semibold))
+            .monospacedDigit()
+            GeometryReader { proxy in
+                let width = proxy.size.width
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.white)
+                    // What's open so far today.
+                    Capsule().fill(Color(hex: "#CFEBDB"))
+                        .frame(width: width * Double(cap) / Double(max(limit, 1)))
+                    Capsule().fill(isBlocked ? ScreenSpanAppearance.text : PlanReportStyle.brightGreen)
+                        .frame(width: width * min(max((used ?? 0) / Double(max(limit, 1)), 0), 1))
+                    ForEach(Array(Set(caps.dropLast())).filter { $0 < limit }, id: \.self) { tick in
+                        Rectangle().fill(Color(hex: "#9AA3AE"))
+                            .frame(width: 1.5, height: 10)
+                            .offset(x: width * Double(tick) / Double(limit) - 0.75)
+                    }
+                }
+            }
+            .frame(height: 10)
+            if let more {
+                let added = spread.cap(limit: limit, at: more) - cap
+                Text("+\(PlanReportFormat.duration(Double(added))) opens at \(more.formatted(date: .omitted, time: .shortened)). Unused time carries over.")
+                    .font(.geist(size: 12))
+                    .foregroundStyle(ScreenSpanAppearance.secondaryText)
+            }
+        }
+    }
+
+    private var nextLine: String {
+        let goal = "Goal \(PlanReportFormat.duration(Double(course.targetMinutes)))"
+        guard let next = course.nextChange(after: now) else { return "Goal reached. \(PlanReportFormat.duration(Double(course.targetMinutes))) a day stays." }
+        guard progress.currentLimit != nil else { return "\(goal) a day by \(course.goalDate().formatted(.dateTime.month(.abbreviated).day()))." }
+        let day = Calendar.current.isDateInTomorrow(next.startedAt)
+            ? "tomorrow" : next.startedAt.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day())
+        if course.isHolding(at: now) {
+            return "Repeating this limit after 3 missed days. Keep 5 and it drops to \(PlanReportFormat.duration(Double(next.dailyMinutes))) \(day)."
+        }
+        if next.dailyMinutes <= course.targetMinutes {
+            return "Drops to your goal, \(PlanReportFormat.duration(Double(next.dailyMinutes))) a day, \(day)."
+        }
+        return "Drops to \(PlanReportFormat.duration(Double(next.dailyMinutes))) \(day) · \(goal) by \(course.goalDate().formatted(.dateTime.month(.abbreviated).day()))"
     }
 }
 

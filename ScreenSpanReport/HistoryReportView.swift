@@ -40,18 +40,20 @@ struct HistoryReportView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
                 if hasPlan {
-                    // The plan leads; the whole-phone projection follows the
-                    // chart it's drawn from, so it doesn't read as the plan's.
+                    // The plan is the page: its days, its years, its apps.
+                    // Whole-phone time follows as context, without a second
+                    // set of projections to compete with the plan's.
                     PlanReportSection(payload: payload, currentAge: currentAge, targetAge: targetAge)
                     chartSection(progress)
-                    regainSection(progress)
                 } else {
                     regainSection(progress)
                     chartSection(progress)
+                    goalSection(progress)
+                    currentSection(progress)
                 }
-                if !hasPlan { goalSection(progress) }
-                currentSection(progress)
-                Text("Projections compare your daily average since starting with your starting pace, from now until age \(targetAge). Days Screen Time did not report are left out, not counted as zero.")
+                Text(hasPlan
+                     ? "Years back compare each planned app’s daily average since its plan started with the starting point you entered, from now until age \(targetAge). A day is kept when every planned app stayed within its limit. Days Screen Time did not report are left out, not counted as zero."
+                     : "Projections compare your daily average since starting with your starting pace, from now until age \(targetAge). Days Screen Time did not report are left out, not counted as zero.")
                     .font(.geist(size: 12))
                     .foregroundStyle(ScreenSpanAppearance.secondaryText)
             }
@@ -175,7 +177,7 @@ struct HistoryReportView: View {
         let showsStart = progress.startDay > domain.start
         return VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Screen time over time")
+                Text(hasPlan ? "Your whole phone" : "Screen time over time")
                     .font(.geist(size: 20, weight: .semibold))
                 Text(progress.coversWholeSinceStart
                      ? "Since you started on \(progress.startDay.formatted(.dateTime.month(.abbreviated).day()))"

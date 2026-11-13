@@ -378,6 +378,72 @@ struct CalculationTests {
         expect(PlanProgress.otherAppsChangeMinutes(total: Array(phoneTotal.suffix(5)), planned: [appUsage], planStart: planStart,
                                                    now: at(26, 10), calendar: calendar) == nil, "No week before the plan")
 
+        // Day parts: the limit opens up through the day and unused time carries over.
+        expect(DaySpread.evening.caps(limit: 90) == [25, 45, 90] && DaySpread.evening.allowances(limit: 90) == [25, 20, 45], "Half the day's time kept for the evening")
+        expect(DaySpread.even.caps(limit: 90) == [30, 60, 90] && DaySpread.anytime.caps(limit: 90) == [90, 90, 90], "Even thirds, or the whole limit")
+        expect(DaySpread.evening.caps(limit: 25) == [25, 25, 25] && DaySpread.evening.caps(limit: 30) == [10, 15, 30], "Short limits aren't split; the shortest split still adds 5 a part")
+        for spread in DaySpread.allCases {
+            for limit in stride(from: 10, through: 960, by: 5) {
+                let caps = spread.caps(limit: limit)
+                expect(caps.count == 3 && caps[2] == limit && caps[0] >= 5 && caps[0] <= caps[1] && caps[1] <= caps[2] && caps.allSatisfy { $0 % 5 == 0 },
+                       "Caps rise to the limit in whole fives (\(spread), \(limit))")
+            }
+        }
+        expect(DayPart.at(at(20, 0), calendar: calendar) == .morning && DayPart.at(at(20, 11), calendar: calendar) == .morning
+               && DayPart.at(at(20, 12), calendar: calendar) == .afternoon && DayPart.at(at(20, 18), calendar: calendar) == .evening
+               && DayPart.at(at(20, 23), calendar: calendar) == .evening, "Parts of the day")
+        expect(DaySpread.evening.cap(limit: 90, at: at(20, 9), calendar: calendar) == 25 && DaySpread.evening.cap(limit: 90, at: at(20, 13), calendar: calendar) == 45
+               && DaySpread.evening.cap(limit: 90, at: at(20, 20), calendar: calendar) == 90, "The cap in force follows the clock")
+        expect(DaySpread.evening.moreTime(limit: 90, after: at(20, 9), calendar: calendar) == at(20, 12)
+               && DaySpread.evening.moreTime(limit: 90, after: at(20, 13), calendar: calendar) == at(20, 18)
+               && DaySpread.evening.moreTime(limit: 90, after: at(20, 19), calendar: calendar) == nil
+               && DaySpread.anytime.moreTime(limit: 90, after: at(20, 9), calendar: calendar) == nil, "When more time opens up")
+        let partBlock = BlockScreenCopy(appName: "Instagram", reason: .plan(minutes: 90, more: at(20, 12)), now: at(20, 9), calendar: calendar)
+        expect(partBlock.subtitle.hasPrefix("You’ve used this morning’s time · more at "), "A part's block says when more opens")
+
+        // Missed days: three in a week and the limit repeats instead of dropping.
+        var kept = ReductionCourse(baselineMinutes: 180, start: planStart)
+        expect(!kept.recordMiss(at: at(19, 22), calendar: calendar) && kept.missedDays.isEmpty, "Nothing to miss before the first limit")
+        expect(!kept.recordMiss(at: at(21, 20), calendar: calendar) && !kept.recordMiss(at: at(21, 22), calendar: calendar)
+               && kept.misses(at: at(21, 23), calendar: calendar) == 1, "A day is missed once")
+        expect(!kept.recordMiss(at: at(23, 20), calendar: calendar) && kept.misses(at: at(23, 21), calendar: calendar) == 2
+               && kept.nextChange(after: at(23, 21), calendar: calendar)?.startedAt == at(27, 0), "Two missed days still step down")
+        expect(kept.isMissed(at(23, 9), calendar: calendar) && !kept.isMissed(at(22, 9), calendar: calendar), "Which days were missed")
+        var held = kept
+        expect(held.recordMiss(at: at(25, 20), calendar: calendar), "The third missed day repeats the week")
+        expect(held.limit(at: at(25, 21), calendar: calendar) == 150 && held.limit(at: at(28, 12), calendar: calendar) == 150
+               && held.plannedSteps(calendar: calendar).map({ $0.dailyMinutes }) == [150, 120, 90]
+               && held.plannedSteps(calendar: calendar).map({ $0.startedAt }) == [planStart, at(3, 0, month: 11), at(10, 0, month: 11)],
+               "Today's limit stays; every later limit moves a week")
+        expect(held.isHolding(at: at(25, 21), calendar: calendar) && held.isHolding(at: at(29, 12), calendar: calendar)
+               && !held.isHolding(at: at(4, 12, month: 11), calendar: calendar) && !kept.isHolding(at: at(25, 21), calendar: calendar), "Holding lasts the repeated week")
+        expect(held.misses(at: at(28, 12), calendar: calendar) == 0 && !held.recordMiss(at: at(28, 12), calendar: calendar)
+               && held.goalDate(calendar: calendar) == at(10, 0, month: 11), "The repeated week starts clean")
+        var heldEdit = held
+        heldEdit.setLimit(at: 2, to: 80, at: at(28, 12), calendar: calendar)
+        expect(heldEdit.plannedSteps(calendar: calendar).map({ $0.startedAt }) == [planStart, at(3, 0, month: 11), at(10, 0, month: 11)]
+               && heldEdit.targetMinutes == 80, "Editing a week keeps the repeated week's dates")
+        var atGoalMiss = ReductionCourse(baselineMinutes: 180, start: planStart)
+        for day in 4...8 { _ = atGoalMiss.recordMiss(at: at(day, 20, month: 11), calendar: calendar) }
+        expect(atGoalMiss.heldOn == nil && atGoalMiss.limit(at: at(9, 12, month: 11), calendar: calendar) == 90, "Nothing repeats at the goal")
+        let encodedHeld = try! JSONEncoder().encode(held)
+        expect((try? JSONDecoder().decode(ReductionCourse.self, from: encodedHeld)) == held, "Missed days round-trip")
+
+        // The whole plan's last week, a day at a time.
+        let planDays = PlanProgress.recentDays(apps: [(kept, appUsage)], now: at(26, 10), calendar: calendar)
+        expect(planDays.map({ $0.state }) == [.kept, .over, .over, .over, .unreported, .kept, .today],
+               "Kept, unlocked early, over the limit, unreported, and today")
+        expect(PlanProgress.streak(planDays) == 1, "An unreported day ends the streak")
+        let steady = PlanProgress.recentDays(apps: [(progressCourse, (18...25).map { ActivityDay(date: at($0, 0), hours: 2) })],
+                                             now: at(26, 10), calendar: calendar)
+        expect(steady.map({ $0.state }) == [.kept, .kept, .kept, .kept, .kept, .kept, .today] && PlanProgress.streak(steady) == 6, "A kept week")
+        let earlyDays = PlanProgress.recentDays(apps: [(progressCourse, appUsage)], now: at(22, 10), calendar: calendar)
+        expect(earlyDays.map({ $0.state }) == [.notStarted, .notStarted, .notStarted, .notStarted, .kept, .kept, .today], "Days before the plan are blank")
+        let twoApps = PlanProgress.recentDays(apps: [(progressCourse, (20...25).map { ActivityDay(date: at($0, 0), hours: 2) }),
+                                                     (ReductionCourse(baselineMinutes: 60, start: at(24, 0)), [ActivityDay(date: at(24, 0), hours: 0.5), ActivityDay(date: at(25, 0), hours: 1.5)])],
+                                             now: at(26, 10), calendar: calendar)
+        expect(twoApps.suffix(3).map({ $0.state }) == [.kept, .over, .today], "One app over makes the day over")
+
         let encoded = try! JSONEncoder().encode(course)
         expect((try? JSONDecoder().decode(ReductionCourse.self, from: encoded)) == course, "Course round-trips")
         let checkInEra = #"{"baselineMinutes":180,"targetMinutes":90,"steps":[{"dailyMinutes":150,"startedAt":0}],"heldUntil":0}"#.data(using: .utf8)!

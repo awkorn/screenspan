@@ -51,6 +51,7 @@
 		50F8A89C5A98944613AECC53 /* UserDefaults+AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C0C48EC6DDF3E57788CA87B /* UserDefaults+AppGroup.swift */; };
 		5369ABF7CD89321E8357F9B6 /* PlanProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6825C39C3DE25A567419A4AB /* PlanProgress.swift */; };
 		536E0D5D1C6E8F2D19C3790C /* OnboardingScaffold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70334E36F1FD04BF4207E98B /* OnboardingScaffold.swift */; };
+		55767D2028EB47AE6752C74F /* DayParts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B9DC1D52A3A15109A1F22C /* DayParts.swift */; };
 		56EDA126CF5BC55982BB61F5 /* OnboardingRevealPanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC001674A06509B90440FE1 /* OnboardingRevealPanels.swift */; };
 		5899087DD153621F52A860BE /* ProjectionCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C243C4B38CF92C03D01F92AB /* ProjectionCalculator.swift */; };
 		5926CEB012E3EE74A4F9B8EE /* ReductionCourse.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBCAEEC2ACCB94A5A510F9E5 /* ReductionCourse.swift */; };
@@ -93,6 +94,7 @@
 		A714B4B31CC70134EEE8D5CB /* ReductionCourse+Projection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5038F2615D67A1D5E00575D5 /* ReductionCourse+Projection.swift */; };
 		A7BA55370667EBB5975595DA /* StoreKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7D5F6A44622236803D7EED /* StoreKitService.swift */; };
 		A842D69D5C77E8CBB463F4F4 /* ScreenSpanMonitorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B9CCC5FAC1260FEF5189086 /* ScreenSpanMonitorExtension.swift */; };
+		A8E4DE2ABF952B265AEBFBA0 /* DayParts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B9DC1D52A3A15109A1F22C /* DayParts.swift */; };
 		A9E23254695DCCEE7DAA9DD9 /* SharedConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF778599A684CC2DFD97DC6 /* SharedConstants.swift */; };
 		AAD05CA7BEF543FC120A45E3 /* BlockSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13087A939D48C292559235F /* BlockSchedule.swift */; };
 		AFAE3FD26CE8D5923D988FCF /* ScreenSpanApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A4D8FAD2211C2AAFF1DED04 /* ScreenSpanApp.swift */; };
@@ -102,6 +104,7 @@
 		B4ACF05184003E71EE7D5385 /* LifeRegainedProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */; };
 		BCF6F78B3D755D11032EC993 /* BlockingRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC84D5D3FA2FE94E69A96188 /* BlockingRule.swift */; };
 		BEA1AE92D67D9F32550E1D58 /* BlockingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273EF992FFD25C2EDACC9649 /* BlockingView.swift */; };
+		C44F7799CA9CF7BC4409B186 /* DayParts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B9DC1D52A3A15109A1F22C /* DayParts.swift */; };
 		C4F663E111C60B7F05B93FC9 /* PlanBaselinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FF83F5D95FC17915C18EE36 /* PlanBaselinesView.swift */; };
 		C5CE5B332E978EB3FF006FC0 /* PlanAppsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98D9F80E05F29B9CD840A013 /* PlanAppsView.swift */; };
 		C73B4B869E90C5CD06E20BE2 /* LifeGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2AC75288B4E2F4E8469DC82 /* LifeGridView.swift */; };
@@ -133,6 +136,7 @@
 		F420A4DEF7335FF818D107A2 /* GeistItalicVF.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 768E88DDC1F8C5FCB5191E94 /* GeistItalicVF.ttf */; };
 		F51CE5698164331490E5433C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 086D3D5A2EE570B7E1E8DEBA /* Assets.xcassets */; };
 		F9A996FA3DA97DE6F1DEEDC2 /* ReductionPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863A5A3E939A13A701826B2B /* ReductionPlan.swift */; };
+		FA60245887116FF7F4554159 /* DayParts.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B9DC1D52A3A15109A1F22C /* DayParts.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -267,6 +271,7 @@
 		CC84D5D3FA2FE94E69A96188 /* BlockingRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingRule.swift; sourceTree = "<group>"; };
 		CCCFE517652396A0F9ACDA79 /* ScreenSpanAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSpanAppearance.swift; sourceTree = "<group>"; };
 		CF82A268487C5AC03C8A995D /* TimeIntention.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeIntention.swift; sourceTree = "<group>"; };
+		D4B9DC1D52A3A15109A1F22C /* DayParts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayParts.swift; sourceTree = "<group>"; };
 		D541E0CE886AB9530162F9E3 /* GeistMonoItalicVF.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = GeistMonoItalicVF.ttf; sourceTree = "<group>"; };
 		D7139E2DB99F66F42F7B8DEE /* LifeRegainedProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeRegainedProgress.swift; sourceTree = "<group>"; };
 		D7A6A230E201C6A5E34E064D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -490,6 +495,7 @@
 				742E45FF184F9B2A26A7B210 /* BlockingConfiguration.swift */,
 				CC84D5D3FA2FE94E69A96188 /* BlockingRule.swift */,
 				A13087A939D48C292559235F /* BlockSchedule.swift */,
+				D4B9DC1D52A3A15109A1F22C /* DayParts.swift */,
 				CBCAEEC2ACCB94A5A510F9E5 /* ReductionCourse.swift */,
 				863A5A3E939A13A701826B2B /* ReductionPlan.swift */,
 			);
@@ -770,6 +776,7 @@
 				63A96DF2A8F6EAF116D2B484 /* ChartReportView.swift in Sources */,
 				7CA6D26D4488504C8E363E2A /* Color+ScreenSpanReport.swift in Sources */,
 				599713727556A635527C1D4B /* DashboardReportView.swift in Sources */,
+				FA60245887116FF7F4554159 /* DayParts.swift in Sources */,
 				CD3F589C787C3D53B49BDC8F /* DeviceActivityReport+Contexts.swift in Sources */,
 				67385984CDF1FEB760B7C12E /* DonutChartView.swift in Sources */,
 				4DA70EE7E40E3A0E1C184C68 /* GeistFont.swift in Sources */,
@@ -815,6 +822,7 @@
 				EEFC74152742F33836C9D61D /* Color+ScreenSpan.swift in Sources */,
 				9DB102EEFD27E1CF5149435F /* ContentView.swift in Sources */,
 				43C8D153FC53E264AD147C97 /* Date+ScreenSpan.swift in Sources */,
+				55767D2028EB47AE6752C74F /* DayParts.swift in Sources */,
 				2FF689C97CDC644D27D555BC /* DeviceActivityFilter+ScreenSpan.swift in Sources */,
 				4288D9394E6BA2D742E38996 /* DeviceActivityReport+Contexts.swift in Sources */,
 				59BFC6CC6EAC27863395F717 /* DonutChartView.swift in Sources */,
@@ -867,6 +875,7 @@
 				0D8BC829F5093221A532C21A /* BlockScreenStyle.swift in Sources */,
 				D96FC850D086C652B2A8CEA9 /* BlockingConfiguration.swift in Sources */,
 				EEB02920524F9DED2CCAEA60 /* BlockingRule.swift in Sources */,
+				C44F7799CA9CF7BC4409B186 /* DayParts.swift in Sources */,
 				5926CEB012E3EE74A4F9B8EE /* ReductionCourse.swift in Sources */,
 				EB72B7FCDB61ED89A6E0EF44 /* ReductionPlan.swift in Sources */,
 				A4D1A65E9CD083450D467A02 /* SharedConstants.swift in Sources */,
@@ -883,6 +892,7 @@
 				CD10F110D781688CD2D7A783 /* BlockSchedule.swift in Sources */,
 				3144CD2A97C9F2FC3283522B /* BlockingConfiguration.swift in Sources */,
 				1BDCFE2268B9C54590FA6AC8 /* BlockingRule.swift in Sources */,
+				A8E4DE2ABF952B265AEBFBA0 /* DayParts.swift in Sources */,
 				5F23AF387EC0868520FB5F0F /* ReductionCourse.swift in Sources */,
 				5E3795D828D3BE49D76BF88B /* ReductionPlan.swift in Sources */,
 				A842D69D5C77E8CBB463F4F4 /* ScreenSpanMonitorExtension.swift in Sources */,

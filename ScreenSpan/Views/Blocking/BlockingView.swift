@@ -398,7 +398,7 @@ struct BlockingView: View {
                     Label("Strict mode", systemImage: "lock.shield")
                         .font(.geist(size: 16, weight: .semibold))
                         .foregroundStyle(OnboardingStyle.navy)
-                    Text("Focus blocks can’t end early, running schedules can’t be turned off, and loosening a daily limit waits until tomorrow.")
+                    Text("Focus blocks can’t end early, running schedules can’t be turned off, plan blocks can’t be unlocked early, and loosening a daily limit waits until tomorrow.")
                         .font(.geist(size: 13))
                         .foregroundStyle(OnboardingStyle.muted)
                         .fixedSize(horizontal: false, vertical: true)
