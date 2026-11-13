@@ -3,7 +3,7 @@ import SwiftUI
 import UserNotifications
 
 /// The plan in Blocking: each app's time today and how it opens up through
-/// the day, the week so far, a way to unlock a block early at a cost, and
+/// the day, a way to unlock a block early at a cost, and
 /// ways to change the plan, add an app, or start one.
 struct PlanBlockingSection: View {
     @Binding var showsSetup: Bool
@@ -152,9 +152,6 @@ struct PlanBlockingSection: View {
                 PlanDayParts(limit: course.limit(at: now) ?? course.firstMinutes, spread: plan.spread(at: course.hasStarted(at: now) ? now : course.steps[0].startedAt),
                              current: course.hasStarted(at: now) ? DayPart.at(now) : nil)
             }
-            if course.hasStarted(at: now) {
-                PlanWeekDots(course: course, now: now)
-            }
             if let next = nextLine(app, now: now) {
                 Text(next)
                     .font(.geist(size: 12))
@@ -283,58 +280,6 @@ extension DayPart {
         case .morning: return "Until \(hour(.afternoon))"
         case .afternoon: return "\(hour(.afternoon)) – \(hour(.evening))"
         case .evening: return "After \(hour(.evening))"
-        }
-    }
-}
-
-/// The week that decides the next step down, a circle a day: a green check
-/// for a day the limit held, an amber mark for one unlocked early.
-struct PlanWeekDots: View {
-    let course: ReductionCourse
-    let now: Date
-
-    var body: some View {
-        let calendar = Calendar.current
-        let week = course.currentWeek(at: now)
-        let today = calendar.startOfDay(for: now)
-        let start = calendar.startOfDay(for: course.steps[0].startedAt)
-        let days = (0..<ReductionCourse.stepDays).compactMap { calendar.date(byAdding: .day, value: $0, to: week.start) }
-        let kept = days.filter { $0 >= start && $0 < today && !course.isMissed($0) }.count
-        HStack(spacing: 6) {
-            ForEach(days, id: \.self) { day in
-                VStack(spacing: 3) {
-                    mark(day: day, today: today, start: start)
-                        .frame(width: 24, height: 24)
-                    Text(day.formatted(.dateTime.weekday(.narrow)))
-                        .font(.geist(size: 10, weight: day == today ? .bold : .regular))
-                        .foregroundStyle(day == today ? OnboardingStyle.navy : OnboardingStyle.muted)
-                }
-                .frame(maxWidth: .infinity)
-            }
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("This week: \(kept) days kept, \(course.misses(at: now)) missed")
-    }
-
-    @ViewBuilder
-    private func mark(day: Date, today: Date, start: Date) -> some View {
-        if day >= start, day <= today, course.isMissed(day) {
-            Image(systemName: "lock.open.fill")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(Color(hex: "#8A5A00"))
-                .frame(width: 24, height: 24)
-                .background(Color(hex: "#FFE9BF"), in: Circle())
-        } else if day >= start, day < today {
-            Image(systemName: "checkmark")
-                .font(.system(size: 11, weight: .heavy))
-                .foregroundStyle(.white)
-                .frame(width: 24, height: 24)
-                .background(Color(hex: "#2BB673"), in: Circle())
-        } else if day == today {
-            Circle().strokeBorder(OnboardingStyle.navy, lineWidth: 2)
-                .overlay(Circle().fill(OnboardingStyle.navy).frame(width: 6, height: 6))
-        } else {
-            Circle().strokeBorder(Color(hex: "#C5CCD6"), lineWidth: 1.5)
         }
     }
 }
