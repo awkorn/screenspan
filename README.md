@@ -9,9 +9,12 @@ xcodegen generate
 Scripts/test-calculations.sh
 # Regenerate the app icon after changing Scripts/render-app-icon.swift
 swift Scripts/render-app-icon.swift ScreenSpan/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
+swift Scripts/render-app-icon.swift ScreenSpan/Resources/Assets.xcassets/AppIcon-Dev.appiconset/AppIcon.png --dev
 # Optional: build a separate Simulator app with clearly labeled sample data
 python3 Scripts/build-design-preview.py
 ```
+
+Running from Xcode (Debug) installs **ScreenSpan Dev**, a separate app with an orange icon, bundle IDs under `com.screenspan.dev`, and its own App Group, `group.com.screenspan.dev.shared`. It sits next to the TestFlight or App Store app and never reads or changes its data, plan, or blocks. Archive (Release) builds the real `com.screenspan` app. The IDs and group are set per configuration in `project.yml`; the code reads the group from each target's Info.plist (`ScreenSpanAppGroup`).
 
 To ship a new build, bump `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` in `project.yml`; every target's Info.plist reads them. The app, report, monitor, and shield each carry a `PrivacyInfo.xcprivacy` declaring their App Group `UserDefaults` access.
 

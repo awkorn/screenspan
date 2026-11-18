@@ -173,6 +173,10 @@ enum OnboardingRevealLayout {
     static let lifetimeRevealDelays: [Double] = [0, 1.7, 1.1, 1.1]
     /// From the tap until the last stage has settled.
     static var lifetimeRevealDuration: Double { lifetimeRevealDelays.reduce(0, +) + 0.6 }
+    /// From the lifetime panel showing until Continue unlocks when the report
+    /// draws it. The tap lands in the extension's process and never reaches
+    /// the host, so the host allows a moment for the tap, then the sequence.
+    static var lifetimeReportGate: Double { lifetimeRevealDuration + 1.5 }
 
     static func totalHeight(panelHeight: CGFloat) -> CGFloat {
         panelHeight * CGFloat(panelCount) + goalRowHeight * CGFloat(goalValues.count)

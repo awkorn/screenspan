@@ -10,9 +10,11 @@ struct RevealView: View {
     @Bindable var viewModel: OnboardingViewModel
     @State private var filter = DeviceActivityFilter.screenSpanProjectionAverage
     @State private var showsEstimateFallback = false
-    /// The lifetime panel unseals its numbers after a tap inside the report,
-    /// which can't tell the host when it's done. So the host notices that tap
-    /// and holds Continue until the sequence has played.
+    /// The lifetime panel unseals its numbers after a tap, and Continue waits
+    /// until the sequence has played. In estimate mode the host draws the
+    /// panel and sees the tap. With Screen Time access the report draws it in
+    /// another process and the tap never reaches the host, so Continue
+    /// unlocks on a short timer from when the panel shows instead.
     @State private var lifetimeTapped = false
     @State private var lifetimeRevealed = false
     private let goalPresets: [Double] = [1, 1.5, 2, 3]
@@ -89,9 +91,10 @@ struct RevealView: View {
             withAnimation { lifetimeRevealed = true }
         }
         .task(id: isLifetimePanel) {
-            // Never strand anyone if the tap doesn't reach the host.
+            // The report's tap never reaches the host; in estimate mode this
+            // only guards against a missed tap.
             guard isLifetimePanel, !lifetimeRevealed else { return }
-            try? await Task.sleep(for: .seconds(20))
+            try? await Task.sleep(for: .seconds(viewModel.usesEstimate ? 20 : OnboardingRevealLayout.lifetimeReportGate))
             guard !Task.isCancelled else { return }
             withAnimation { lifetimeRevealed = true }
         }

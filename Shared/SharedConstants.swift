@@ -1,7 +1,11 @@
 import Foundation
 
 enum SharedConstants {
-    static let appGroupIdentifier = "group.com.screenspan.shared"
+    /// The App Group shared by the app and its extensions. Each target's
+    /// Info.plist carries it from the build: Debug builds (ScreenSpan Dev)
+    /// use their own group so they never share data with the real app.
+    static let appGroupIdentifier = Bundle.main.object(forInfoDictionaryKey: "ScreenSpanAppGroup") as? String
+        ?? "group.com.screenspan.shared"
 
     enum UserDefaultsKey: String {
         // PRIVACY MODEL

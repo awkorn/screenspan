@@ -73,11 +73,8 @@ struct StatsReportView: View {
 
     // MARK: - Hero
 
-    /// The years here are ahead of the user, not a tally of their life so
-    /// far, so the span they're counted over leads and is said again below.
     private var heroYearsSection: some View {
-        let yearsAhead = max(targetAge - currentAge, 0)
-        return VStack(spacing: 8) {
+        VStack(spacing: 8) {
             Text("FROM TODAY TO AGE \(targetAge)")
                 .font(.geist(size: 12, weight: .semibold))
                 .tracking(1.2)
@@ -89,19 +86,11 @@ struct StatsReportView: View {
                 .multilineTextAlignment(.center)
                 .monospacedDigit()
 
-            Text("of the \(yearsAhead) years ahead of you will go to your phone at your current pace")
+            Text("of your life will be spent on your phone")
                 .font(.geist(size: 15, weight: .medium))
                 .foregroundStyle(Color(hex: "#595959"))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
-
-            Label("Future time only. Nothing before today is counted.", systemImage: "arrow.right")
-                .font(.geist(size: 12, weight: .semibold))
-                .foregroundStyle(iconColor)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color(hex: "#EAF1FA"), in: Capsule())
-                .padding(.top, 6)
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)

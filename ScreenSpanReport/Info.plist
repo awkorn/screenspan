@@ -23,6 +23,8 @@
 		<key>EXExtensionPointIdentifier</key>
 		<string>com.apple.deviceactivityui.report-extension</string>
 	</dict>
+	<key>ScreenSpanAppGroup</key>
+	<string>$(APP_GROUP_ID)</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>GeistVF.ttf</string>

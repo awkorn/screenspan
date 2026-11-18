@@ -206,7 +206,7 @@ private struct RealityCheckPanel: View {
         }
         let gap = RevealMath.underestimateHours(guess: guess, actual: data.dailyHours)
         if gap >= 0.25 {
-            return "That’s \(formatDuration(gap)) more than you thought, every single day. Most people underestimate their screen time."
+            return "That’s \(formatDuration(gap)) more than you thought, every single day."
         } else if gap <= -0.25 {
             return "You overestimated by \(formatDuration(-gap)). Even so, here’s what that time adds up to."
         }
@@ -237,7 +237,7 @@ private struct LifetimePanel: View {
         let projection = data.projection
         VStack(alignment: .leading, spacing: 16) {
             eyebrow("YOUR FUTURE")
-            Text("At \(formatDuration(data.dailyHours)) a day, by age \(data.targetAge) you’ll spend")
+            Text("At \(formatDuration(data.dailyHours)) a day, from now until age \(data.targetAge) you’ll spend")
                 .font(.geist(size: 26, weight: .bold))
                 .foregroundStyle(RevealStyle.navy)
                 .fixedSize(horizontal: false, vertical: true)
