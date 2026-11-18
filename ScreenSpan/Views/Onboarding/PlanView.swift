@@ -217,7 +217,7 @@ private struct PlanCourseCard: View {
     private var limits: [Int] { course.plannedSteps().map(\.dailyMinutes) }
     private static let targetStep = 10
     private var lowestTarget: Int { ReductionCourse.minimumTargetMinutes }
-    private var highestTarget: Int { course.baselineMinutes - ReductionCourse.minimumCut }
+    private var highestTarget: Int { ReductionCourse.highestTarget(baselineMinutes: course.baselineMinutes) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {

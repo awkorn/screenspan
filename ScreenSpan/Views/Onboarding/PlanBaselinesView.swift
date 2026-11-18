@@ -66,7 +66,7 @@ private struct BaselineCard: View {
                 .frame(maxWidth: .infinity)
                 .clipped()
                 Picker("Minutes", selection: component(hours: false)) {
-                    ForEach(Array(stride(from: 0, to: 60, by: 5)), id: \.self) { Text("\($0) min").tag($0) }
+                    ForEach(0..<60, id: \.self) { Text("\($0) min").tag($0) }
                 }
                 .pickerStyle(.wheel)
                 .frame(maxWidth: .infinity)

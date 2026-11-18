@@ -11,7 +11,8 @@ import Foundation
 /// Every number here is user-entered or derived from user entries, like the
 /// goal. It holds the limits the user chose, never measured usage.
 struct ReductionCourse: Codable, Equatable {
-    /// Daily minutes the user said the app took when they started.
+    /// Daily minutes the user said the app took when they started, to the
+    /// minute. Limits and the goal stay on whole 5 minutes below it.
     private(set) var baselineMinutes: Int
     private(set) var targetMinutes: Int
     /// Limits fixed so far, oldest first: the first, any that started before
@@ -82,7 +83,7 @@ struct ReductionCourse: Codable, Equatable {
 
     /// Starts the course with its first limit, effective `start`.
     init(baselineMinutes: Int, targetMinutes: Int? = nil, pace: Pace = .steady, start: Date) {
-        let baseline = Self.clamped(Self.rounded(Double(baselineMinutes)), Self.minimumBaselineMinutes, Self.maximumBaselineMinutes)
+        let baseline = Self.clamped(baselineMinutes, Self.minimumBaselineMinutes, Self.maximumBaselineMinutes)
         self.baselineMinutes = baseline
         self.pace = pace
         self.targetMinutes = Self.validTarget(targetMinutes ?? Self.defaultTarget(baselineMinutes: baseline), baseline: baseline)
@@ -95,7 +96,7 @@ struct ReductionCourse: Codable, Equatable {
     init(baselineMinutes: Int, limits: [Int], pace: Pace = .steady, start: Date, calendar: Calendar = .current) {
         self.init(baselineMinutes: baselineMinutes, pace: pace, start: start)
         guard !limits.isEmpty else { return }
-        var previous = self.baselineMinutes
+        var previous = Self.floored(self.baselineMinutes)
         let fixed = limits.map { minutes -> Int in
             previous = Self.clamped(Self.rounded(Double(minutes)), Self.minimumTargetMinutes, previous)
             return previous
@@ -131,7 +132,9 @@ struct ReductionCourse: Codable, Equatable {
     /// last step: a remainder under the smallest cut either joins this step
     /// (if the combined cut still fits under the largest) or the rest is split
     /// into two even steps.
+    /// A starting point between whole 5 minutes steps from the one below it.
     static func nextLimit(from current: Int, toward target: Int, pace: Pace = .steady) -> Int {
+        let current = floored(current)
         let gap = current - target
         guard gap > 0 else { return current }
         let cut = clamped(rounded(Double(current) * pace.cutFraction), pace.minimumCut, pace.maximumCut)
@@ -160,8 +163,19 @@ struct ReductionCourse: Codable, Equatable {
         return Int((minutes / Double(increment)).rounded()) * increment
     }
 
+    /// Whole 5 minutes at or below `minutes`.
+    static func floored(_ minutes: Int) -> Int {
+        max(minutes, 0) / increment * increment
+    }
+
+    /// The highest goal for a starting point: at least `minimumCut` below
+    /// it, on whole 5 minutes.
+    static func highestTarget(baselineMinutes: Int) -> Int {
+        max(floored(baselineMinutes - minimumCut), minimumTargetMinutes)
+    }
+
     private static func validTarget(_ minutes: Int, baseline: Int) -> Int {
-        clamped(rounded(Double(minutes)), minimumTargetMinutes, baseline - minimumCut)
+        clamped(rounded(Double(minutes)), minimumTargetMinutes, highestTarget(baselineMinutes: baseline))
     }
 
     private static func clamped(_ value: Int, _ lower: Int, _ upper: Int) -> Int {
@@ -262,7 +276,8 @@ struct ReductionCourse: Codable, Equatable {
     mutating func setLimit(at index: Int, to minutes: Int, at date: Date, ceiling: Int? = nil, calendar: Calendar = .current) {
         let planned = plannedSteps(calendar: calendar)
         guard planned.indices.contains(index), planned[index].startedAt > date else { return }
-        let upper = hasStarted(at: date) ? min(ceiling ?? planned[index].dailyMinutes, baselineMinutes) : baselineMinutes
+        let top = Self.floored(baselineMinutes)
+        let upper = hasStarted(at: date) ? min(ceiling ?? planned[index].dailyMinutes, top) : top
         let value = Self.clamped(Self.rounded(Double(minutes)), Self.minimumTargetMinutes, max(upper, Self.minimumTargetMinutes))
         let first = planned.lastIndex { $0.startedAt <= date }.map { $0 + 1 } ?? 0
         var limits = planned.map(\.dailyMinutes)

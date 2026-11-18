@@ -341,7 +341,22 @@ struct CalculationTests {
         let odd = ReductionCourse(baselineMinutes: 2000, targetMinutes: 2, start: planStart)
         expect(odd.baselineMinutes == 960 && odd.targetMinutes == 10, "Out-of-range entries clamped")
         let tooHigh = ReductionCourse(baselineMinutes: 183, targetMinutes: 400, start: planStart)
-        expect(tooHigh.baselineMinutes == 185 && tooHigh.targetMinutes == 175 && tooHigh.firstMinutes == 175, "Goal always below the start")
+        expect(tooHigh.baselineMinutes == 183 && tooHigh.targetMinutes == 170 && tooHigh.firstMinutes == 170, "Goal always below the start")
+        let exact = ReductionCourse(baselineMinutes: 47, start: planStart)
+        expect(exact.baselineMinutes == 47 && exact.targetMinutes == 25 && exact.firstMinutes == 35, "Starting point kept to the minute; limits on whole 5 minutes")
+        var everyExactStep = true
+        for pace in ReductionCourse.Pace.allCases {
+            for baseline in ReductionCourse.minimumBaselineMinutes...300 {
+                let top = ReductionCourse.highestTarget(baselineMinutes: baseline)
+                for target in stride(from: ReductionCourse.minimumTargetMinutes, through: top, by: 5) {
+                    let course = ReductionCourse(baselineMinutes: baseline, targetMinutes: target, pace: pace, start: planStart)
+                    let limits = course.plannedSteps(calendar: calendar).map(\.dailyMinutes)
+                    everyExactStep = everyExactStep && course.baselineMinutes == baseline && top <= baseline - ReductionCourse.minimumCut
+                        && limits.last == target && limits.allSatisfy { $0 % 5 == 0 && $0 < baseline }
+                }
+            }
+        }
+        expect(everyExactStep, "Any starting minute gets 5-minute limits under it that reach the goal")
 
         let light = ReductionCourse(baselineMinutes: 60, start: at(22, 0))
         let plan = [ReductionCourse(baselineMinutes: 180, start: planStart), light]

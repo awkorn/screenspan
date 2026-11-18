@@ -501,7 +501,7 @@ struct PlanEditSheet: View {
     private var saved: ReductionCourse { app.course }
     private var hasStarted: Bool { saved.hasStarted(at: now) }
     private var lowest: Int { ReductionCourse.minimumTargetMinutes }
-    private var highest: Int { hasStarted ? saved.targetMinutes : saved.baselineMinutes - ReductionCourse.minimumCut }
+    private var highest: Int { hasStarted ? saved.targetMinutes : ReductionCourse.highestTarget(baselineMinutes: saved.baselineMinutes) }
     private var isChanged: Bool { course != saved || PlannedApp.cleaned(name) != app.displayName }
 
     /// The saved course with a different goal, at the edited pace. Weeks set
