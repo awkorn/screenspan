@@ -215,6 +215,7 @@ private struct PlanCourseCard: View {
     @State private var showsWeeks = false
 
     private var limits: [Int] { course.plannedSteps().map(\.dailyMinutes) }
+    private static let targetStep = 10
     private var lowestTarget: Int { ReductionCourse.minimumTargetMinutes }
     private var highestTarget: Int { course.baselineMinutes - ReductionCourse.minimumCut }
 
@@ -259,13 +260,13 @@ private struct PlanCourseCard: View {
                         .foregroundStyle(Color(hex: "#1F7A4D"))
                 }
                 Spacer()
-                stepButton("minus", enabled: course.targetMinutes > lowestTarget) { moveTarget(by: -15) }
+                stepButton("minus", enabled: course.targetMinutes > lowestTarget) { moveTarget(by: -Self.targetStep) }
                 Text(PlanFormat.duration(course.targetMinutes))
                     .font(.geist(size: 17, weight: .bold))
                     .foregroundStyle(OnboardingStyle.navy)
                     .monospacedDigit()
                     .frame(minWidth: 64)
-                stepButton("plus", enabled: course.targetMinutes < highestTarget) { moveTarget(by: 15) }
+                stepButton("plus", enabled: course.targetMinutes < highestTarget) { moveTarget(by: Self.targetStep) }
             }
             .accessibilityElement(children: .contain)
             PlanPacePicker(pace: course.pace) { pace in
@@ -311,10 +312,11 @@ private struct PlanCourseCard: View {
         return date.formatted(.dateTime.month(.abbreviated).day())
     }
 
-    /// Moves in quarter hours, landing on one even if the default target didn't.
+    /// Moves in steps of `targetStep`, landing on one even if the default target didn't.
     private func moveTarget(by delta: Int) {
+        let step = Self.targetStep
         let current = course.targetMinutes
-        let moved = delta > 0 ? (current / 15 + 1) * 15 : ((current - 1) / 15) * 15
+        let moved = delta > 0 ? (current / step + 1) * step : ((current - 1) / step) * step
         withAnimation(.snappy) {
             item.targetMinutes = min(max(moved, lowestTarget), highestTarget)
             item.limits = nil

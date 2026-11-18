@@ -52,6 +52,26 @@ struct ScheduleEditor: View {
                     WeekdayPicker(selection: $schedule.weekdays)
                         .listRowInsets(EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12))
                 }
+                Section {
+                    let list = blocking.configuration.blockList
+                    if list.isEmpty {
+                        Text("Nothing yet. Choose your distracting apps on the Blocking screen.")
+                            .font(.geist(size: 14))
+                            .foregroundStyle(OnboardingStyle.muted)
+                    } else {
+                        VStack(alignment: .leading, spacing: 8) {
+                            SelectionIcons(selection: list, size: 24)
+                            Text(list.summary)
+                                .font(.geist(size: 13))
+                                .foregroundStyle(OnboardingStyle.muted)
+                        }
+                        .padding(.vertical, 4)
+                    }
+                } header: {
+                    Text("Blocks")
+                } footer: {
+                    Text("Every schedule blocks your distracting apps. Change them on the Blocking screen.")
+                }
                 if !draft.isNew {
                     Section {
                         Button("Delete schedule", role: .destructive) { confirmsDelete = true }

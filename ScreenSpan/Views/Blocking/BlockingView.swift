@@ -27,16 +27,8 @@ struct BlockingView: View {
                 VStack(alignment: .leading, spacing: 28) {
                     if !authService.isAuthorized { authorizationCard }
                     VStack(alignment: .leading, spacing: 28) {
-                        TimelineView(.periodic(from: .now, by: 1)) { context in
-                            if let session = configuration.activeSession(at: context.date) {
-                                activeFocusCard(session, now: context.date)
-                            } else {
-                                startFocusCard
-                            }
-                        }
                         PlanBlockingSection(showsSetup: $showsPlanSetup)
-                        blockListSection
-                        schedulesSection
+                        distractionsSection
                         limitsSection
                         strictModeSection
                     }
@@ -121,18 +113,97 @@ struct BlockingView: View {
         .background(Color(hex: "#FDECEC"), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
+    // MARK: - Distracting apps
+
+    /// The list and the two ways to block it, now or on a schedule, in one
+    /// group: neither does anything until the list has something in it.
+    private var distractionsSection: some View {
+        let hasList = !configuration.blockList.isEmpty
+        return VStack(alignment: .leading, spacing: 10) {
+            SectionHeader(title: "Distracting apps", action: hasList ? ("Edit", openListPicker) : nil)
+            VStack(alignment: .leading, spacing: 18) {
+                blockListRow
+                VStack(alignment: .leading, spacing: 18) {
+                    if !hasList {
+                        Label("Choose your apps first. Focus blocks and schedules block them.", systemImage: "arrow.up")
+                            .font(.geist(size: 13, weight: .medium))
+                            .foregroundStyle(OnboardingStyle.muted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        if let session = configuration.activeSession(at: context.date) {
+                            activeFocusCard(session, now: context.date)
+                        } else {
+                            startFocusPart(hasList: hasList)
+                        }
+                    }
+                    Divider()
+                    schedulesPart(hasList: hasList)
+                }
+                .padding(.leading, 14)
+                .overlay(alignment: .leading) {
+                    // Ties focus and schedules to the list above.
+                    Capsule()
+                        .fill(hasList ? OnboardingStyle.navy.opacity(0.15) : Color(hex: "#DDE1E7"))
+                        .frame(width: 3)
+                }
+            }
+            .padding(16)
+            .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            if configuration.blockList.applicationTokens.count > BlockingService.maximumShieldedApps {
+                Text("iOS can block up to \(BlockingService.maximumShieldedApps) individual apps. Choose whole categories to block more.")
+                    .font(.geist(size: 12))
+                    .foregroundStyle(OnboardingStyle.muted)
+            }
+        }
+    }
+
+    private var blockListRow: some View {
+        Button(action: openListPicker) {
+            HStack(spacing: 12) {
+                if configuration.blockList.isEmpty {
+                    Image(systemName: "plus.app")
+                        .font(.system(size: 22))
+                        .foregroundStyle(OnboardingStyle.red)
+                    Text("Choose the apps that take your time")
+                        .font(.geist(size: 15, weight: .semibold))
+                        .foregroundStyle(OnboardingStyle.navy)
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        SelectionIcons(selection: configuration.blockList)
+                        Text(configuration.blockList.summary)
+                            .font(.geist(size: 13))
+                            .foregroundStyle(OnboardingStyle.muted)
+                    }
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Color(hex: "#9AA3AE"))
+            }
+            .padding(14)
+            .background(Color.white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func openListPicker() {
+        draftList = configuration.blockList
+        showsListPicker = true
+    }
+
     // MARK: - Focus
 
-    private var startFocusCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
+    private func startFocusPart(hasList: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text("Focus now")
-                    .font(.geist(size: 22, weight: .bold))
+                    .font(.geist(size: 17, weight: .bold))
                     .foregroundStyle(OnboardingStyle.navy)
-                Text(configuration.blockList.isEmpty
-                     ? "Choose your distracting apps, then block them for as long as you need."
-                     : "Block \(configuration.blockList.summary) until you’re done.")
-                    .font(.geist(size: 14))
+                Text(hasList
+                     ? "Block \(configuration.blockList.summary) until the timer runs out."
+                     : "Block your distracting apps until the timer runs out.")
+                    .font(.geist(size: 13))
                     .foregroundStyle(OnboardingStyle.muted)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -153,16 +224,12 @@ struct BlockingView: View {
                     .accessibilityAddTraits(sessionMinutes == minutes ? .isSelected : [])
                 }
             }
-            if configuration.blockList.isEmpty {
-                OnboardingPrimaryButton(title: "Choose apps to block", action: openListPicker)
-            } else {
-                OnboardingPrimaryButton(title: "Start \(Self.format(minutes: sessionMinutes)) focus block") {
-                    withAnimation(.snappy) { blocking.startSession(minutes: sessionMinutes) }
-                }
+            OnboardingPrimaryButton(title: "Start \(Self.format(minutes: sessionMinutes)) focus block") {
+                withAnimation(.snappy) { blocking.startSession(minutes: sessionMinutes) }
             }
         }
-        .padding(18)
-        .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .disabled(!hasList)
+        .opacity(hasList ? 1 : 0.45)
     }
 
     private func activeFocusCard(_ session: FocusSession, now: Date) -> some View {
@@ -204,97 +271,67 @@ struct BlockingView: View {
         .accessibilityElement(children: .contain)
     }
 
-    // MARK: - Block list
-
-    private var blockListSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "Distracting apps", action: configuration.blockList.isEmpty ? nil : ("Edit", openListPicker))
-            Button(action: openListPicker) {
-                HStack(spacing: 12) {
-                    if configuration.blockList.isEmpty {
-                        Image(systemName: "plus.app")
-                            .font(.system(size: 22))
-                            .foregroundStyle(OnboardingStyle.red)
-                        Text("Choose the apps that take your time")
-                            .font(.geist(size: 15, weight: .semibold))
-                            .foregroundStyle(OnboardingStyle.navy)
-                    } else {
-                        VStack(alignment: .leading, spacing: 8) {
-                            SelectionIcons(selection: configuration.blockList)
-                            Text(configuration.blockList.summary)
-                                .font(.geist(size: 13))
-                                .foregroundStyle(OnboardingStyle.muted)
-                        }
-                    }
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Color(hex: "#9AA3AE"))
-                }
-                .padding(16)
-                .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            }
-            .buttonStyle(.plain)
-            Text(configuration.blockList.applicationTokens.count > BlockingService.maximumShieldedApps
-                 ? "iOS can block up to \(BlockingService.maximumShieldedApps) individual apps. Choose whole categories to block more."
-                 : "Focus blocks and schedules block these.")
-                .font(.geist(size: 12))
-                .foregroundStyle(OnboardingStyle.muted)
-        }
-    }
-
-    private func openListPicker() {
-        draftList = configuration.blockList
-        showsListPicker = true
-    }
-
     // MARK: - Schedules
 
-    private var schedulesSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "Schedules",
-                          action: configuration.schedules.count < BlockingConfiguration.maximumSchedules
-                            ? ("Add", addSchedule)
-                            : nil)
+    /// Schedules stay editable without a list, so one left on can still be
+    /// turned off or deleted, but new ones wait for the list.
+    private func schedulesPart(hasList: Bool) -> some View {
+        let canAdd = hasList && configuration.schedules.count < BlockingConfiguration.maximumSchedules
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("On a schedule")
+                        .font(.geist(size: 17, weight: .bold))
+                        .foregroundStyle(OnboardingStyle.navy)
+                    Text(configuration.schedules.isEmpty
+                         ? "Block them at set times, like bedtime or work hours."
+                         : "Blocks your distracting apps at these times.")
+                        .font(.geist(size: 13))
+                        .foregroundStyle(OnboardingStyle.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 8)
+                if canAdd && !configuration.schedules.isEmpty {
+                    Button("Add", action: addSchedule)
+                        .font(.geist(size: 14, weight: .semibold))
+                        .foregroundStyle(Color(hex: "#0063D6"))
+                }
+            }
             if configuration.schedules.isEmpty {
                 Button(action: addSchedule) {
-                    HStack(spacing: 12) {
+                    HStack(spacing: 10) {
                         Image(systemName: "calendar.badge.clock")
-                            .font(.system(size: 20, weight: .semibold))
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(OnboardingStyle.red)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Add a schedule")
-                                .font(.geist(size: 15, weight: .semibold))
-                                .foregroundStyle(OnboardingStyle.navy)
-                            Text("Block your distracting apps at set times, like bedtime or work hours.")
-                                .font(.geist(size: 13))
-                                .foregroundStyle(OnboardingStyle.muted)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
+                        Text("Add a schedule")
+                            .font(.geist(size: 15, weight: .semibold))
+                            .foregroundStyle(OnboardingStyle.navy)
                         Spacer(minLength: 0)
                     }
-                    .padding(16)
-                    .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .padding(14)
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
                 .buttonStyle(.plain)
+                .disabled(!canAdd)
             } else {
                 TimelineView(.periodic(from: .now, by: 30)) { context in
                     VStack(spacing: 8) {
                         ForEach(configuration.schedules) { schedule in
-                            scheduleRow(schedule, now: context.date)
+                            scheduleRow(schedule, now: context.date, hasList: hasList)
                         }
                     }
                 }
             }
         }
+        .opacity(hasList ? 1 : 0.45)
     }
 
     private func addSchedule() {
         editingSchedule = ScheduleDraft(schedule: .newSchedule(), isNew: true)
     }
 
-    private func scheduleRow(_ schedule: BlockSchedule, now: Date) -> some View {
-        let isOn = schedule.isEnabled && schedule.isActive(at: now)
+    private func scheduleRow(_ schedule: BlockSchedule, now: Date, hasList: Bool) -> some View {
+        let isOn = hasList && schedule.isEnabled && schedule.isActive(at: now)
         return HStack(spacing: 12) {
             Button { editingSchedule = ScheduleDraft(schedule: schedule, isNew: false) } label: {
                 VStack(alignment: .leading, spacing: 3) {
@@ -318,10 +355,11 @@ struct BlockingView: View {
             ))
             .labelsHidden()
             .tint(Color(hex: "#2BB673"))
-            .disabled(!blocking.canTurnOff(schedule, at: now))
+            // Without a list, a schedule can be turned off but not on.
+            .disabled(!blocking.canTurnOff(schedule, at: now) || (!hasList && !schedule.isEnabled))
         }
-        .padding(16)
-        .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .padding(14)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
     // MARK: - Limits
