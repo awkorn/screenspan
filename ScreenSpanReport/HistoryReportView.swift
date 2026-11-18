@@ -177,7 +177,7 @@ struct HistoryReportView: View {
         let showsStart = progress.startDay > domain.start
         return VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(hasPlan ? "Your whole phone" : "Screen time over time")
+                Text("Screen time over time")
                     .font(.geist(size: 20, weight: .semibold))
                 Text(progress.coversWholeSinceStart
                      ? "Since you started on \(progress.startDay.formatted(.dateTime.month(.abbreviated).day()))"
