@@ -5,9 +5,25 @@ options:
     iOS: "17.0"
   swiftVersion: "5.9"
 
+# Debug builds (Run from Xcode) are a separate app, ScreenSpan Dev, with
+# their own bundle IDs and App Group, so they install next to the TestFlight
+# or App Store app and never touch its data or blocks. Release (Archive) is
+# the real app.
 settings:
-  MARKETING_VERSION: "1.0"
-  CURRENT_PROJECT_VERSION: "11"
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "11"
+  configs:
+    Debug:
+      APP_ID_SUFFIX: .dev
+      APP_GROUP_ID: group.com.screenspan.dev.shared
+      APP_DISPLAY_NAME: ScreenSpan Dev
+      APP_ICON_NAME: AppIcon-Dev
+    Release:
+      APP_ID_SUFFIX: ""
+      APP_GROUP_ID: group.com.screenspan.shared
+      APP_DISPLAY_NAME: ScreenSpan
+      APP_ICON_NAME: AppIcon
 
 targets:
   ScreenSpan:
@@ -24,8 +40,10 @@ targets:
       path: ScreenSpan/Info.plist
       uses: [.plist]
       properties:
+        CFBundleDisplayName: $(APP_DISPLAY_NAME)
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ScreenSpanAppGroup: $(APP_GROUP_ID)
         ITSAppUsesNonExemptEncryption: false
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -41,10 +59,11 @@ targets:
       properties:
         com.apple.developer.family-controls: true
         com.apple.security.application-groups:
-          - group.com.screenspan.shared
+          - $(APP_GROUP_ID)
     settings:
       DEVELOPMENT_TEAM: 9XXTA2SG5L
-      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan
+      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan$(APP_ID_SUFFIX)
+      ASSETCATALOG_COMPILER_APPICON_NAME: $(APP_ICON_NAME)
       TARGETED_DEVICE_FAMILY: 1
     dependencies:
       - target: ScreenSpanReport
@@ -79,6 +98,7 @@ targets:
         CFBundleDisplayName: ScreenSpan Report
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ScreenSpanAppGroup: $(APP_GROUP_ID)
         UIAppFonts:
           - GeistVF.ttf
           - GeistItalicVF.ttf
@@ -92,10 +112,10 @@ targets:
       properties:
         com.apple.developer.family-controls: true
         com.apple.security.application-groups:
-          - group.com.screenspan.shared
+          - $(APP_GROUP_ID)
     settings:
       DEVELOPMENT_TEAM: 9XXTA2SG5L
-      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.deviceactivityreport
+      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan$(APP_ID_SUFFIX).deviceactivityreport
       TARGETED_DEVICE_FAMILY: 1
     frameworks:
       - DeviceActivity
@@ -119,6 +139,7 @@ targets:
         CFBundleDisplayName: ScreenSpan Monitor
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ScreenSpanAppGroup: $(APP_GROUP_ID)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.deviceactivity.monitor-extension
           NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ScreenSpanMonitorExtension
@@ -127,10 +148,10 @@ targets:
       properties:
         com.apple.developer.family-controls: true
         com.apple.security.application-groups:
-          - group.com.screenspan.shared
+          - $(APP_GROUP_ID)
     settings:
       DEVELOPMENT_TEAM: 9XXTA2SG5L
-      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.deviceactivity
+      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan$(APP_ID_SUFFIX).deviceactivity
       TARGETED_DEVICE_FAMILY: 1
     frameworks:
       - DeviceActivity
@@ -157,6 +178,7 @@ targets:
         CFBundleDisplayName: ScreenSpan Shield
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ScreenSpanAppGroup: $(APP_GROUP_ID)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.ManagedSettingsUI.shield-configuration-service
           NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShieldConfigurationExtension
@@ -165,10 +187,10 @@ targets:
       properties:
         com.apple.developer.family-controls: true
         com.apple.security.application-groups:
-          - group.com.screenspan.shared
+          - $(APP_GROUP_ID)
     settings:
       DEVELOPMENT_TEAM: 9XXTA2SG5L
-      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.shieldconfiguration
+      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan$(APP_ID_SUFFIX).shieldconfiguration
       TARGETED_DEVICE_FAMILY: 1
     frameworks:
       - DeviceActivity
@@ -198,10 +220,10 @@ targets:
       properties:
         com.apple.developer.family-controls: true
         com.apple.security.application-groups:
-          - group.com.screenspan.shared
+          - $(APP_GROUP_ID)
     settings:
       DEVELOPMENT_TEAM: 9XXTA2SG5L
-      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan.shieldaction
+      PRODUCT_BUNDLE_IDENTIFIER: com.screenspan$(APP_ID_SUFFIX).shieldaction
       TARGETED_DEVICE_FAMILY: 1
     frameworks:
       - ManagedSettings

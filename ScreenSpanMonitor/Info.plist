@@ -27,5 +27,7 @@
 		<key>NSExtensionPrincipalClass</key>
 		<string>$(PRODUCT_MODULE_NAME).ScreenSpanMonitorExtension</string>
 	</dict>
+	<key>ScreenSpanAppGroup</key>
+	<string>$(APP_GROUP_ID)</string>
 </dict>
 </plist>
