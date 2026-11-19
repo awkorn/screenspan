@@ -8,8 +8,12 @@
   --line: #E0E4EA;
   --red: #E5322D;
   --green: #2BB673;
-  --cell: #DCE1E8;
   --link: #0063D6;
+  /* The life grid's colors, the same as the app's. */
+  --grid-lived: #0063D6;
+  --grid-phone: #F63232;
+  --grid-back: #2BB673;
+  --grid-left: #D9D9D9;
   color-scheme: light;
 }
 
@@ -22,8 +26,9 @@
     --line: #26314A;
     --red: #FF5A52;
     --green: #34C27F;
-    --cell: #2A3549;
     --link: #6FAEFF;
+    /* App's light gray would glare on a dark page; keep the rest as is. */
+    --grid-left: #2A3549;
     color-scheme: dark;
   }
 }
@@ -120,12 +125,12 @@ a { color: var(--link); }
 .grid span {
   aspect-ratio: 1;
   border-radius: 2px;
-  background: var(--cell);
+  background: var(--grid-left);
 }
 
-.grid .lived { background: var(--ink); opacity: 0.85; }
-.grid .phone { background: var(--red); }
-.grid .back { background: var(--green); }
+.grid .lived { background: var(--grid-lived); }
+.grid .phone { background: var(--grid-phone); }
+.grid .back { background: var(--grid-back); }
 
 .legend {
   display: flex;
