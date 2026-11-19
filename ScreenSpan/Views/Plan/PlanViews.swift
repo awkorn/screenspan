@@ -136,30 +136,39 @@ struct PlanBlockingSection: View {
     private func row(_ app: PlannedApp, now: Date) -> some View {
         let course = app.course
         let plan = blocking.configuration.plan
-        return VStack(alignment: .leading, spacing: 12) {
-            HStack {
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 8) {
                 PlanItemLabel(selection: app.selection)
                 Spacer(minLength: 8)
+                blockStatus(app, now: now)
+            }
+            PlanTrack(course: course, now: now)
+                .padding(.top, 20)
+            if app.removesAt == nil {
+                PlanDayBar(limit: course.limit(at: now) ?? course.firstMinutes, spread: plan.spread(at: course.hasStarted(at: now) ? now : course.steps[0].startedAt),
+                           current: course.hasStarted(at: now) ? DayPart.at(now) : nil)
+                    .padding(.top, 18)
+            }
+            Divider()
+                .padding(.top, 14)
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                if let next = nextLine(app, now: now) {
+                    Text(next)
+                        .font(.geist(size: 12))
+                        .foregroundStyle(OnboardingStyle.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
                 if app.removesAt == nil {
                     Button("Edit") { editing = app }
                         .font(.geist(size: 14, weight: .semibold))
                         .foregroundStyle(Color(hex: "#0063D6"))
                 }
             }
-            blockStatus(app, now: now)
-            PlanStats(course: course, now: now)
-            if app.removesAt == nil {
-                PlanDayParts(limit: course.limit(at: now) ?? course.firstMinutes, spread: plan.spread(at: course.hasStarted(at: now) ? now : course.steps[0].startedAt),
-                             current: course.hasStarted(at: now) ? DayPart.at(now) : nil)
-            }
-            if let next = nextLine(app, now: now) {
-                Text(next)
-                    .font(.geist(size: 12))
-                    .foregroundStyle(OnboardingStyle.muted)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            .padding(.top, 10)
             if app.removesAt != nil {
                 pending("Leaves your plan at midnight", action: "Keep it") { blocking.cancelRemoval(app) }
+                    .padding(.top, 8)
             }
         }
         .padding(16)
@@ -167,38 +176,53 @@ struct PlanBlockingSection: View {
         .background(OnboardingStyle.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    /// Blocked now and until when, with the way to unlock early; or how long
-    /// an early unlock has left.
+    /// A pill for the header: blocked and until when, tapping through to
+    /// unlock early when that's allowed; or how long an early unlock has left.
     @ViewBuilder
     private func blockStatus(_ app: PlannedApp, now: Date) -> some View {
         if let until = app.unlockedUntil, now < until {
-            Label("Unlocked until \(until.formatted(date: .omitted, time: .shortened)). Today counts as missed.",
-                  systemImage: "lock.open")
-                .font(.geist(size: 13, weight: .medium))
-                .foregroundStyle(Color(hex: "#8A5A00"))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 9)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(hex: "#FFF6E5"), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            let time = until.formatted(date: .omitted, time: .shortened)
+            statusPill("Unlocked until \(time)", icon: "lock.open.fill",
+                       foreground: Color(hex: "#8A5A00"), background: Color(hex: "#FFF6E5"))
+                .accessibilityLabel("Unlocked until \(time). Today counts as missed.")
         } else if blocking.isPlanBlocked(app) {
             let end = blocking.configuration.plan.blockEnd(for: app, at: now)
-            HStack(spacing: 8) {
-                Label(Calendar.current.isDate(end, inSameDayAs: now)
-                      ? "Blocked until \(end.formatted(date: .omitted, time: .shortened))" : "Blocked until midnight",
-                      systemImage: "lock.fill")
-                    .font(.geist(size: 13, weight: .semibold))
-                    .foregroundStyle(OnboardingStyle.navy)
-                Spacer(minLength: 0)
-                if blocking.unlockUnavailableReason(app, at: now) == nil {
-                    Button("Unlock early") { unlocking = app }
-                        .font(.geist(size: 13, weight: .medium))
-                        .foregroundStyle(OnboardingStyle.muted)
+            let text = Calendar.current.isDate(end, inSameDayAs: now)
+                ? "Until \(end.formatted(date: .omitted, time: .shortened))" : "Until midnight"
+            if blocking.unlockUnavailableReason(app, at: now) == nil {
+                Button { unlocking = app } label: {
+                    statusPill(text, icon: "lock.fill", chevron: true)
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Blocked \(text.lowercased())")
+                .accessibilityHint("Unlock early")
+            } else {
+                statusPill(text, icon: "lock.fill")
+                    .accessibilityLabel("Blocked \(text.lowercased())")
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 9)
-            .background(Color.white, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
+    }
+
+    private func statusPill(_ text: String, icon: String, chevron: Bool = false,
+                            foreground: Color = OnboardingStyle.navy, background: Color = .white) -> some View {
+        HStack(spacing: 5) {
+            Image(systemName: icon)
+                .font(.system(size: 11, weight: .semibold))
+            Text(text)
+                .font(.geist(size: 12, weight: .semibold))
+                .lineLimit(1)
+            if chevron {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(OnboardingStyle.muted)
+            }
+        }
+        .foregroundStyle(foreground)
+        .padding(.leading, 10)
+        .padding(.trailing, chevron ? 8 : 10)
+        .padding(.vertical, 6)
+        .background(background, in: Capsule())
+        .fixedSize()
     }
 
     /// When the limit drops next, that it's repeating, or that the goal is reached.
@@ -270,7 +294,168 @@ struct PlanDayParts: View {
     }
 }
 
+/// Where today's limit sits on the way from the starting point to the goal:
+/// a track with today's dot moving right as the limit steps down, and the
+/// three numbers beneath it.
+struct PlanTrack: View {
+    let course: ReductionCourse
+    let now: Date
+
+    private var today: Int { course.limit(at: now) ?? course.firstMinutes }
+
+    /// 0 at the starting point, 1 at the goal.
+    private var progress: Double {
+        let span = course.baselineMinutes - course.targetMinutes
+        guard span > 0 else { return 1 }
+        return min(max(Double(course.baselineMinutes - today) / Double(span), 0), 1)
+    }
+
+    private static let rail = Color(hex: "#D5DAE1")
+
+    var body: some View {
+        VStack(spacing: 10) {
+            GeometryReader { geo in
+                let inset: CGFloat = 8
+                let width = geo.size.width - inset * 2
+                let x = inset + width * progress
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Self.rail)
+                        .frame(width: width, height: 2)
+                        .offset(x: inset)
+                    Capsule().fill(OnboardingStyle.navy)
+                        .frame(width: width * progress, height: 2)
+                        .offset(x: inset)
+                    Circle().fill(OnboardingStyle.navy)
+                        .frame(width: 10, height: 10)
+                        .offset(x: inset - 5)
+                    Circle().strokeBorder(Color(hex: "#9AA3AE"), lineWidth: 2)
+                        .background(Circle().fill(OnboardingStyle.card))
+                        .frame(width: 10, height: 10)
+                        .offset(x: inset + width - 5)
+                    Circle().fill(OnboardingStyle.navy)
+                        .frame(width: 12, height: 12)
+                        .padding(3)
+                        .background(Circle().fill(OnboardingStyle.card))
+                        .offset(x: x - 9)
+                }
+                .frame(height: geo.size.height)
+            }
+            .frame(height: 18)
+            HStack(alignment: .lastTextBaseline) {
+                value("Started", course.baselineMinutes, alignment: .leading)
+                value(course.limit(at: now) == nil ? "From tonight" : "Today", today, alignment: .center, isCurrent: true)
+                value("Goal", course.targetMinutes, alignment: .trailing)
+            }
+        }
+        .animation(.snappy, value: progress)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Started at \(PlanFormat.duration(course.baselineMinutes)). \(course.limit(at: now) == nil ? "From tonight" : "Today’s limit"): \(PlanFormat.duration(today)). Goal: \(PlanFormat.duration(course.targetMinutes)).")
+    }
+
+    private func value(_ label: String, _ minutes: Int, alignment: HorizontalAlignment, isCurrent: Bool = false) -> some View {
+        VStack(alignment: alignment, spacing: 1) {
+            Text(label)
+                .font(.geist(size: 11, weight: .medium))
+                .foregroundStyle(OnboardingStyle.muted)
+            Text(PlanFormat.duration(minutes))
+                .font(.geist(size: isCurrent ? 22 : 14, weight: isCurrent ? .bold : .medium))
+                .foregroundStyle(OnboardingStyle.navy)
+                .monospacedDigit()
+                .contentTransition(.numericText())
+        }
+        .frame(maxWidth: .infinity, alignment: Alignment(horizontal: alignment, vertical: .center))
+    }
+}
+
+/// A day's limit as one bar split into its three parts, each as wide as the
+/// time it adds, with the part that's on now filled in. Hidden when the
+/// limit isn't split.
+struct PlanDayBar: View {
+    let limit: Int
+    let spread: DaySpread
+    /// The part of the day it is now; nil to highlight none.
+    var current: DayPart?
+
+    var body: some View {
+        let allowances = spread.allowances(limit: limit)
+        if allowances[0] < limit {
+            ProportionalHStack(weights: allowances.map(Double.init), spacing: 3, minimumWidth: 68) {
+                ForEach(DayPart.allCases, id: \.self) { part in
+                    let isCurrent = part == current
+                    VStack(alignment: .leading, spacing: 6) {
+                        Capsule()
+                            .fill(isCurrent ? OnboardingStyle.navy : Color(hex: "#D5DAE1"))
+                            .frame(height: 8)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text((part == .morning ? "" : "+") + PlanFormat.duration(allowances[part.rawValue]))
+                                .font(.geist(size: 13, weight: isCurrent ? .bold : .medium))
+                                .foregroundStyle(OnboardingStyle.navy)
+                                .monospacedDigit()
+                                .contentTransition(.numericText())
+                            Text(part.shortTitle)
+                                .font(.geist(size: 11, weight: isCurrent ? .semibold : .regular))
+                                .foregroundStyle(isCurrent ? OnboardingStyle.navy : OnboardingStyle.muted)
+                        }
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    }
+                }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(DayPart.allCases.map { "\($0.title): \(PlanFormat.duration(allowances[$0.rawValue]))" }.joined(separator: ", "))
+        }
+    }
+}
+
+/// Lays children out in a row with widths in proportion to `weights`, each
+/// at least `minimumWidth` so its label still fits.
+struct ProportionalHStack: Layout {
+    let weights: [Double]
+    var spacing: CGFloat = 0
+    var minimumWidth: CGFloat = 0
+
+    /// In proportion to the weights; any child that would fall under the
+    /// minimum gets it, and the others share what's left in proportion.
+    private func widths(total: CGFloat, count: Int) -> [CGFloat] {
+        guard count > 0 else { return [] }
+        let weights = (0..<count).map { $0 < self.weights.count ? max(self.weights[$0], 0) : 0 }
+        let available = max(total - spacing * CGFloat(count - 1), 0)
+        let floor = min(minimumWidth, available / CGFloat(count))
+        var pinned = Set<Int>()
+        while true {
+            let free = available - floor * CGFloat(pinned.count)
+            let sum = weights.indices.filter { !pinned.contains($0) }.map { weights[$0] }.reduce(0, +)
+            let widths = weights.indices.map { index -> CGFloat in
+                if pinned.contains(index) { return floor }
+                return sum > 0 ? free * CGFloat(weights[index] / sum) : free / CGFloat(count - pinned.count)
+            }
+            let under = weights.indices.filter { !pinned.contains($0) && widths[$0] < floor }
+            if under.isEmpty { return widths }
+            pinned.formUnion(under)
+        }
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let total = proposal.width ?? 300
+        let widths = widths(total: total, count: subviews.count)
+        let height = zip(subviews, widths).map { $0.sizeThatFits(ProposedViewSize(width: $1, height: nil)).height }.max() ?? 0
+        return CGSize(width: total, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX
+        for (subview, width) in zip(subviews, widths(total: bounds.width, count: subviews.count)) {
+            subview.place(at: CGPoint(x: x, y: bounds.minY), proposal: ProposedViewSize(width: width, height: bounds.height))
+            x += width + spacing
+        }
+    }
+}
+
 extension DayPart {
+    /// "Morning", "Afternoon", "Evening": short enough to sit under a narrow
+    /// part of the day bar.
+    var shortTitle: String { name.capitalized }
+
     /// "Until noon", "Noon – 6 PM", "After 6 PM", in the user's clock style.
     var title: String {
         func hour(_ part: DayPart) -> String {
